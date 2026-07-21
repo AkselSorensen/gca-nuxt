@@ -2,6 +2,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: false },
   css: ['~/assets/css/main.css'],
+  typescript: { shim: false, typeCheck: false },
   app: {
     head: {
       title: 'GCA - Marketplace Garry\'s Mod',
