@@ -12,6 +12,7 @@ export const useAuth = () => {
   async function checkAuth() {
     try {
       const res = await $fetch(api + '/api/auth/me', {
+        credentials: 'include'
       })
       user.value = res.user || res
     } catch { user.value = null }
