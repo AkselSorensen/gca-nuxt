@@ -11,7 +11,7 @@ export const useAuth = () => {
 
   async function checkAuth() {
     try {
-      const res = await $fetch(api + '/api/auth/me', {
+      const res = await $fetch(api + '/api/me', {
         credentials: 'include'
       })
       user.value = res.user || res
