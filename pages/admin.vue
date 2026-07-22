@@ -160,6 +160,30 @@
         </table>
       </div>
 
+      <!-- Demandes Vendeurs -->
+      <div v-if="activeTab === 'sellers'" class="tab-content">
+        <div class="tab-header"><h2>Demandes vendeurs</h2><span v-if="sellerRequests.length" class="tab-badge">{{ sellerRequests.length }} en attente</span></div>
+        <div class="table-wrap">
+          <table v-if="sellerRequests.length" class="admin-table">
+            <thead><tr><th>Email</th><th>Boutique</th><th>Description</th><th>Discord</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr v-for="r in sellerRequests" :key="r.id">
+                <td><strong>{{ r.displayName || r.email }}</strong></td>
+                <td>{{ r.shopName || '—' }}</td>
+                <td><span class="desc-preview" :title="r.sellerDescription">{{ r.sellerDescription?.substring(0, 60) || '—' }}{{ r.sellerDescription?.length > 60 ? '…' : '' }}</span></td>
+                <td>{{ r.discordTag || '—' }}</td>
+                <td>{{ new Date(r.createdAt).toLocaleDateString('fr-FR') }}</td>
+                <td class="actions">
+                  <button class="btn-action" title="Approuver" @click="approveSeller(r.id)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></button>
+                  <button class="btn-action danger" title="Refuser" @click="rejectSeller(r.id)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else class="empty-tab">Aucune demande en attente.</div>
+        </div>
+      </div>
+
     </main>
   </div>
   <ToastNotif ref="toastRef" />
@@ -279,6 +303,7 @@ const tabs = [
   { id:'featured', label:'Mise en avant', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' },
   { id:'pages', label:'Pages', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
   { id:'ambassadors', label:'Ambassadeurs', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' },
+  { id:'sellers', label:'Vendeurs', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
 ]
 
 // ─── Ambassadors ──────────────────────────────────────
@@ -328,6 +353,7 @@ async function saveAmbCode() {
 
 // ─── Products ──────────────────────────────────────────
 const products = ref<any[]>([])
+const sellerRequests = ref<any[]>([])
 const showProductForm = ref(false)
 const categories = ref<{slug:string;name:string}[]>([])
 const sellers = ref<{slug:string;username:string}[]>([])
@@ -464,6 +490,36 @@ async function loadUsers() {
     const res = await $fetch(api + '/api/admin/users')
     users.value = res.users || res
   } catch { users.value = [] }
+}
+
+// ─── Seller Requests ────────────────────────────────────
+async function loadSellerRequests() {
+  try {
+    const res = await $fetch(api + '/api/admin/seller-requests')
+    sellerRequests.value = res.items || []
+  } catch { sellerRequests.value = [] }
+}
+
+async function approveSeller(id: number) {
+  try {
+    await $fetch(api + '/api/admin/seller-requests/' + id + '/approve', { method: 'POST' })
+    toastRef.value?.show('success', 'Vendeur approuvé ✓')
+    loadSellerRequests()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur')
+  }
+}
+
+async function rejectSeller(id: number) {
+  const confirmed = await confirmRef.value?.confirm('Refuser ce vendeur ?', 'Cette action est irréversible.')
+  if (!confirmed) return
+  try {
+    await $fetch(api + '/api/admin/seller-requests/' + id + '/reject', { method: 'POST' })
+    toastRef.value?.show('info', 'Vendeur refusé')
+    loadSellerRequests()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur')
+  }
 }
 
 // ─── Featured ──────────────────────────────────────────
@@ -604,7 +660,7 @@ async function savePage(page: typeof editablePages.value[0]) {
   finally { page.saving = false }
 }
 
-onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes() })
+onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests() })
 </script>
 
 <style scoped>

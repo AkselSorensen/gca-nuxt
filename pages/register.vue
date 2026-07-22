@@ -23,6 +23,7 @@
         <div v-if="accountType === 'seller'" class="seller-fields anim-scroll">
           <div class="field"><label>Nom de la boutique</label><input v-model="shopName" type="text" placeholder="Ma boutique" /></div>
           <div class="field"><label>Discord</label><input v-model="discord" type="text" placeholder="votre_discord#0000" /></div>
+          <div class="field"><label>Présentez-vous</label><textarea v-model="sellerDescription" rows="4" placeholder="Parlez-nous de vous, votre expérience, ce que vous créez…" maxlength="1000"></textarea></div>
         </div>
         <p v-if="error" class="auth-error anim-fade">{{ error }}</p>
         <p v-if="success" class="auth-success anim-fade">Compte créé !</p>
@@ -89,7 +90,7 @@ const termsScrollRef = ref<HTMLElement | null>(null)
 
 const accountType = ref('buyer')
 const username = ref(''); const email = ref(''); const password = ref('')
-const shopName = ref(''); const discord = ref('')
+const shopName = ref(''); const discord = ref(''); const sellerDescription = ref('')
 const error = ref(''); const success = ref(false); const submitting = ref(false)
 const showTerms = ref(false)
 const termsAccepted = ref(false)
@@ -116,9 +117,20 @@ async function handleRegister() {
   }
   error.value = ''; submitting.value = true
   try {
-    await register({ displayName: username.value, email: email.value, password: password.value, shopName: shopName.value, discord: discord.value })
+    const body: any = { displayName: username.value, email: email.value, password: password.value }
+    if (accountType.value === 'seller') {
+      body.role = 'seller'
+      body.shopName = shopName.value
+      body.discordTag = discord.value
+      body.sellerDescription = sellerDescription.value
+    }
+    const res = await register(body)
     success.value = true
-    setTimeout(() => navigateTo('/seller/account'), 1500)
+    if (res?.sellerPending) {
+      setTimeout(() => navigateTo('/seller/pending'), 1500)
+    } else {
+      setTimeout(() => navigateTo('/'), 1500)
+    }
   } catch (e: any) {
     error.value = e.data?.message || e.message || "Erreur"
   } finally { submitting.value = false }
