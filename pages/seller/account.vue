@@ -15,10 +15,37 @@
           </div>
           <div class="acard-body">
             <div class="field"><label>Nom de la boutique</label><input v-model="profile.shopName" type="text" /></div>
-            <div class="field"><label>Discord</label><input v-model="profile.discord" type="text" /></div>
             <div class="field"><label>Bio</label><textarea v-model="profile.bio" rows="3" placeholder="Présentez votre travail…"></textarea></div>
             <button class="btn-save" @click="saveProfile">Enregistrer</button>
             <span v-if="profileMsg" class="msg">{{ profileMsg }}</span>
+          </div>
+        </div>
+
+        <!-- Linked accounts card -->
+        <div class="acard anim-card">
+          <div class="acard-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <h2>Comptes liés</h2>
+          </div>
+          <div class="acard-body">
+            <!-- Discord -->
+            <div class="linked-row" v-if="discordLinked">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#5865f2"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/></svg>
+              <div class="linked-info"><strong>Discord</strong><span>Lié ✓</span></div>
+            </div>
+            <button v-else class="btn-link btn-discord" @click="linkDiscord">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/></svg>
+              Lier Discord
+            </button>
+            <!-- Steam -->
+            <div class="linked-row" v-if="steamLinked">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#1b2838"><path d="M11.5 2C7 2 3.3 5.2 2.5 9.5l4.3 1.8c.6-.4 1.4-.5 2.2-.3.9.2 1.6.8 2 1.6l2.9 7.1c.1.2.1.5.1.7 0 1.1-.9 2-2 2-.7 0-1.4-.4-1.7-1l-3.9-1.6c-.3 1.2-1 2.3-2.1 3.1C7.7 23.5 9.5 24 11.3 24c3.8 0 7.1-2.7 7.9-6.5l3.8-1.5.5-4.2L11.5 2zM6.6 13.4l-2.8-1.2c.2 2.4 2 4.3 4.4 4.5l2.4-1.1c.4.9 1.3 1.5 2.3 1.5 1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5c-1 0-1.9.6-2.3 1.5L8.7 14c-.2-1-.7-1.9-1.5-2.5l1.4 1.9z"/></svg>
+              <div class="linked-info"><strong>Steam</strong><span>Lié ✓</span></div>
+            </div>
+            <button v-else class="btn-link btn-steam" @click="linkSteam">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#1b2838"><path d="M11.5 2C7 2 3.3 5.2 2.5 9.5l4.3 1.8c.6-.4 1.4-.5 2.2-.3.9.2 1.6.8 2 1.6l2.9 7.1c.1.2.1.5.1.7 0 1.1-.9 2-2 2-.7 0-1.4-.4-1.7-1l-3.9-1.6c-.3 1.2-1 2.3-2.1 3.1C7.7 23.5 9.5 24 11.3 24c3.8 0 7.1-2.7 7.9-6.5l3.8-1.5.5-4.2L11.5 2zM6.6 13.4l-2.8-1.2c.2 2.4 2 4.3 4.4 4.5l2.4-1.1c.4.9 1.3 1.5 2.3 1.5 1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5c-1 0-1.9.6-2.3 1.5L8.7 14c-.2-1-.7-1.9-1.5-2.5l1.4 1.9z"/></svg>
+              Lier Steam
+            </button>
           </div>
         </div>
 
@@ -74,6 +101,8 @@ const config = useRuntimeConfig()
 const api = config.public.apiOrigin
 const pageRef = ref<HTMLElement | null>(null)
 const stripeLinked = ref(false)
+const discordLinked = ref(false)
+const steamLinked = ref(false)
 const profileMsg = ref('')
 const stripeUrl = ref('/api/stripe/connect')
 const stripeMsg = ref('Vérification du compte Stripe…')
@@ -132,12 +161,29 @@ async function connectStripe() {
   }
 }
 
+function linkDiscord() {
+  window.location.href = '/auth/discord?return_url=' + encodeURIComponent(window.location.origin + '/seller/account')
+}
+function linkSteam() {
+  window.location.href = '/auth/steam?return_url=' + encodeURIComponent(window.location.origin + '/seller/account')
+}
+
 onMounted(async () => {
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
   if (gsap) pageEntrance(gsap, pageRef.value)
 
   checkStripeConnect()
+
+  // Check linked accounts from URL params (after OAuth callback)
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('discord_id')) discordLinked.value = true
+  if (params.get('steam_id')) steamLinked.value = true
+
+  // Check from user session
+  const { user } = useAuth()
+  if (user.value?.discordId) discordLinked.value = true
+  if (user.value?.steamId) steamLinked.value = true
 })
 </script>
 
@@ -160,6 +206,19 @@ onMounted(async () => {
 .btn-save { padding:10px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;justify-self:start;font-family:inherit; }
 .btn-save:hover { opacity:.9;transform:translateY(-1px); }
 .msg { font-size:.82rem;color:var(--green); }
+
+/* Linked accounts */
+.linked-row { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border); }
+.linked-row svg { flex-shrink:0; }
+.linked-info { display:flex;align-items:center;gap:8px;flex:1; }
+.linked-info strong { font-size:.85rem;font-weight:600; }
+.linked-info span { font-size:.75rem;color:var(--green);font-weight:600;margin-left:auto; }
+.btn-link { display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;width:100%;text-align:left;font-family:inherit;background:transparent; }
+.btn-link:hover { background:rgba(255,255,255,0.03); }
+.btn-discord { color:#5865f2;border-color:rgba(88,101,242,0.2); }
+.btn-discord:hover { background:rgba(88,101,242,0.04);border-color:rgba(88,101,242,0.3); }
+.btn-steam { color:#1b2838;border-color:rgba(27,40,56,0.2); }
+.btn-steam:hover { background:rgba(27,40,56,0.03);border-color:rgba(27,40,56,0.3); }
 
 /* Stripe */
 .stripe-status { display:flex;align-items:center;gap:14px;padding:16px;border-radius:10px;background:rgba(255,255,255,0.02); }
