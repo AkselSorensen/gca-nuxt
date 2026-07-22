@@ -182,7 +182,11 @@ const filteredProducts = computed(() => products.value)
 
 function formatDate(dateStr: string) {
   if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+  try {
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return '—'
+    return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+  } catch { return '—' }
 }
 
 function contactSeller() {
