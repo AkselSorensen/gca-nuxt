@@ -11,9 +11,13 @@ const pageRef = ref<HTMLElement | null>(null)
 async function handleLogin() {
   error.value = ''; submitting.value = true
   try {
-    await login(email.value, password.value)
-    const target = tab.value === 'admin' ? '/admin' : tab.value === 'seller' ? '/seller/account' : '/'
-    navigateTo(target)
+    const res = await login(email.value, password.value)
+    const role = res?.user?.role || user?.value?.role
+    const slug = res?.user?.slug || user?.value?.slug
+    if (role === 'admin') navigateTo('/admin')
+    else if (role === 'seller' && slug) navigateTo('/seller/' + slug)
+    else if (tab.value === 'seller' && slug) navigateTo('/seller/' + slug)
+    else navigateTo('/')
   } catch (e: any) {
     error.value = e.data?.message || e.message || 'Erreur de connexion'
   } finally { submitting.value = false }

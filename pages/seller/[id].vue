@@ -155,11 +155,18 @@ const toastRef = ref<InstanceType<typeof ToastNotif> | null>(null)
 
 const sellerSlug = route.params.id as string
 
-const { data: raw } = await useFetch(() => api + '/api/sellers/' + sellerSlug, { lazy: true })
+const { data: raw, error: fetchError } = await useFetch(() => api + '/api/sellers/' + sellerSlug, { lazy: true })
 
 const seller = computed(() => raw.value?.seller || {})
 const products = computed(() => raw.value?.products || [])
-const loading = computed(() => !raw.value)
+const loading = computed(() => !raw.value && !fetchError.value)
+const hasError = computed(() => fetchError.value)
+
+// Si erreur API, afficher le message
+const errorMessage = computed(() => {
+  if (!fetchError.value) return ''
+  return fetchError.value?.data?.message || fetchError.value?.message || 'Erreur de chargement'
+})
 
 const avgRating = computed(() => {
   const p = products.value
