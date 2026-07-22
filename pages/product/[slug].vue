@@ -138,11 +138,12 @@
 
 <script setup lang="ts">
 const config = useRuntimeConfig()
+const api = config.public.apiOrigin
 const route = useRoute()
 const pageRef = ref<HTMLElement | null>(null)
 const slug = route.params.slug as string
 
-const { data: prodData } = await useFetch('/api/products/' + slug, { lazy: true, server: false })
+const { data: prodData } = await useFetch(api + '/api/products/' + slug, { lazy: true })
 const product = computed(() => prodData.value?.product || prodData.value || null)
 
 const currentImg = ref('')
