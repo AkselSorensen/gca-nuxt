@@ -2,7 +2,7 @@ export const useAuth = () => {
   const user = useState('auth-user', () => null)
   const loading = useState('auth-loading', () => true)
   const config = useRuntimeConfig()
-  const api = ''
+  const api = config.public.apiOrigin
 
   // Auto-check auth on first call
   if (process.client && user.value === null) {
