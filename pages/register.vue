@@ -22,7 +22,17 @@
         <div class="field anim-up"><label>Mot de passe</label><input v-model="password" type="password" placeholder="••••••••" required minlength="6" /></div>
         <div v-if="accountType === 'seller'" class="seller-fields anim-scroll">
           <div class="field"><label>Nom de la boutique</label><input v-model="shopName" type="text" placeholder="Ma boutique" /></div>
-          <div class="field"><label>Discord</label><input v-model="discord" type="text" placeholder="votre_discord#0000" /></div>
+          <div class="field"><label>Discord</label>
+            <div v-if="discordLinked" class="discord-linked">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#5865f2"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/></svg>
+              <span>Compte Discord lié</span>
+              <small>{{ discordLinked }}</small>
+            </div>
+            <button v-else type="button" class="btn-discord-link" @click="linkDiscord">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/></svg>
+              Lier mon compte Discord
+            </button>
+          </div>
           <div class="field"><label>Présentez-vous</label><textarea v-model="sellerDescription" rows="4" placeholder="Parlez-nous de vous, votre expérience, ce que vous créez…" maxlength="1000"></textarea></div>
         </div>
         <p v-if="error" class="auth-error anim-fade">{{ error }}</p>
@@ -91,6 +101,7 @@ const termsScrollRef = ref<HTMLElement | null>(null)
 const accountType = ref('buyer')
 const username = ref(''); const email = ref(''); const password = ref('')
 const shopName = ref(''); const discord = ref(''); const sellerDescription = ref('')
+const discordLinked = ref('')
 const error = ref(''); const success = ref(false); const submitting = ref(false)
 const showTerms = ref(false)
 const termsAccepted = ref(false)
@@ -137,11 +148,23 @@ async function handleRegister() {
 }
 
 function socialLogin(p: string) { window.location.href = '/auth/' + p }
+function linkDiscord() {
+  window.location.href = '/auth/discord?return_url=' + encodeURIComponent(window.location.origin + '/register')
+}
 
 onMounted(async () => {
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
   if (gsap) pageEntrance(gsap, pageRef.value)
+
+  // Check URL params for Discord link
+  const params = new URLSearchParams(window.location.search)
+  const did = params.get('discord_id')
+  const duser = params.get('discord_username')
+  if (did && duser) {
+    discordLinked.value = duser
+    discord.value = did
+  }
 })
 </script>
 
@@ -168,6 +191,11 @@ onMounted(async () => {
 .field textarea { padding:11px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.9rem;outline:none;transition:border-color .2s;font-family:inherit;resize:vertical;min-height:80px;width:100%;box-sizing:border-box; }
 .field textarea:focus { border-color:var(--primary); }
 .seller-fields { display:grid;gap:14px;padding:16px;border-radius:10px;background:rgba(110,231,183,0.03);border:1px solid rgba(110,231,183,0.1); }
+.discord-linked { display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;background:rgba(88,101,242,0.08);border:1px solid rgba(88,101,242,0.15); }
+.discord-linked span { font-size:.85rem;font-weight:600;color:#5865f2; }
+.discord-linked small { font-size:.75rem;color:var(--text-muted);margin-left:auto; }
+.btn-discord-link { display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid rgba(88,101,242,0.2);background:rgba(88,101,242,0.04);color:#5865f2;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;width:100%; }
+.btn-discord-link:hover { background:rgba(88,101,242,0.1);border-color:rgba(88,101,242,0.3); }
 .auth-error { color:var(--red);font-size:.85rem;padding:10px;border-radius:6px;background:rgba(248,113,113,0.1); }
 .auth-success { color:var(--green);font-size:.85rem;padding:10px;border-radius:6px;background:rgba(110,231,183,0.1); }
 .btn-submit { padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:.9rem;font-weight:600;transition:all .2s;cursor:pointer;font-family:inherit; }
