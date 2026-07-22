@@ -210,6 +210,24 @@
           <input ref="thumbInput" type="file" accept="image/png,image/jpeg" style="display:none" @change="handleThumbUpload" />
         </div>
         <div class="field"><label>Tags</label><input v-model="productForm.tags" type="text" placeholder="tag1, tag2, tag3" /><small style="font-size:.75rem;color:var(--text-muted);margin-top:-4px;">Séparés par des virgules</small></div>
+
+        <!-- Product file upload -->
+        <div class="field">
+          <label>Fichier du produit (zip, pour téléchargement)</label>
+          <div v-if="!uploadFile" class="file-zone" @click="fileInput?.click()" @dragover.prevent @drop.prevent="handleFileUpload">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+            <span>Glissez votre fichier zip ici</span>
+            <small v-if="uploadFileName">{{ uploadFileName }}</small>
+            <small v-else>Max 2 Go</small>
+          </div>
+          <div v-else class="file-preview">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+            <span class="file-name">{{ uploadFileName }}</span>
+            <span class="file-size">{{ formatSize(uploadFileSize) }}</span>
+            <button class="file-remove" @click="removeFile"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
+          <input ref="fileInput" type="file" accept=".zip,.rar,.7z" style="display:none" @change="handleFileUpload" />
+        </div>
         <label class="checkbox-row"><input type="checkbox" v-model="productForm.isHidden" /><span>Cacher ce produit sur le catalogue (Visible uniquement par l'admin)</span></label>
       </div>
       <div class="modal-actions">
@@ -249,7 +267,7 @@
 definePageMeta({ layout: 'auth' })
 const { user, logout } = useAuth()
 const config = useRuntimeConfig()
-const api = ''
+const api = config.public.apiOrigin
 
 // Redirect if not admin
 if (user.value?.role !== 'admin') navigateTo('/')
@@ -335,7 +353,7 @@ async function animateProdIn() {
 }
 function openProductForm() {
   Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', sellerSlug:'', price:0, discountPercent:0, tags:'', thumbnail:'', isHidden:false })
-  uploadThumb.value = ''
+  uploadThumb.value = ''; removeFile()
   showProductForm.value = true
   nextTick(() => animateProdIn())
 }
@@ -356,15 +374,63 @@ function handleThumbUpload(e: any) {
 }
 function removeThumb() { uploadThumb.value = ''; productForm.thumbnail = '' }
 
+// ─── Product File Upload ──────────────────────────────
+const uploadFile = ref<File | null>(null)
+const uploadFileName = ref('')
+const uploadFileSize = ref(0)
+const fileInput = ref<HTMLInputElement | null>(null)
+function handleFileUpload(e: any) {
+  const file = e.target?.files?.[0] || e.dataTransfer?.files?.[0]
+  if (!file) return
+  uploadFile.value = file
+  uploadFileName.value = file.name
+  uploadFileSize.value = file.size
+}
+function removeFile() {
+  uploadFile.value = null
+  uploadFileName.value = ''
+  uploadFileSize.value = 0
+}
+function formatSize(bytes: number) {
+  if (!bytes) return ''
+  if (bytes < 1024) return bytes + ' o'
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' Ko'
+  if (bytes < 1024*1024*1024) return (bytes/(1024*1024)).toFixed(1) + ' Mo'
+  return (bytes/(1024*1024*1024)).toFixed(2) + ' Go'
+}
+
 async function saveProduct() {
   if (!productForm.title || !productForm.price) return toastRef.value?.show('error', 'Titre et prix requis')
   try {
-    await $fetch(api + '/api/admin/products', { method:'POST', body: {
+    const res = await $fetch(api + '/api/admin/products', { method:'POST', body: {
       ...productForm,
       tags: productForm.tags.split(',').map((t:string) => t.trim()).filter(Boolean)
     }})
+
+    // Upload fichier produit vers R2 si un fichier a été sélectionné
+    const productId = res?.id || res?.productId
+    if (uploadFile.value && productId) {
+      const reader = new FileReader()
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const dataUrl = reader.result as string
+          resolve(dataUrl.split(',')[1]) // Remove data:...;base64, prefix
+        }
+        reader.onerror = reject
+        reader.readAsDataURL(uploadFile.value)
+      })
+
+      await $fetch(api + '/api/admin/products/' + productId + '/upload', {
+        method: 'POST',
+        body: {
+          filename: uploadFileName.value,
+          data_base64: base64
+        }
+      })
+    }
+
     showProductForm.value = false; loadProducts()
-    toastRef.value?.show('success', 'Produit créé')
+    toastRef.value?.show('success', 'Produit créé' + (uploadFile.value ? ' + fichier uploadé' : ''))
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || e?.message || 'Erreur')
   }
@@ -643,6 +709,28 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
   border-radius:12px;cursor:pointer;transition:all .25s;text-align:center;
 }
 .thumb-zone:hover { border-color:var(--primary);background:rgba(47,125,246,0.03); }
+
+/* File upload zone */
+.file-zone {
+  display:grid;place-items:center;gap:10px;padding:28px;border:2px dashed var(--border);
+  border-radius:12px;cursor:pointer;transition:all .25s;text-align:center;background:var(--bg-surface);
+}
+.file-zone:hover { border-color:var(--green);background:rgba(110,231,183,0.03); }
+.file-zone svg { color:var(--green); }
+.file-zone span { font-size:.88rem;font-weight:600;color:var(--text); }
+.file-zone small { font-size:.75rem;color:var(--text-muted); }
+.file-preview {
+  display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;
+  border:1px solid var(--border);background:var(--bg-surface);
+}
+.file-preview .file-name { flex:1;font-weight:600;font-size:.85rem;color:var(--text); }
+.file-preview .file-size { color:var(--text-muted);font-size:.78rem; }
+.file-remove {
+  width:28px;height:28px;border-radius:6px;border:1px solid transparent;
+  background:rgba(248,113,113,0.06);color:var(--red);cursor:pointer;
+  display:grid;place-items:center;transition:all .15s;flex-shrink:0;
+}
+.file-remove:hover { border-color:rgba(248,113,113,0.2);background:rgba(248,113,113,0.12); }
 .thumb-zone svg { opacity:.4; }
 .thumb-zone span { font-size:.85rem;color:var(--text-secondary);font-weight:600; }
 .thumb-zone small { font-size:.75rem;color:var(--text-muted); }
