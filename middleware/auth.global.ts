@@ -4,7 +4,7 @@ export default defineNuxtRouteMiddleware((to) => {
   // If not client-side yet, skip middleware
   if (process.server) return
 
-  if (to.path.startsWith('/admin')) {
+  if (to.path.startsWith('/seller/account') || to.path.startsWith('/admin')) {
     if (!user.value) return navigateTo('/login')
     if (user.value.role !== 'admin') return navigateTo('/')
   }
