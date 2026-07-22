@@ -1,20 +1,13 @@
 export default defineNuxtRouteMiddleware(async (to) => {
-  const { user, loading } = useAuth()
-
-  // Wait for auth check to complete on client side
-  if (process.client && loading.value) {
-    await new Promise<void>((resolve) => {
-      const unwatch = watch(loading, (val) => {
-        if (!val) {
-          unwatch()
-          resolve()
-        }
-      })
-    })
-  }
-
   // Skip on server side
   if (process.server) return
+
+  const { user, checkAuth } = useAuth()
+
+  // Ensure auth is checked before guarding routes
+  if (!user.value) {
+    await checkAuth()
+  }
 
   // Admin routes - admin only
   if (to.path.startsWith('/admin')) {
