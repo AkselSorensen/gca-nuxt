@@ -5,9 +5,9 @@ export default defineNuxtConfig({
   typescript: { shim: false, typeCheck: false },
   app: {
     head: {
-      title: 'GCA - Marketplace Garry\'s Mod',
+      title: 'GSA - Marketplace Garry\'s Mod',
       meta: [
-        { name: 'description', content: 'GCA structure la distribution d\'assets Garry\'s Mod.' }
+        { name: 'description', content: 'GSA structure la distribution d\'assets Garry\'s Mod.' }
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },

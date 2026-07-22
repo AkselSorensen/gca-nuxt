@@ -46,7 +46,7 @@
       <div class="collab-header">
         <div class="collab-tag">PARTENAIRES</div>
         <h2>Ils nous font confiance</h2>
-        <p>Des créateurs et studios qui misent sur GCA pour distribuer leurs assets.</p>
+        <p>Des créateurs et studios qui misent sur GSA pour distribuer leurs assets.</p>
       </div>
       <div class="collab-grid">
         <div v-for="(item, i) in collabItems" :key="i" class="collab-card" :style="{ transitionDelay: i * 0.06 + 's' }">

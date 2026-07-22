@@ -3,15 +3,15 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <NuxtLink to="/" class="footer-logo"><img src="/logo.png" alt="GCA" class="logo-img" /></NuxtLink>
-          <p>GCA — marketplace premium pour assets Garry's Mod.</p>
+          <NuxtLink to="/" class="footer-logo"><img src="/logo.png" alt="GSA" class="logo-img" /></NuxtLink>
+          <p>GSA — marketplace premium pour assets Garry's Mod.</p>
         </div>
         <div class="footer-links"><h4>Plateforme</h4><NuxtLink to="/catalogue">Marketplace</NuxtLink><NuxtLink to="/prestation">Prestation</NuxtLink><NuxtLink to="/about">À propos</NuxtLink></div>
         <div class="footer-links"><h4>Légal</h4><a href="#">CGV</a><a href="#">Confidentialité</a><a href="#">Mentions légales</a></div>
         <div class="footer-links"><h4>Support</h4><a href="#">Discord</a><a href="#">Contact</a><a href="#">FAQ</a></div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; {{ new Date().getFullYear() }} GCA. Tous droits réservés.</p>
+        <p>&copy; {{ new Date().getFullYear() }} GSA. Tous droits réservés.</p>
       </div>
     </div>
   </footer>

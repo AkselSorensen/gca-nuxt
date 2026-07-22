@@ -2,7 +2,7 @@
   <header class="site-header">
     <div class="container header-inner">
       <NuxtLink to="/" class="logo">
-        <img src="/logo.png" alt="GCA" class="logo-img" />
+        <img src="/logo.png" alt="GSA" class="logo-img" />
       </NuxtLink>
       <nav class="nav-links">
         <NuxtLink to="/" class="nav-link">Accueil</NuxtLink>
