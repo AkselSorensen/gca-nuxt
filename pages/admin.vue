@@ -318,7 +318,7 @@ const ambForm = reactive({
 async function loadAmbCodes() {
   ambLoading.value = true
   try {
-    const res = await $fetch(api + '/api/admin/promo-codes', { credentials: 'include' })
+    const res = await $fetch(api + '/api/admin/promo-codes', { credentials: 'include', credentials: 'include' })
     ambCodes.value = res.codes || res || []
   } catch { ambCodes.value = [] }
   finally { ambLoading.value = false }
@@ -616,8 +616,8 @@ async function saveFeatured() {
     await $fetch(api + '/api/admin/landing-config/featured_comm', { credentials: 'include', method:'PATCH', body: { title:'Communauté', metadata:{ items: featuredComm.value.filter(i => i.name && i.image) } }, timeout: 30000 })
     toastRef.value?.show('success', 'Mise en avant enregistrée')
   } catch (e: any) {
-    seller-requests/' + id + '/reject', { credentials: 'include', method: 'POST' })
-        toastRef.value?.show('info',
+    const msg = e?.data?.message || e?.message || 'Erreur inconnue'
+    toastRef.value?.show('error', msg)
     console.error('Save error:', e)
   } finally { savingFeatured.value = false }
 }
