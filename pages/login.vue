@@ -14,6 +14,24 @@ async function handleLogin() {
     const res = await login(email.value, password.value)
     const role = res?.user?.role || user?.value?.role
     const slug = res?.user?.slug || user?.value?.slug
+
+    // Vérifier que le rôle correspond à l'onglet sélectionné
+    if (tab.value === 'admin' && role !== 'admin') {
+      error.value = 'Ces identifiants ne sont pas ceux d\'un administrateur.'
+      submitting.value = false
+      return
+    }
+    if (tab.value === 'seller' && role === 'admin') {
+      error.value = 'Compte administrateur — utilisez l\'onglet Administrateur.'
+      submitting.value = false
+      return
+    }
+    if (tab.value === 'user' && role === 'admin') {
+      error.value = 'Compte administrateur — utilisez l\'onglet Administrateur.'
+      submitting.value = false
+      return
+    }
+
     if (role === 'admin') navigateTo('/admin')
     else if (role === 'seller' && slug) navigateTo('/seller/' + slug)
     else if (tab.value === 'seller' && slug) navigateTo('/seller/' + slug)
