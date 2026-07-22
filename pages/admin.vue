@@ -142,11 +142,14 @@
 
       <!-- ==================== AMBASSADEURS ==================== -->
       <div v-if="activeTab === 'ambassadors'" class="tab-content">
-        <div class="tab-header"><h2>Ambassadeurs</h2>
-          <button class="btn-primary-sm" @click="showAmbForm = true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nouveau code
-          </button>
+        <div class="tab-header">
+          <h2>Ambassadeurs</h2>
+          <div class="tab-actions">
+            <button class="admin-btn" @click="showAmbForm = true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nouveau code
+            </button>
+          </div>
         </div>
         <p class="tab-desc">Codes promo associés à des ambassadeurs pour le suivi des recommandations.</p>
         <div v-if="ambLoading" class="loading">Chargement…</div>
@@ -169,10 +172,12 @@
       <div v-if="activeTab === 'sellers'" class="tab-content">
         <div class="tab-header">
           <h2>Demandes vendeurs</h2>
-          <span v-if="sellerRequests.length" class="tab-badge">{{ sellerRequests.length }} en attente</span>
-          <button class="btn-icon" @click="loadSellerRequests" title="Rafraîchir">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-          </button>
+          <div class="tab-actions">
+            <span v-if="sellerRequests.length" class="tab-badge">{{ sellerRequests.length }} en attente</span>
+            <button class="admin-btn-icon" @click="loadSellerRequests" title="Rafraîchir">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+          </div>
         </div>
         <div class="table-wrap">
           <table v-if="sellerRequests.length" class="admin-table">
