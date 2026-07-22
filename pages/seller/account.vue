@@ -162,10 +162,10 @@ async function connectStripe() {
 }
 
 function linkDiscord() {
-  window.location.href = '/auth/discord?return_url=' + encodeURIComponent(window.location.origin + '/seller/account')
+  window.location.href = 'https://gsa-tresingo.vercel.app/auth/discord?return_url=' + encodeURIComponent('https://gca-nuxt.vercel.app/seller/account')
 }
 function linkSteam() {
-  window.location.href = '/auth/steam?return_url=' + encodeURIComponent(window.location.origin + '/seller/account')
+  window.location.href = 'https://gsa-tresingo.vercel.app/auth/steam?return_url=' + encodeURIComponent('https://gca-nuxt.vercel.app/seller/account')
 }
 
 onMounted(async () => {
@@ -208,17 +208,18 @@ onMounted(async () => {
 .msg { font-size:.82rem;color:var(--green); }
 
 /* Linked accounts */
-.linked-row { display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border); }
-.linked-row svg { flex-shrink:0; }
+.linked-row { display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;background:var(--bg-surface);border:1px solid var(--border); }
+.linked-row svg { flex-shrink:0;width:20px;height:20px; }
 .linked-info { display:flex;align-items:center;gap:8px;flex:1; }
-.linked-info strong { font-size:.85rem;font-weight:600; }
-.linked-info span { font-size:.75rem;color:var(--green);font-weight:600;margin-left:auto; }
-.btn-link { display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;width:100%;text-align:left;font-family:inherit;background:transparent; }
-.btn-link:hover { background:rgba(255,255,255,0.03); }
+.linked-info strong { font-size:.85rem;font-weight:600;color:var(--text); }
+.linked-info span { font-size:.75rem;color:var(--green);font-weight:700;margin-left:auto;padding:3px 10px;border-radius:20px;background:rgba(110,231,183,0.08);border:1px solid rgba(110,231,183,0.15); }
+.btn-link { display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;border:1px solid var(--border);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;width:100%;text-align:left;font-family:inherit;background:var(--bg-surface); }
+.btn-link:hover { transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+.btn-link svg { width:20px;height:20px;flex-shrink:0; }
 .btn-discord { color:#5865f2;border-color:rgba(88,101,242,0.2); }
-.btn-discord:hover { background:rgba(88,101,242,0.04);border-color:rgba(88,101,242,0.3); }
+.btn-discord:hover { border-color:rgba(88,101,242,0.4);background:rgba(88,101,242,0.04); }
 .btn-steam { color:#1b2838;border-color:rgba(27,40,56,0.2); }
-.btn-steam:hover { background:rgba(27,40,56,0.03);border-color:rgba(27,40,56,0.3); }
+.btn-steam:hover { border-color:rgba(27,40,56,0.4);background:rgba(27,40,56,0.03); }
 
 /* Stripe */
 .stripe-status { display:flex;align-items:center;gap:14px;padding:16px;border-radius:10px;background:rgba(255,255,255,0.02); }
