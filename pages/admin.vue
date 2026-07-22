@@ -142,7 +142,12 @@
 
       <!-- ==================== AMBASSADEURS ==================== -->
       <div v-if="activeTab === 'ambassadors'" class="tab-content">
-        <div class="tab-header"><h2>Ambassadeurs</h2><button class="btn-primary-sm" @click="showAmbForm = true">+ Nouveau code</button></div>
+        <div class="tab-header"><h2>Ambassadeurs</h2>
+          <button class="btn-primary-sm" @click="showAmbForm = true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nouveau code
+          </button>
+        </div>
         <p class="tab-desc">Codes promo associés à des ambassadeurs pour le suivi des recommandations.</p>
         <div v-if="ambLoading" class="loading">Chargement…</div>
         <table v-else class="admin-table">
