@@ -75,6 +75,7 @@ onMounted(async () => {
         <div class="field anim-up"><label>Mot de passe</label><input v-model="password" type="password" placeholder="••••••••" required /></div>
         <p v-if="error" class="auth-error anim-fade">{{ error }}</p>
         <button type="submit" class="btn-submit btn-seller anim-up" :disabled="submitting">{{ submitting ? 'Connexion…' : 'Accéder à mon espace' }}</button>
+        <p class="auth-footer anim-fade">Pas encore de compte vendeur ? <NuxtLink to="/register">S'inscrire</NuxtLink></p>
       </form>
 
       <form v-if="tab === 'admin'" @submit.prevent="handleLogin" class="auth-form">
