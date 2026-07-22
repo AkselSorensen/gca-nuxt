@@ -78,7 +78,7 @@ onMounted(async () => {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <span>Accès réservé aux administrateurs.</span>
         </div>
-        <div class="field anim-up"><label>Email</label><input v-model="email" type="email" placeholder="admin@gsa.fr" required /></div>
+        <div class="field anim-up"><label>Email</label><input v-model="email" type="email" placeholder="GSA" required /></div>
         <div class="field anim-up"><label>Mot de passe</label><input v-model="password" type="password" placeholder="••••••••" required /></div>
         <p v-if="error" class="auth-error anim-fade">{{ error }}</p>
         <button type="submit" class="btn-submit btn-admin anim-up" :disabled="submitting">{{ submitting ? 'Connexion…' : 'Accéder au panneau' }}</button>
