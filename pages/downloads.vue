@@ -133,6 +133,20 @@ onMounted(async () => {
   const { gsap } = await load()
   if (gsap) pageEntrance(gsap, pageRef.value)
 
+  // Auto-confirm Stripe payment
+  const params = new URLSearchParams(window.location.search)
+  const sessionId = params.get('session_id')
+  if (params.get('confirmed') === '1' && sessionId) {
+    try {
+      await $fetch(api + '/api/checkout/confirm-session', {
+        method: 'POST', credentials: 'include', body: { sessionId }
+      })
+      toastRef.value?.show('success', 'Paiement confirmé !')
+    } catch (e: any) {
+      console.error('Confirm error:', e)
+    }
+  }
+
   fetchPurchases()
 })
 </script>
