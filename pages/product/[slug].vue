@@ -201,7 +201,7 @@ async function buyNow() {
   if (buying.value) return
   buying.value = true; buyError.value = ''
   try {
-    const res = await $fetch('/api/checkout/buy-now', { method:'POST', body: { slug } })
+    const res = await $fetch(api + '/api/checkout/buy-now', { method:'POST', body: { slug } })
     if (res.url) window.location.href = res.url
   } catch (e: any) {
     buyError.value = e?.data?.message || e?.message || 'Erreur de paiement'
