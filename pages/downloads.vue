@@ -172,14 +172,15 @@ async function confirmManual() {
   const sid = manualSessionId.value.trim()
   if (!sid) return
   try {
-    const res = await $fetch(api + '/api/checkout/debug-confirm', {
+    const res = await $fetch(api + '/api/checkout/confirm-session', {
       method: 'POST', credentials: 'include', body: { sessionId: sid }
     })
-    toastRef.value?.show('success', 'Commande créée !')
+    toastRef.value?.show('success', 'Commande confirmée !')
     manualSessionId.value = ''
     fetchPurchases()
   } catch (e: any) {
-    toastRef.value?.show('error', e?.data?.message || 'Erreur')
+    const msg = e?.data?.message || e?.message || 'Erreur'
+    toastRef.value?.show('error', msg)
   }
 }
 
