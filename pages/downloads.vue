@@ -19,11 +19,16 @@
       </div>
 
       <div v-else-if="!purchases.length" class="empty-state anim-up">
+        <!-- Paiement en attente de confirmation -->
+        <div v-if="checkoutSessionId" class="confirm-banner">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f5b342" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div><strong>Paiement reçu !</strong><span>Confirmation en cours…</span></div>
+          <button class="btn-confirm" @click="retryConfirm">Vérifier</button>
+        </div>
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <h2>Aucun téléchargement</h2>
         <p>Vous n'avez encore rien acheté sur la marketplace.</p>
         <NuxtLink to="/catalogue" class="btn-browse">Parcourir le catalogue</NuxtLink>
-        <button v-if="checkoutSessionId" class="btn-retry" @click="retryConfirm">Confirmer mon paiement ({{ checkoutSessionId.substring(0, 8) }}…)</button>
       </div>
 
       <div v-else class="purchases-list anim-up">
@@ -205,4 +210,9 @@ onMounted(async () => {
 .btn-dl:disabled { opacity: .5; cursor: not-allowed; }
 
 .no-files { padding: 8px 0; font-size: .82rem; color: var(--text-muted); }
+.confirm-banner { display:flex;align-items:center;gap:12px;padding:16px 20px;border-radius:12px;border:1px solid rgba(245,179,66,0.2);background:rgba(245,179,66,0.04);width:100%;max-width:400px;margin-bottom:16px; }
+.confirm-banner div { display:grid;gap:2px;text-align:left;flex:1; }
+.confirm-banner strong { font-size:.85rem;font-weight:700; }
+.confirm-banner span { font-size:.75rem;color:var(--text-muted); }
+.btn-confirm { padding:8px 18px;border-radius:6px;border:none;background:linear-gradient(135deg,#f5b342,#f59e0b);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s; }
 </style>
