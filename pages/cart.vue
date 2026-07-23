@@ -15,7 +15,15 @@
         <div class="step"><span class="step-num">3</span> Terminé</div>
       </div>
 
-      <div class="cart-layout" v-if="items.length">
+      <!-- Success state -->
+      <div v-if="checkoutSuccess" class="success-banner anim-scale">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <h2>Paiement réussi !</h2>
+        <p>Votre commande a été confirmée. Vous pouvez dès maintenant télécharger vos produits.</p>
+        <NuxtLink to="/downloads" class="btn-success">Mes téléchargements</NuxtLink>
+      </div>
+
+      <div class="cart-layout" v-if="items.length && !checkoutSuccess">
         <div class="cart-items anim-left">
           <h2>Votre panier ({{ items.length }})</h2>
           <div v-for="(item, i) in items" :key="item.id || i" class="cart-item">
@@ -70,6 +78,8 @@ const promoCode = ref('')
 const promoStatus = ref<'idle'|'loading'|'valid'|'error'>('idle')
 const promoMsg = ref('')
 const promoDiscount = ref(0)
+const checkoutSuccess = ref(false)
+const checkoutSessionId = ref('')
 const subtotal = computed(() => items.value.reduce((s, i) => s + Number(i.price), 0))
 const total = computed(() => Math.max(0, subtotal.value - promoDiscount.value))
 
@@ -112,6 +122,23 @@ onMounted(async () => {
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
   if (gsap) pageEntrance(gsap, pageRef.value)
+
+  // Handle Stripe checkout success
+  const params = new URLSearchParams(window.location.search)
+  const sid = params.get('session_id')
+  if (params.get('checkout') === 'success' && sid) {
+    checkoutSessionId.value = sid
+    try {
+      const config = useRuntimeConfig()
+      const api = config.public.apiOrigin
+      await $fetch(api + '/api/checkout/confirm-session', { method: 'POST', credentials: 'include', body: { sessionId: sid } })
+      checkoutSuccess.value = true
+      localStorage.removeItem('gsa-cart')
+      items.value = []
+    } catch (e: any) {
+      console.error('Confirm error:', e)
+    }
+  }
 })
 
 watch(items, (val) => {
@@ -179,4 +206,11 @@ watch(items, (val) => {
 .cart-empty p { color:var(--text-secondary); }
 .btn-browse { padding:12px 24px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-weight:700;text-decoration:none;margin-top:8px;transition:opacity .2s; }
 .btn-browse:hover { opacity:.9; }
+
+/* Success */
+.success-banner { text-align:center;padding:60px 20px;display:grid;gap:12px;justify-items:center;border-radius:16px;border:1px solid rgba(110,231,183,0.15);background:rgba(110,231,183,0.03); }
+.success-banner h2 { font-size:1.3rem;font-weight:900;color:var(--green); }
+.success-banner p { color:var(--text-secondary);max-width:400px; }
+.btn-success { padding:14px 32px;border-radius:10px;background:linear-gradient(135deg,var(--green),#4ade80);color:#fff;font-weight:700;text-decoration:none;font-size:.9rem;transition:all .2s;margin-top:8px; }
+.btn-success:hover { opacity:.9;transform:translateY(-1px); }
 </style>
