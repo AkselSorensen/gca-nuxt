@@ -9,6 +9,7 @@
       <div v-if="loading" class="loading-state anim-up">
         <div class="loader"></div>
         <span>Chargement de vos achats…</span>
+        <small v-if="waitMsg" class="wait-msg">{{ waitMsg }}</small>
       </div>
 
       <div v-else-if="error" class="error-state anim-up">
@@ -86,6 +87,7 @@ const toastRef = ref<InstanceType<typeof ToastNotif> | null>(null)
 const purchases = ref<any[]>([])
 const loading = ref(true)
 const error = ref('')
+const waitMsg = ref('')
 const downloading = ref<number | null>(null)
 const checkoutSessionId = ref('')
 const manualSessionId = ref('')
@@ -142,29 +144,36 @@ function formatSize(bytes: number) {
 
 async function retryConfirm() {
   if (!checkoutSessionId.value) return
-  try {
-    const res = await $fetch(api + '/api/checkout/confirm-session', {
-      method: 'POST', credentials: 'include', body: { sessionId: checkoutSessionId.value }
-    })
-    toastRef.value?.show('success', 'Paiement confirmé !')
-    checkoutSessionId.value = ''
-    fetchPurchases()
-  } catch (e: any) {
-    toastRef.value?.show('error', e?.data?.message || 'Erreur de confirmation')
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise(r => setTimeout(r, 2000))
+    try {
+      const res = await $fetch(api + '/api/checkout/confirm-session', {
+        method: 'POST', credentials: 'include', body: { sessionId: checkoutSessionId.value }
+      })
+      toastRef.value?.show('success', 'Paiement confirmé !')
+      checkoutSessionId.value = ''
+      fetchPurchases()
+      return
+    } catch (e: any) {
+      console.error('Confirm attempt', attempt + 1, 'failed:', e?.data?.message || e)
+      if (attempt === 2) {
+        toastRef.value?.show('error', 'Cliquez sur "Vérifier" pour confirmer le paiement')
+      }
+    }
   }
 }
 
 async function forceConfirm() {
   if (!checkoutSessionId.value) return
   try {
-    const res = await $fetch(api + '/api/checkout/debug-confirm', {
+    const res = await $fetch(api + '/api/checkout/confirm-session', {
       method: 'POST', credentials: 'include', body: { sessionId: checkoutSessionId.value }
     })
-    toastRef.value?.show('success', 'Commande forcée !')
+    toastRef.value?.show('success', 'Commande confirmée !')
     checkoutSessionId.value = ''
     fetchPurchases()
   } catch (e: any) {
-    toastRef.value?.show('error', e?.data?.message || 'Erreur force')
+    toastRef.value?.show('error', e?.data?.message || 'Erreur')
   }
 }
 
