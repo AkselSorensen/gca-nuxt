@@ -254,23 +254,25 @@
               <input ref="thumbInput" type="file" accept="image/png,image/jpeg" style="display:none" @change="handleThumbUpload" />
             </div>
             <div class="field"><label>Tags</label>
-              <div class="tag-selector">
-                <div class="tag-input-row">
-                  <input v-model="newTag" type="text" placeholder="Nouveau tag..." @keyup.enter="addTag" />
-                  <button class="tag-add-btn" @click="addTag">+</button>
+              <div class="tag-dropdown">
+                <div class="tag-trigger" @click="tagOpen = !tagOpen">
+                  <span v-if="selectedTags.length">{{ selectedTags.length }} tag(s) sélectionné(s)</span>
+                  <span v-else class="ph">Sélectionner des tags…</span>
+                  <svg :class="{ open: tagOpen }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
-                <div class="tag-list">
-                  <label v-for="t in allTags" :key="t" class="tag-option" :class="{ checked: selectedTags.includes(t) }">
-                    <input type="checkbox" :value="t" :checked="selectedTags.includes(t)" @change="toggleTag(t)" />
-                    <span>{{ t }}</span>
+                <div v-if="tagOpen" class="tag-menu">
+                  <label v-for="t in allTags" :key="t" class="tag-opt" :class="{ checked: selectedTags.includes(t) }">
+                    <input type="checkbox" :checked="selectedTags.includes(t)" @change="toggleTag(t)" />
+                    <span>#{{ t }}</span>
                   </label>
+                  <div v-if="!allTags.length" class="tag-empty">Aucun tag disponible</div>
                 </div>
-                <div v-if="selectedTags.length" class="tag-selected">
-                  <span v-for="t in selectedTags" :key="t" class="tag-pill">
-                    {{ t }}
-                    <button @click="removeTag(t)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                  </span>
-                </div>
+              </div>
+              <div v-if="selectedTags.length" class="tag-pills">
+                <span v-for="t in selectedTags" :key="t" class="tag-pill">
+                  #{{ t }}
+                  <button @click="removeTag(t)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                </span>
               </div>
             </div>
             <div class="field">
@@ -436,6 +438,7 @@ const uploadThumb = ref('')
 const allTags = ref<string[]>([])
 const selectedTags = ref<string[]>([])
 const newTag = ref('')
+const tagOpen = ref(false)
 const thumbInput = ref<HTMLInputElement | null>(null)
 function handleThumbUpload(e: any) {
   const file = e.target?.files?.[0] || e.dataTransfer?.files?.[0]
@@ -913,18 +916,19 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 @keyframes spin { to { transform:rotate(360deg); } }
 .btn-primary:disabled { opacity:.7;cursor:not-allowed;transform:none !important;box-shadow:none !important; }
 .tag-selector { display:grid;gap:8px; }
-.tag-input-row { display:flex;gap:6px; }
-.tag-input-row input { flex:1;padding:8px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.8rem;outline:none; }
-.tag-input-row input:focus { border-color:var(--primary); }
-.tag-add-btn { padding:8px 14px;border-radius:6px;border:none;background:var(--primary);color:#fff;font-size:.9rem;font-weight:700;cursor:pointer; }
-.tag-list { display:flex;flex-wrap:wrap;gap:4px;max-height:110px;overflow-y:auto;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-surface); }
-.tag-option { display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;font-size:.75rem;cursor:pointer;transition:all .1s;white-space:nowrap;font-weight:500; }
-.tag-option:hover { background:rgba(255,255,255,0.05); }
-.tag-option.checked { background:rgba(47,125,246,0.12);color:var(--primary);font-weight:600; }
-.tag-option input { display:none; }
-.tag-option span::before { content:'#';opacity:.4;margin-right:1px; }
-.tag-selected { display:flex;flex-wrap:wrap;gap:4px; }
+.tag-dropdown { position:relative; }
+.tag-trigger { display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface);cursor:pointer;transition:border-color .2s;font-size:.85rem; }
+.tag-trigger:hover { border-color:var(--border-hover); }
+.tag-trigger .ph { color:var(--text-muted); }
+.tag-trigger svg { margin-left:auto;transition:transform .2s;flex-shrink:0; }
+.tag-trigger svg.open { transform:rotate(180deg); }
+.tag-menu { position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:50;display:flex;flex-wrap:wrap;gap:2px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);box-shadow:0 8px 24px rgba(0,0,0,0.2);max-height:160px;overflow-y:auto; }
+.tag-opt { display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:4px;font-size:.78rem;cursor:pointer;transition:all .1s;white-space:nowrap;flex:0 0 calc(50% - 2px);box-sizing:border-box; }
+.tag-opt:hover { background:rgba(255,255,255,0.04); }
+.tag-opt.checked { background:rgba(47,125,246,0.1);color:var(--primary);font-weight:600; }
+.tag-opt input { display:none; }
+.tag-empty { padding:12px;text-align:center;font-size:.78rem;color:var(--text-muted);width:100%; }
+.tag-pills { display:flex;flex-wrap:wrap;gap:4px;margin-top:6px; }
 .tag-pill { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:4px;background:rgba(47,125,246,0.12);font-size:.75rem;font-weight:600; }
 .tag-pill button { display:grid;place-items:center;width:14px;height:14px;border:none;background:none;color:var(--text-muted);cursor:pointer;padding:0;border-radius:3px; }
-.tag-pill button:hover { background:rgba(0,0,0,0.15);color:var(--text); }
 </style>
