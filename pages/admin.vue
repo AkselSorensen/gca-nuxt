@@ -253,7 +253,26 @@
               </div>
               <input ref="thumbInput" type="file" accept="image/png,image/jpeg" style="display:none" @change="handleThumbUpload" />
             </div>
-            <div class="field"><label>Tags</label><input v-model="productForm.tags" type="text" placeholder="tag1, tag2, tag3" /><small style="font-size:.75rem;color:var(--text-muted);margin-top:-4px;">Séparés par des virgules</small></div>
+            <div class="field"><label>Tags</label>
+              <div class="tag-selector">
+                <div class="tag-input-row">
+                  <input v-model="newTag" type="text" placeholder="Nouveau tag..." @keyup.enter="addTag" />
+                  <button class="tag-add-btn" @click="addTag">+</button>
+                </div>
+                <div class="tag-list">
+                  <label v-for="t in allTags" :key="t" class="tag-option" :class="{ checked: selectedTags.includes(t) }">
+                    <input type="checkbox" :value="t" :checked="selectedTags.includes(t)" @change="toggleTag(t)" />
+                    <span>{{ t }}</span>
+                  </label>
+                </div>
+                <div v-if="selectedTags.length" class="tag-selected">
+                  <span v-for="t in selectedTags" :key="t" class="tag-pill">
+                    {{ t }}
+                    <button @click="removeTag(t)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                  </span>
+                </div>
+              </div>
+            </div>
             <div class="field">
               <label>Fichier du produit (zip)</label>
               <div v-if="!uploadFile" class="file-zone" @click="fileInput?.click()" @dragover.prevent @drop.prevent="handleFileUpload">
@@ -336,6 +355,12 @@ const ambForm = reactive({
   code: '', name: '', contact: '', discountType: 'percent', discountValue: 0, maxUses: 0, points: 1, reward: ''
 })
 
+async function loadTags() {
+  try {
+    const r = await $fetch(api + '/api/admin/tags', { credentials: 'include' })
+    allTags.value = r.tags || []
+  } catch { allTags.value = [] }
+}
 async function loadAmbCodes() {
   ambLoading.value = true
   try {
@@ -685,7 +710,7 @@ async function savePage(page: typeof editablePages.value[0]) {
   finally { page.saving = false }
 }
 
-onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests() })
+onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests(); loadTags() })
 </script>
 
 <style scoped>
