@@ -762,7 +762,8 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 
 /* Form modal (product) */
 .form-modal { width:100%;max-width:520px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.3); }
-.form-modal-lg { max-width:820px !important; }
+.form-modal-lg { max-width:880px !important; }
+.form-modal-lg .modal-body { max-height:70vh;overflow-y:auto; }
 .form-grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:24px; }
 @media(max-width:768px){.form-grid-2{grid-template-columns:1fr}}
 .check-field { display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text-secondary);cursor:pointer; }
