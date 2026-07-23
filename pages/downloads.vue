@@ -18,6 +18,15 @@
         <button class="btn-retry" @click="fetchPurchases">Réessayer</button>
       </div>
 
+      <!-- Manuel : coller l'ID de session Stripe -->
+      <div v-if="!checkoutSessionId && !purchases.length" class="manual-confirm anim-up">
+        <p>Vous avez payé mais rien ne s'affiche ? Collez l'ID de session Stripe ici :</p>
+        <div class="manual-row">
+          <input v-model="manualSessionId" placeholder="cs_test_..." class="manual-input" />
+          <button class="btn-confirm" @click="confirmManual">Confirmer</button>
+        </div>
+      </div>
+
       <div v-else-if="!purchases.length" class="empty-state anim-up">
         <!-- Paiement en attente de confirmation -->
         <div v-if="checkoutSessionId" class="confirm-banner">
@@ -79,6 +88,7 @@ const loading = ref(true)
 const error = ref('')
 const downloading = ref<number | null>(null)
 const checkoutSessionId = ref('')
+const manualSessionId = ref('')
 
 async function fetchPurchases() {
   loading.value = true; error.value = ''
@@ -158,6 +168,21 @@ async function forceConfirm() {
   }
 }
 
+async function confirmManual() {
+  const sid = manualSessionId.value.trim()
+  if (!sid) return
+  try {
+    const res = await $fetch(api + '/api/checkout/debug-confirm', {
+      method: 'POST', credentials: 'include', body: { sessionId: sid }
+    })
+    toastRef.value?.show('success', 'Commande créée !')
+    manualSessionId.value = ''
+    fetchPurchases()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur')
+  }
+}
+
 onMounted(async () => {
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
@@ -230,4 +255,9 @@ onMounted(async () => {
 .confirm-banner strong { font-size:.85rem;font-weight:700; }
 .confirm-banner span { font-size:.75rem;color:var(--text-muted); }
 .btn-confirm { padding:8px 18px;border-radius:6px;border:none;background:linear-gradient(135deg,#f5b342,#f59e0b);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s; }
+.manual-confirm { text-align:center;padding:32px 20px;max-width:480px;margin:0 auto; }
+.manual-confirm p { font-size:.85rem;color:var(--text-secondary);margin-bottom:12px; }
+.manual-row { display:flex;gap:8px; }
+.manual-input { flex:1;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.85rem;outline:none;font-family:monospace; }
+.manual-input:focus { border-color:var(--primary); }
 </style>
