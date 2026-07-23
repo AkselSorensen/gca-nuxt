@@ -23,6 +23,15 @@
         <NuxtLink to="/downloads" class="btn-success">Mes téléchargements</NuxtLink>
       </div>
 
+      <!-- Retry state -->
+      <div v-if="checkoutSessionId && !checkoutSuccess" class="retry-banner anim-scale">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h2>Paiement en attente de confirmation</h2>
+        <p>Votre paiement a bien été reçu, mais la confirmation prend quelques instants.</p>
+        <button class="btn-retry" @click="confirmCheckout(checkoutSessionId)">Réessayer</button>
+        <NuxtLink to="/downloads" class="link-dl">Voir mes téléchargements</NuxtLink>
+      </div>
+
       <div class="cart-layout" v-if="items.length && !checkoutSuccess">
         <div class="cart-items anim-left">
           <h2>Votre panier ({{ items.length }})</h2>
@@ -128,18 +137,26 @@ onMounted(async () => {
   const sid = params.get('session_id')
   if (params.get('checkout') === 'success' && sid) {
     checkoutSessionId.value = sid
-    try {
-      const config = useRuntimeConfig()
-      const api = config.public.apiOrigin
-      await $fetch(api + '/api/checkout/confirm-session', { method: 'POST', credentials: 'include', body: { sessionId: sid } })
-      checkoutSuccess.value = true
-      localStorage.removeItem('gsa-cart')
-      items.value = []
-    } catch (e: any) {
-      console.error('Confirm error:', e)
-    }
+    // Wait a moment for Stripe to process, then confirm
+    await new Promise(r => setTimeout(r, 2000))
+    await confirmCheckout(sid)
   }
 })
+
+async function confirmCheckout(sid: string) {
+  try {
+    const config = useRuntimeConfig()
+    const api = config.public.apiOrigin
+    await $fetch(api + '/api/checkout/confirm-session', { method: 'POST', credentials: 'include', body: { sessionId: sid } })
+    checkoutSuccess.value = true
+    localStorage.removeItem('gsa-cart')
+    items.value = []
+  } catch (e: any) {
+    console.error('Confirm error:', e?.data || e)
+    // Show retry option on failure
+    checkoutSessionId.value = sid
+  }
+}
 
 watch(items, (val) => {
   localStorage.setItem('gsa-cart', JSON.stringify(val))
@@ -213,4 +230,11 @@ watch(items, (val) => {
 .success-banner p { color:var(--text-secondary);max-width:400px; }
 .btn-success { padding:14px 32px;border-radius:10px;background:linear-gradient(135deg,var(--green),#4ade80);color:#fff;font-weight:700;text-decoration:none;font-size:.9rem;transition:all .2s;margin-top:8px; }
 .btn-success:hover { opacity:.9;transform:translateY(-1px); }
+.retry-banner { text-align:center;padding:60px 20px;display:grid;gap:12px;justify-items:center;border-radius:16px;border:1px solid rgba(245,179,66,0.15);background:rgba(245,179,66,0.03); }
+.retry-banner h2 { font-size:1.3rem;font-weight:900;color:#f5b342; }
+.retry-banner p { color:var(--text-secondary);max-width:400px; }
+.btn-retry { padding:14px 32px;border-radius:10px;background:linear-gradient(135deg,#f5b342,#f59e0b);color:#fff;font-weight:700;border:none;font-size:.9rem;cursor:pointer;transition:all .2s;font-family:inherit; }
+.btn-retry:hover { opacity:.9;transform:translateY(-1px); }
+.link-dl { font-size:.85rem;color:var(--primary);font-weight:600;text-decoration:none; }
+.link-dl:hover { text-decoration:underline; }
 </style>
