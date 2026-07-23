@@ -199,6 +199,8 @@ const toastRef = ref<InstanceType<typeof ToastNotif> | null>(null)
 
 async function buyNow() {
   if (buying.value) return
+  const { user } = useAuth()
+  if (!user.value?.id) return navigateTo('/login?redirect=' + encodeURIComponent(route.fullPath))
   buying.value = true; buyError.value = ''
   try {
     const res = await $fetch(api + '/api/checkout/buy-now', { method:'POST', credentials: 'include', body: { slug } })
