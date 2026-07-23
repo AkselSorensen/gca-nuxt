@@ -453,6 +453,17 @@ function handleThumbUpload(e: any) {
 }
 function removeThumb() { uploadThumb.value = ''; productForm.thumbnail = '' }
 
+function toggleTag(t: string) {
+  const idx = selectedTags.value.indexOf(t)
+  if (idx > -1) selectedTags.value.splice(idx, 1)
+  else selectedTags.value.push(t)
+  productForm.tags = selectedTags.value.join(', ')
+}
+function removeTag(t: string) {
+  selectedTags.value = selectedTags.value.filter(x => x !== t)
+  productForm.tags = selectedTags.value.join(', ')
+}
+
 // ─── Product File Upload ──────────────────────────────
 const uploadFile = ref<File | null>(null)
 const uploadFileName = ref('')
