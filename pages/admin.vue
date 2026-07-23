@@ -281,9 +281,6 @@
       </div>
     </div>
   </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Ambassador form modal -->
   <div v-if="showAmbForm" ref="ambOverlay" class="modal-overlay" @click.self="showAmbForm = false">
