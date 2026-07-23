@@ -177,7 +177,8 @@ async function confirmManual() {
     })
     toastRef.value?.show('success', 'Commande confirmée !')
     manualSessionId.value = ''
-    fetchPurchases()
+    await new Promise(r => setTimeout(r, 500))
+    window.location.reload()
   } catch (e: any) {
     const msg = e?.data?.message || e?.message || 'Erreur'
     toastRef.value?.show('error', msg)
