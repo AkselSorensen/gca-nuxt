@@ -426,6 +426,7 @@ async function animateProdIn() {
 function openProductForm() {
   Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', sellerSlug:'', price:0, discountPercent:0, tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
+  selectedTags.value = []; newTag.value = ''
   showProductForm.value = true
   nextTick(() => animateProdIn())
 }
