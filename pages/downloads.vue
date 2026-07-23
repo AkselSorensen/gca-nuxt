@@ -18,7 +18,23 @@
         <button class="btn-retry" @click="fetchPurchases">Réessayer</button>
       </div>
 
+      <!-- Manuel : coller l'ID de session Stripe -->
+      <div v-if="!checkoutSessionId && !purchases.length" class="manual-confirm anim-up">
+        <p>Vous avez payé mais rien ne s'affiche ? Collez l'ID de session Stripe ici :</p>
+        <div class="manual-row">
+          <input v-model="manualSessionId" placeholder="cs_test_..." class="manual-input" />
+          <button class="btn-confirm" @click="confirmManual">Confirmer</button>
+        </div>
+      </div>
+
       <div v-else-if="!purchases.length" class="empty-state anim-up">
+        <!-- Paiement en attente de confirmation -->
+        <div v-if="checkoutSessionId" class="confirm-banner">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f5b342" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div><strong>Paiement reçu !</strong><span>Confirmation en cours…</span></div>
+          <button class="btn-confirm" @click="retryConfirm">Vérifier</button>
+          <button v-if="checkoutSessionId && !retrying" class="btn-force" @click="forceConfirm" style="background:#ef4444;padding:8px 14px;border-radius:6px;border:none;color:#fff;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;">Force</button>
+        </div>
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <h2>Aucun téléchargement</h2>
         <p>Vous n'avez encore rien acheté sur la marketplace.</p>
@@ -26,39 +42,33 @@
       </div>
 
       <div v-else class="purchases-list anim-up">
-        <div v-for="item in purchases" :key="item.order_item_id" class="dl-card">
-          <div class="dl-card-top">
-            <div class="dl-thumb">
-              <img :src="item.thumbnail || '/placeholder.svg'" :alt="item.title" />
+        <article v-for="item in purchases" :key="item.order_item_id" class="purchase-card">
+          <div class="purchase-thumb">
+            <img :src="item.thumbnail || '/placeholder.svg'" :alt="item.title" />
+          </div>
+          <div class="purchase-info">
+            <h3>{{ item.title }}</h3>
+            <div class="purchase-meta">
+              <span class="meta-cat">{{ item.category_name }}</span>
+              <span class="meta-date">Acheté le {{ formatDate(item.purchase_date) }}</span>
+              <span class="meta-price">{{ Number(item.price).toFixed(2) }}€</span>
             </div>
-            <div class="dl-info">
-              <h3 class="dl-title">{{ item.title }}</h3>
-              <div class="dl-meta">
-                <span class="dl-cat">{{ item.category_name }}</span>
-                <span class="dl-date">Acheté le {{ formatDate(item.purchase_date) }}</span>
+            <div v-if="item.files?.length" class="purchase-files">
+              <div v-for="f in item.files" :key="f.id" class="file-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span class="file-name">{{ f.filename }}</span>
+                <span class="file-size">{{ formatSize(f.file_size) }}</span>
+                <button class="btn-dl" @click="download(item.order_item_id)" :disabled="downloading === item.order_item_id">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  {{ downloading === item.order_item_id ? 'Téléchargement…' : 'Télécharger' }}
+                </button>
               </div>
-              <div class="dl-price">{{ Number(item.price).toFixed(2) }}€</div>
+            </div>
+            <div v-else class="no-files">
+              <span>Aucun fichier disponible pour ce produit.</span>
             </div>
           </div>
-          <div v-if="item.files?.length" class="dl-files">
-            <div v-for="f in item.files" :key="f.id" class="dl-file">
-              <div class="dl-file-left">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                <span class="dl-filename">{{ f.filename }}</span>
-                <span class="dl-filesize">{{ formatSize(f.file_size) }}</span>
-              </div>
-              <button class="dl-btn" @click="download(item.order_item_id)" :disabled="downloading === item.order_item_id">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                <span v-if="downloading !== item.order_item_id">Télécharger</span>
-                <span v-else>Chargement…</span>
-              </button>
-            </div>
-          </div>
-          <div v-else class="dl-nofiles">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span>Aucun fichier disponible</span>
-          </div>
-        </div>
+        </article>
       </div>
     </div>
     <ToastNotif ref="toastRef" />
@@ -77,6 +87,8 @@ const purchases = ref<any[]>([])
 const loading = ref(true)
 const error = ref('')
 const downloading = ref<number | null>(null)
+const checkoutSessionId = ref('')
+const manualSessionId = ref('')
 
 async function fetchPurchases() {
   loading.value = true; error.value = ''
@@ -128,23 +140,64 @@ function formatSize(bytes: number) {
   return (bytes / (1024 * 1024)).toFixed(1) + ' Mo'
 }
 
+async function retryConfirm() {
+  if (!checkoutSessionId.value) return
+  try {
+    const res = await $fetch(api + '/api/checkout/confirm-session', {
+      method: 'POST', credentials: 'include', body: { sessionId: checkoutSessionId.value }
+    })
+    toastRef.value?.show('success', 'Paiement confirmé !')
+    checkoutSessionId.value = ''
+    fetchPurchases()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur de confirmation')
+  }
+}
+
+async function forceConfirm() {
+  if (!checkoutSessionId.value) return
+  try {
+    const res = await $fetch(api + '/api/checkout/debug-confirm', {
+      method: 'POST', credentials: 'include', body: { sessionId: checkoutSessionId.value }
+    })
+    toastRef.value?.show('success', 'Commande forcée !')
+    checkoutSessionId.value = ''
+    fetchPurchases()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur force')
+  }
+}
+
+async function confirmManual() {
+  const sid = manualSessionId.value.trim()
+  if (!sid) return
+  try {
+    const res = await $fetch(api + '/api/checkout/confirm-session', {
+      method: 'POST', credentials: 'include', body: { sessionId: sid }
+    })
+    toastRef.value?.show('success', 'Commande confirmée !')
+    manualSessionId.value = ''
+    await new Promise(r => setTimeout(r, 500))
+    window.location.reload()
+  } catch (e: any) {
+    const msg = e?.data?.message || e?.message || 'Erreur'
+    toastRef.value?.show('error', msg)
+  }
+}
+
 onMounted(async () => {
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
   if (gsap) pageEntrance(gsap, pageRef.value)
 
-  // Auto-confirm Stripe payment
+  // If redirected from Stripe after payment, confirm the session
   const params = new URLSearchParams(window.location.search)
   const sessionId = params.get('session_id')
   if (params.get('confirmed') === '1' && sessionId) {
-    try {
-      await $fetch(api + '/api/checkout/confirm-session', {
-        method: 'POST', credentials: 'include', body: { sessionId }
-      })
-      toastRef.value?.show('success', 'Paiement confirmé !')
-    } catch (e: any) {
-      console.error('Confirm error:', e)
-    }
+    checkoutSessionId.value = sessionId
+    // Auto-confirm with a small delay for Stripe processing
+    await new Promise(r => setTimeout(r, 1500))
+    await retryConfirm()
   }
 
   fetchPurchases()
@@ -195,6 +248,18 @@ onMounted(async () => {
 .file-size { color: var(--text-muted); font-size: .75rem; flex-shrink: 0; }
 
 .btn-dl { display: flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 6px; border: none; background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; font-size: .78rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; flex-shrink: 0; }
-.dl-btn:hover:not(:disabled) { opacity:.9; }
-.dl-btn:disabled { opacity:.5;cursor:not-allowed; }
+.btn-dl:hover:not(:disabled) { opacity: .9; }
+.btn-dl:disabled { opacity: .5; cursor: not-allowed; }
 
+.no-files { padding: 8px 0; font-size: .82rem; color: var(--text-muted); }
+.confirm-banner { display:flex;align-items:center;gap:12px;padding:16px 20px;border-radius:12px;border:1px solid rgba(245,179,66,0.2);background:rgba(245,179,66,0.04);width:100%;max-width:400px;margin-bottom:16px; }
+.confirm-banner div { display:grid;gap:2px;text-align:left;flex:1; }
+.confirm-banner strong { font-size:.85rem;font-weight:700; }
+.confirm-banner span { font-size:.75rem;color:var(--text-muted); }
+.btn-confirm { padding:8px 18px;border-radius:6px;border:none;background:linear-gradient(135deg,#f5b342,#f59e0b);color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s; }
+.manual-confirm { text-align:center;padding:32px 20px;max-width:480px;margin:0 auto; }
+.manual-confirm p { font-size:.85rem;color:var(--text-secondary);margin-bottom:12px; }
+.manual-row { display:flex;gap:8px; }
+.manual-input { flex:1;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.85rem;outline:none;font-family:monospace; }
+.manual-input:focus { border-color:var(--primary); }
+</style>
