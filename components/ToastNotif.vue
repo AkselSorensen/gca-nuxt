@@ -26,9 +26,8 @@ function show(t: string, msg: string, duration = 3000) {
   title.value = t === 'success' ? 'Succès' : t === 'error' ? 'Erreur' : 'Information'
   message.value = msg
   visible.value = true
-  nextTick(() => animateIn())
   if (timer) clearTimeout(timer)
-  if (duration > 0) timer = setTimeout(() => animateOut(close), duration)
+  if (duration > 0) timer = setTimeout(() => { visible.value = false }, duration)
 }
 
 async function animateIn() {
