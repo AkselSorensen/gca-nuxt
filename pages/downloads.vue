@@ -23,6 +23,7 @@
         <h2>Aucun téléchargement</h2>
         <p>Vous n'avez encore rien acheté sur la marketplace.</p>
         <NuxtLink to="/catalogue" class="btn-browse">Parcourir le catalogue</NuxtLink>
+        <button v-if="checkoutSessionId" class="btn-retry" @click="retryConfirm">Confirmer mon paiement ({{ checkoutSessionId.substring(0, 8) }}…)</button>
       </div>
 
       <div v-else class="purchases-list anim-up">
@@ -71,6 +72,7 @@ const purchases = ref<any[]>([])
 const loading = ref(true)
 const error = ref('')
 const downloading = ref<number | null>(null)
+const checkoutSessionId = ref('')
 
 async function fetchPurchases() {
   loading.value = true; error.value = ''
@@ -122,6 +124,20 @@ function formatSize(bytes: number) {
   return (bytes / (1024 * 1024)).toFixed(1) + ' Mo'
 }
 
+async function retryConfirm() {
+  if (!checkoutSessionId.value) return
+  try {
+    await $fetch(api + '/api/checkout/confirm-session', {
+      method: 'POST', credentials: 'include', body: { sessionId: checkoutSessionId.value }
+    })
+    toastRef.value?.show('success', 'Paiement confirmé !')
+    checkoutSessionId.value = ''
+    fetchPurchases()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur de confirmation')
+  }
+}
+
 onMounted(async () => {
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
@@ -131,14 +147,10 @@ onMounted(async () => {
   const params = new URLSearchParams(window.location.search)
   const sessionId = params.get('session_id')
   if (params.get('confirmed') === '1' && sessionId) {
-    try {
-      await $fetch(api + '/api/checkout/confirm-session', {
-        method: 'POST', credentials: 'include', body: { sessionId }
-      })
-      toastRef.value?.show('success', 'Paiement confirmé !')
-    } catch (e: any) {
-      toastRef.value?.show('error', e?.data?.message || 'Erreur de confirmation')
-    }
+    checkoutSessionId.value = sessionId
+    // Auto-confirm with a small delay for Stripe processing
+    await new Promise(r => setTimeout(r, 1500))
+    await retryConfirm()
   }
 
   fetchPurchases()
