@@ -433,6 +433,9 @@ function openProductForm() {
 function closeProductForm() { showProductForm.value = false }
 
 const uploadThumb = ref('')
+const allTags = ref<string[]>([])
+const selectedTags = ref<string[]>([])
+const newTag = ref('')
 const thumbInput = ref<HTMLInputElement | null>(null)
 function handleThumbUpload(e: any) {
   const file = e.target?.files?.[0] || e.dataTransfer?.files?.[0]
