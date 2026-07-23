@@ -24,6 +24,7 @@
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f5b342" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <div><strong>Paiement reçu !</strong><span>Confirmation en cours…</span></div>
           <button class="btn-confirm" @click="retryConfirm">Vérifier</button>
+          <button v-if="checkoutSessionId && !retrying" class="btn-force" @click="forceConfirm" style="background:#ef4444;padding:8px 14px;border-radius:6px;border:none;color:#fff;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;">Force</button>
         </div>
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <h2>Aucun téléchargement</h2>
@@ -132,7 +133,7 @@ function formatSize(bytes: number) {
 async function retryConfirm() {
   if (!checkoutSessionId.value) return
   try {
-    await $fetch(api + '/api/checkout/confirm-session', {
+    const res = await $fetch(api + '/api/checkout/confirm-session', {
       method: 'POST', credentials: 'include', body: { sessionId: checkoutSessionId.value }
     })
     toastRef.value?.show('success', 'Paiement confirmé !')
@@ -140,6 +141,20 @@ async function retryConfirm() {
     fetchPurchases()
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || 'Erreur de confirmation')
+  }
+}
+
+async function forceConfirm() {
+  if (!checkoutSessionId.value) return
+  try {
+    const res = await $fetch(api + '/api/checkout/debug-confirm', {
+      method: 'POST', credentials: 'include', body: { sessionId: checkoutSessionId.value }
+    })
+    toastRef.value?.show('success', 'Commande forcée !')
+    checkoutSessionId.value = ''
+    fetchPurchases()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur force')
   }
 }
 
