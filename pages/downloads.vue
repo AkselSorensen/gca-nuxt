@@ -115,11 +115,15 @@ async function fetchPurchases() {
     purchases.value = data.items || []
     console.log('[downloads] purchases count:', purchases.value.length)
   } catch (e: any) {
-    console.error('[downloads] fetchPurchases ERROR:', e?.statusCode, e?.data?.message || e?.message || e)
-    if (e?.statusCode === 401) {
+    const code = e?.statusCode || e?.status || 'NETWORK'
+    const msg = e?.data?.message || e?.message || String(e)
+    console.error('[downloads] fetchPurchases ERROR:', code, msg, e)
+    if (code === 401) {
       error.value = 'Vous devez être connecté pour voir vos achats.'
+    } else if (code === 'NETWORK' || !code) {
+      error.value = 'Erreur réseau — vérifiez votre connexion. (' + String(msg).slice(0, 80) + ')'
     } else {
-      error.value = 'Impossible de charger vos achats. Réessayez plus tard.'
+      error.value = 'Erreur serveur (' + code + '). Réessayez plus tard.'
     }
   } finally {
     loading.value = false
