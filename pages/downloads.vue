@@ -152,6 +152,7 @@ async function retryConfirm() {
       })
       toastRef.value?.show('success', 'Paiement confirmé !')
       checkoutSessionId.value = ''
+      localStorage.removeItem('gsa-pending-session')
       fetchPurchases()
       return
     } catch (e: any) {
@@ -171,6 +172,7 @@ async function forceConfirm() {
     })
     toastRef.value?.show('success', 'Commande confirmée !')
     checkoutSessionId.value = ''
+    localStorage.removeItem('gsa-pending-session')
     fetchPurchases()
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || 'Erreur')
@@ -186,6 +188,7 @@ async function confirmManual() {
     })
     toastRef.value?.show('success', 'Commande confirmée !')
     manualSessionId.value = ''
+    localStorage.removeItem('gsa-pending-session')
     await new Promise(r => setTimeout(r, 500))
     window.location.reload()
   } catch (e: any) {
@@ -204,9 +207,17 @@ onMounted(async () => {
   const sessionId = params.get('session_id')
   if (params.get('confirmed') === '1' && sessionId) {
     checkoutSessionId.value = sessionId
+    // Persist in localStorage as fallback (survives refreshes)
+    localStorage.setItem('gsa-pending-session', sessionId)
     // Auto-confirm with a small delay for Stripe processing
     await new Promise(r => setTimeout(r, 1500))
     await retryConfirm()
+  } else {
+    // Check localStorage for a pending session that wasn't confirmed yet
+    const pending = localStorage.getItem('gsa-pending-session')
+    if (pending) {
+      checkoutSessionId.value = pending
+    }
   }
 
   fetchPurchases()
