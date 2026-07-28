@@ -6,12 +6,6 @@
         <p>Retrouvez tous vos achats et téléchargez vos fichiers.</p>
       </div>
 
-      <!-- DEBUG -->
-      <div style="margin-bottom:16px;padding:10px 14px;background:rgba(0,0,0,0.03);border-radius:8px;font-size:.7rem;font-family:monospace;color:var(--text-muted);word-break:break-all;line-height:1.5;">
-        <strong>🐛 DEBUG:</strong>
-        loading={{ loading }}, error={{ error || '-' }}, checkoutSessionId={{ checkoutSessionId || '-' }}, purchases#={{ purchases.length }}, pendingLS={{ typeof window !== 'undefined' ? (localStorage.getItem('gsa-pending-session') || '-') : 'ssr' }}
-      </div>
-
       <div v-if="loading" class="loading-state anim-up">
         <div class="loader"></div>
         <span>Chargement de vos achats…</span>
@@ -31,15 +25,6 @@
         <div class="manual-row">
           <input v-model="manualSessionId" placeholder="cs_test_..." class="manual-input" />
           <button class="btn-confirm" @click="confirmManual">Confirmer</button>
-        </div>
-        <!-- Debug info -->
-        <div class="debug-info" style="margin-top:16px;padding:12px;background:rgba(0,0,0,0.03);border-radius:8px;font-size:.72rem;font-family:monospace;text-align:left;color:var(--text-muted);word-break:break-all;">
-          <div><strong>Debug:</strong></div>
-          <div>loading: {{ loading }}</div>
-          <div>error: {{ error || '(aucune)' }}</div>
-          <div>checkoutSessionId: {{ checkoutSessionId || '(vide)' }}</div>
-          <div>purchases.length: {{ purchases.length }}</div>
-          <div>localStorage pending: {{ typeof window !== 'undefined' ? localStorage.getItem('gsa-pending-session') || '(vide)' : 'ssr' }}</div>
         </div>
       </div>
 
@@ -111,13 +96,10 @@ async function fetchPurchases() {
   loading.value = true; error.value = ''
   try {
     const data = await $fetch(api + '/api/user/purchases', { credentials: 'include' })
-    console.log('[downloads] fetchPurchases RAW:', JSON.stringify(data))
     purchases.value = data.items || []
-    console.log('[downloads] purchases count:', purchases.value.length)
   } catch (e: any) {
     const code = e?.statusCode || e?.status || 'NETWORK'
     const msg = e?.data?.message || e?.message || String(e)
-    console.error('[downloads] fetchPurchases ERROR:', code, msg, e)
     if (code === 401) {
       error.value = 'Vous devez être connecté pour voir vos achats.'
     } else if (code === 'NETWORK' || !code) {
@@ -225,7 +207,7 @@ onMounted(async () => {
     const { gsap } = await load()
     if (gsap) pageEntrance(gsap, pageRef.value)
   } catch (animErr) {
-    console.error('[downloads] Animation import failed:', animErr)
+    // Animation non critique — on continue sans
   }
 
   try {
@@ -247,7 +229,6 @@ onMounted(async () => {
       }
     }
   } catch (confirmErr) {
-    console.error('[downloads] Confirm flow error:', confirmErr)
     error.value = 'Erreur lors de la confirmation. Rafraîchissez la page.'
     loading.value = false
   }
@@ -261,7 +242,6 @@ if (process.client) {
   fetchPurchases()
   setTimeout(() => {
     if (loading.value) {
-      console.warn('[downloads] Still loading after 8s — forcing fetchPurchases')
       fetchPurchases()
     }
   }, 8000)
