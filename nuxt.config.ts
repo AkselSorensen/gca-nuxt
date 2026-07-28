@@ -3,6 +3,11 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   css: ['~/assets/css/main.css'],
   typescript: { shim: false, typeCheck: false },
+  nitro: {
+    externals: {
+      inline: ['stripe']
+    }
+  },
   app: {
     head: {
       title: 'GSA - Marketplace Garry\'s Mod',

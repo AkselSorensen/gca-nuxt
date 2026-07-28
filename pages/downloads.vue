@@ -216,30 +216,52 @@ async function confirmManual() {
 }
 
 onMounted(async () => {
-  const { load, pageEntrance } = await import('~/composables/useAnimation')
-  const { gsap } = await load()
-  if (gsap) pageEntrance(gsap, pageRef.value)
+  try {
+    const { load, pageEntrance } = await import('~/composables/useAnimation')
+    const { gsap } = await load()
+    if (gsap) pageEntrance(gsap, pageRef.value)
+  } catch (animErr) {
+    console.error('[downloads] Animation import failed:', animErr)
+  }
 
-  // If redirected from Stripe after payment, confirm the session
-  const params = new URLSearchParams(window.location.search)
-  const sessionId = params.get('session_id')
-  if (params.get('confirmed') === '1' && sessionId) {
-    checkoutSessionId.value = sessionId
-    // Persist in localStorage as fallback (survives refreshes)
-    localStorage.setItem('gsa-pending-session', sessionId)
-    // Auto-confirm with a small delay for Stripe processing
-    await new Promise(r => setTimeout(r, 1500))
-    await retryConfirm()
-  } else {
-    // Check localStorage for a pending session that wasn't confirmed yet
-    const pending = localStorage.getItem('gsa-pending-session')
-    if (pending) {
-      checkoutSessionId.value = pending
+  try {
+    // If redirected from Stripe after payment, confirm the session
+    const params = new URLSearchParams(window.location.search)
+    const sessionId = params.get('session_id')
+    if (params.get('confirmed') === '1' && sessionId) {
+      checkoutSessionId.value = sessionId
+      // Persist in localStorage as fallback (survives refreshes)
+      localStorage.setItem('gsa-pending-session', sessionId)
+      // Auto-confirm with a small delay for Stripe processing
+      await new Promise(r => setTimeout(r, 1500))
+      await retryConfirm()
+    } else {
+      // Check localStorage for a pending session that wasn't confirmed yet
+      const pending = localStorage.getItem('gsa-pending-session')
+      if (pending) {
+        checkoutSessionId.value = pending
+      }
     }
+  } catch (confirmErr) {
+    console.error('[downloads] Confirm flow error:', confirmErr)
+    error.value = 'Erreur lors de la confirmation. Rafraîchissez la page.'
+    loading.value = false
   }
 
   fetchPurchases()
 })
+
+// Fallback: si fetchPurchases n'a pas répondu après 8s, on force
+if (process.client) {
+  // Lance fetchPurchases immédiatement (ne dépend pas de onMounted)
+  fetchPurchases()
+  setTimeout(() => {
+    if (loading.value) {
+      console.warn('[downloads] Still loading after 8s — forcing fetchPurchases')
+      fetchPurchases()
+    }
+  }, 8000)
+}
 </script>
 
 <style scoped>
