@@ -144,12 +144,12 @@ async function checkStripeConnect() {
     } else {
       stripeLinked.value = false
       stripeStatus.value = 'unlinked'
-      stripeMsg.value = 'Connectez votre compte Stripe pour recevoir vos paiements.'
+      stripeMsg.value = `Non connecté (charges:${res.chargesEnabled ? '✓' : '✗'} payouts:${res.payoutsEnabled ? '✓' : '✗'} details:${res.detailsSubmitted ? '✓' : '✗'})`
     }
-  } catch {
+  } catch (e: any) {
     stripeLinked.value = false
     stripeStatus.value = 'unlinked'
-    stripeMsg.value = 'Impossible de vérifier le statut Stripe.'
+    stripeMsg.value = 'Erreur: ' + (e?.data?.message || e?.message || 'vérification impossible')
   }
 }
 
