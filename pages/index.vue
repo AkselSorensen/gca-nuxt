@@ -34,6 +34,30 @@
       </div>
     </div></section>
 
+    <!-- Déjà client chez nous -->
+    <section v-if="commItems.length" class="section comm-section"><div class="container">
+      <div class="collab-header">
+        <div class="collab-tag" style="--tag-clr:var(--accent)">SERVEURS</div>
+        <h2>Déjà client chez nous</h2>
+        <p>Des serveurs qui utilisent et recommandent nos assets.</p>
+      </div>
+      <div ref="commStageRef" class="carousel-stage" @mouseenter="pauseCarousel('comm')" @mouseleave="resumeCarousel('comm')">
+        <div ref="commTrackRef" class="carousel-track" @mousedown="dragStart($event,'comm')" @mousemove="dragMove($event,'comm')" @mouseup="dragEnd('comm')" @mouseleave="dragEnd('comm')" @touchstart="dragStart($event,'comm')" @touchmove="dragMove($event,'comm')" @touchend="dragEnd('comm')">
+          <div v-for="(item, i) in commItems" :key="'comm-'+i" class="collab-card">
+            <div class="collab-ring">
+              <div class="collab-avatar"><img :src="item.image" :alt="item.name" loading="lazy" /></div>
+            </div>
+            <div class="collab-label">
+              <span class="collab-name">{{ item.name }}</span>
+              <span class="collab-role">Serveur</span>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-arrow carousel-arrow-left" @click="slideCarousel('comm',1)" aria-label="Précédent"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="carousel-arrow carousel-arrow-right" @click="slideCarousel('comm',-1)" aria-label="Suivant"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+    </div></section>
+
     <section v-if="discounts.length" class="section"><div class="container">
       <div class="section-header"><h2>Promotions</h2><NuxtLink to="/catalogue?sort=discount" class="section-link">Voir tout →</NuxtLink></div>
       <div class="products-grid">
@@ -65,29 +89,6 @@
       </div>
     </div></section>
 
-    <!-- Déjà client chez nous -->
-    <section v-if="commItems.length" class="section comm-section"><div class="container">
-      <div class="collab-header">
-        <div class="collab-tag" style="--tag-clr:var(--accent)">SERVEURS</div>
-        <h2>Déjà client chez nous</h2>
-        <p>Des serveurs qui utilisent et recommandent nos assets.</p>
-      </div>
-      <div ref="commStageRef" class="carousel-stage" @mouseenter="pauseCarousel('comm')" @mouseleave="resumeCarousel('comm')">
-        <div ref="commTrackRef" class="carousel-track" @mousedown="dragStart($event,'comm')" @mousemove="dragMove($event,'comm')" @mouseup="dragEnd('comm')" @mouseleave="dragEnd('comm')" @touchstart="dragStart($event,'comm')" @touchmove="dragMove($event,'comm')" @touchend="dragEnd('comm')">
-          <div v-for="(item, i) in commItems" :key="'comm-'+i" class="collab-card">
-            <div class="collab-ring">
-              <div class="collab-avatar"><img :src="item.image" :alt="item.name" loading="lazy" /></div>
-            </div>
-            <div class="collab-label">
-              <span class="collab-name">{{ item.name }}</span>
-              <span class="collab-role">Serveur</span>
-            </div>
-          </div>
-        </div>
-        <button class="carousel-arrow carousel-arrow-left" @click="slideCarousel('comm',1)" aria-label="Précédent"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
-        <button class="carousel-arrow carousel-arrow-right" @click="slideCarousel('comm',-1)" aria-label="Suivant"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
-      </div>
-    </div></section>
   </div>
 </template>
 
