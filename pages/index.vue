@@ -301,11 +301,11 @@ onMounted(async () => {
 
   if (gsap) {
     const heroTl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.6 } })
-    heroTl.fromTo('.title-line', { y: 30, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08 })
-      .fromTo('.hero-desc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, '-=0.2')
-      .fromTo('.hero-actions', { y: 20, opacity: 0 }, { y: 0, opacity: 1 }, '-=0.1')
-      .fromTo('.hero-metrics', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 })
-      .fromTo('.hero-visual > *', { x: 40, opacity: 0 }, { x: 0, opacity: 1, stagger: 0.1, duration: 0.5 }, '-=0.3')
+    heroTl.fromTo('.hero-title', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 })
+      .fromTo('.hero-desc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, '-=0.3')
+      .fromTo('.hero-actions', { y: 20, opacity: 0 }, { y: 0, opacity: 1 }, '-=0.2')
+      .fromTo('.hero-pills', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, '-=0.1')
+      .fromTo('.hero-stats', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, '-=0.1')
 
     gsap.fromTo('.cat-card',
       { y: 30, opacity: 0, scale: 0.95 },
