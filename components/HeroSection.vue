@@ -1,6 +1,8 @@
 <template>
   <section class="hero">
-    <div class="hero-bg"></div>
+    <video class="hero-video" autoplay loop muted playsinline>
+      <source src="/hero-bg.mp4" type="video/mp4" />
+    </video>
     <div class="hero-overlay"></div>
     <div class="container hero-inner">
       <div class="hero-badge">
@@ -50,17 +52,18 @@ defineProps({ totalProducts: Number, totalSales: Number, avgRating: String })
   padding: 100px 0 80px;
   overflow: hidden;
 }
-.hero-bg {
+.hero-video {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(47,125,246,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 80%, rgba(108,92,231,0.05) 0%, transparent 50%);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.35;
 }
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, var(--bg) 90%);
   pointer-events: none;
 }
 .hero-inner {
