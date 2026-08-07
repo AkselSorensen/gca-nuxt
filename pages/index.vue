@@ -43,7 +43,7 @@
       </div>
     </div></section>
 
-    <!-- Déjà client chez nous -->
+    <!-- Projets -->
     <section v-if="commItems.length" class="section comm-section"><div class="container">
       <div class="collab-header">
         <div class="collab-tag" style="--tag-clr:var(--accent)">{{ t('home.servers_tag') }}</div>
