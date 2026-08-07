@@ -1,28 +1,38 @@
 <template>
   <section class="hero">
-    <div class="container">
-      <div class="hero-inner">
-        <h1 class="hero-title">
-          Des assets <span class="accent">premium</span>,<br />prêts à déployer.
-        </h1>
-        <p class="hero-desc">{{ t('hero.desc') }}</p>
-        <div class="hero-actions">
-          <NuxtLink to="/catalogue" class="btn-primary">
-            {{ t('hero.explore') }}
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg>
-          </NuxtLink>
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="container hero-inner">
+      <div class="hero-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        {{ totalProducts }}+ assets vérifiés
+      </div>
+      <h1 class="hero-title">
+        Des assets premium,<br /><span class="accent">prêts à déployer.</span>
+      </h1>
+      <p class="hero-desc">{{ t('hero.desc') }}</p>
+      <div class="hero-actions">
+        <NuxtLink to="/catalogue" class="btn-primary">
+          {{ t('hero.explore') }}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg>
+        </NuxtLink>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-val">{{ totalProducts }}</span>
+          <span class="stat-lbl">{{ t('hero.assets') }}</span>
         </div>
-        <div class="hero-pills">
-          <div class="pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> {{ t('hero.themes') }}</div>
-          <div class="pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> {{ t('hero.env') }}</div>
-          <div class="pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> {{ t('hero.dev') }}</div>
-          <div class="pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> {{ t('hero.visual') }}</div>
+        <div class="stat">
+          <span class="stat-val">{{ totalSales }}+</span>
+          <span class="stat-lbl">{{ t('hero.sales') }}</span>
         </div>
-        <div class="hero-stats">
-          <div class="stat"><strong>{{ totalProducts }}</strong> <span>{{ t('hero.assets') }}</span></div>
-          <div class="stat"><strong>{{ totalSales }}+</strong> <span>{{ t('hero.sales') }}</span></div>
-          <div class="stat"><strong>{{ avgRating }}</strong> <span>{{ t('hero.rating') }}</span></div>
-          <div class="stat"><strong>25+</strong> <span>{{ t('hero.creators') }}</span></div>
+        <div class="stat">
+          <span class="stat-val">{{ avgRating }}</span>
+          <span class="stat-lbl">{{ t('hero.rating') }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val">25+</span>
+          <span class="stat-lbl">{{ t('hero.creators') }}</span>
         </div>
       </div>
     </div>
@@ -36,87 +46,97 @@ defineProps({ totalProducts: Number, totalSales: Number, avgRating: String })
 
 <style scoped>
 .hero {
-  padding: 80px 0 64px;
-  text-align: center;
+  position: relative;
+  padding: 100px 0 80px;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(47,125,246,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(108,92,231,0.05) 0%, transparent 50%);
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
+  pointer-events: none;
 }
 .hero-inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 20px;
 }
 
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(47,125,246,0.2);
+  background: rgba(47,125,246,0.06);
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.hero-badge svg { color: #f5b342; }
+
 .hero-title {
-  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-size: clamp(2.4rem, 6vw, 4rem);
   font-weight: 900;
-  line-height: 1.1;
+  line-height: 1.08;
   letter-spacing: -0.04em;
-  max-width: 700px;
+  max-width: 750px;
 }
 .hero-title .accent {
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, #a78bfa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .hero-desc {
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: var(--text-secondary);
   line-height: 1.7;
-  max-width: 520px;
+  max-width: 500px;
 }
 
 .hero-actions { margin-top: 4px; }
 .btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
+  gap: 10px;
+  padding: 16px 36px;
   border-radius: 12px;
   background: #fff;
   color: #000;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
-  transition: all 0.25s;
+  transition: all 0.2s;
   text-decoration: none;
 }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,255,255,0.15); }
 
-.hero-pills {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 12px;
-}
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.02);
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-.pill svg { opacity: 0.5; }
-
 .hero-stats {
   display: flex;
-  gap: 32px;
+  gap: 36px;
   margin-top: 20px;
   padding-top: 24px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 .stat { text-align: center; }
-.stat strong { display: block; font-size: 1.15rem; font-weight: 800; }
-.stat span { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+.stat-val { display: block; font-size: 1.3rem; font-weight: 800; }
+.stat-lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-top: 2px; }
 
 @media (max-width: 640px) {
-  .hero { padding: 48px 0 40px; }
+  .hero { padding: 60px 0 48px; }
   .hero-stats { gap: 20px; flex-wrap: wrap; justify-content: center; }
 }
 </style>
