@@ -2,9 +2,7 @@
   <section class="hero">
     <div class="hero-bg">
       <div class="hero-glow"></div>
-      <div class="floating-cards">
-        <div v-for="i in 6" :key="i" class="float-card" :style="floatStyle(i)"></div>
-      </div>
+      <div class="hero-glow-secondary"></div>
     </div>
     <div class="container">
       <div class="hero-layout">
@@ -98,28 +96,6 @@
 <script setup lang="ts">
 const { t } = useLang()
 defineProps({ totalProducts: Number, totalSales: Number, avgRating: String })
-
-const colors = ['var(--primary)', 'var(--accent)', '#a78bfa', '#6ee7b7', '#fbbf24', '#f87171']
-const sizes = [180, 140, 200, 160, 220, 130]
-const positions = [
-  { top: '10%', left: '5%' }, { top: '60%', left: '85%' },
-  { top: '5%', left: '45%' }, { top: '70%', left: '15%' },
-  { top: '30%', left: '75%' }, { top: '50%', left: '50%' }
-]
-const durations = [18, 22, 15, 20, 25, 17]
-
-function floatStyle(i: number) {
-  const idx = i - 1
-  return {
-    width: sizes[idx] + 'px',
-    height: sizes[idx] + 'px',
-    background: colors[idx],
-    top: positions[idx].top,
-    left: positions[idx].left,
-    animationDuration: durations[idx] + 's',
-    animationDelay: -(idx * 3) + 's'
-  }
-}
 </script>
 
 <style scoped>
@@ -140,31 +116,24 @@ function floatStyle(i: number) {
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(47,125,246,0.1) 0%, rgba(108,92,231,0.05) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(47,125,246,0.12) 0%, rgba(108,92,231,0.04) 50%, transparent 70%);
   filter: blur(80px);
+  animation: glowPulse 8s ease-in-out infinite;
 }
-
-.floating-cards {
+.hero-glow-secondary {
   position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
+  bottom: -150px;
+  left: -80px;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(110,231,183,0.06) 0%, rgba(167,139,250,0.03) 50%, transparent 70%);
+  filter: blur(70px);
+  animation: glowPulse 10s ease-in-out infinite reverse;
 }
-
-.float-card {
-  position: absolute;
-  border-radius: 20px;
-  opacity: 0.06;
-  filter: blur(40px);
-  animation: floatDrift linear infinite;
-}
-
-@keyframes floatDrift {
-  0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
-  25%  { transform: translate(40px, -30px) rotate(5deg) scale(1.1); }
-  50%  { transform: translate(-20px, 20px) rotate(-3deg) scale(0.95); }
-  75%  { transform: translate(30px, -10px) rotate(4deg) scale(1.05); }
-  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
 }
 
 .hero-layout {
