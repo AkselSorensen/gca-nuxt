@@ -145,16 +145,15 @@ const collabTrackRef = ref<HTMLElement | null>(null)
 const commStageRef = ref<HTMLElement | null>(null)
 const commTrackRef = ref<HTMLElement | null>(null)
 
-interface CarouselState { x: number; speed: number; paused: boolean; animId: number; dragging: boolean; dragStartX: number; dragStartPos: number; itemW: number; track: HTMLElement | null }
+interface CarouselState { x: number; speed: number; paused: boolean; animId: number; dragging: boolean; dragStartX: number; dragStartPos: number; itemW: number; track: HTMLElement | null; origCount: number }
 const carousels: Record<string, CarouselState> = {
-  collab: { x: 0, speed: 0.25, paused: false, animId: 0, dragging: false, dragStartX: 0, dragStartPos: 0, itemW: 0, track: null },
-  comm:  { x: 0, speed: 0.2, paused: false, animId: 0, dragging: false, dragStartX: 0, dragStartPos: 0, itemW: 0, track: null }
+  collab: { x: 0, speed: 0.15, paused: false, animId: 0, dragging: false, dragStartX: 0, dragStartPos: 0, itemW: 0, track: null, origCount: 0 },
+  comm:  { x: 0, speed: 0.12, paused: false, animId: 0, dragging: false, dragStartX: 0, dragStartPos: 0, itemW: 0, track: null, origCount: 0 }
 }
 
 function cloneItems(track: HTMLElement) {
   const cards = track.querySelectorAll('.collab-card')
   if (cards.length === 0) return
-  // Clone each card twice to fill enough for infinite scroll
   const fragment = document.createDocumentFragment()
   for (let clone = 0; clone < 3; clone++) {
     cards.forEach(card => fragment.appendChild(card.cloneNode(true)))
@@ -165,10 +164,13 @@ function cloneItems(track: HTMLElement) {
 function initCarousel(key: string) {
   const state = carousels[key]
   if (!state.track) return
-  // Reset
   state.x = 0
   state.paused = false
   state.dragging = false
+
+  // Store original count BEFORE cloning
+  const origCards = state.track.querySelectorAll('.collab-card')
+  state.origCount = origCards.length
 
   cloneItems(state.track)
 
@@ -191,7 +193,7 @@ function step(key: string) {
   const state = carousels[key]
   if (!state.track || state.paused) return
   state.x -= state.speed
-  if (state.x <= -state.itemW * 4) state.x = 0 // reset to seamless loop
+  if (state.x <= -state.itemW * state.origCount) state.x = 0
   state.track.style.transform = `translateX(${state.x}px)`
   state.animId = requestAnimationFrame(() => step(key))
 }
