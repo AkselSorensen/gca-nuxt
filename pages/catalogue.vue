@@ -175,6 +175,7 @@ const sortOptions = [
   { value: 'price-asc', label: 'Prix croissant', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 3 21 3 21 7"/><line x1="3" y1="21" x2="21" y2="3"/><line x1="21" y1="17" x2="21" y2="21"/><line x1="17" y1="21" x2="21" y2="21"/></svg>' },
   { value: 'price-desc', label: 'Prix décroissant', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 7 7 3 11 7"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="21" y1="17" x2="21" y2="21"/><line x1="17" y1="21" x2="21" y2="21"/></svg>' },
   { value: 'rating', label: 'Mieux notés', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' },
+  { value: 'discount', label: 'Promotions', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
 ]
 
 const ratingOptions = [0, 3, 4, 4.5]
@@ -232,6 +233,11 @@ const filteredProducts = computed(() => {
   if (filters.trending) result = result.filter((p: any) => p.isTrending || p.popularityScore > 80)
   if (filters.minRating > 0) result = result.filter((p: any) => Number(p.rating || 0) >= filters.minRating)
 
+  // discount first (filter + sort by %)
+  if (filters.sort === 'discount') {
+    result = result.filter((p: any) => p.discountPercent > 0)
+    result.sort((a: any, b: any) => (b.discountPercent || 0) - (a.discountPercent || 0))
+  }
   switch (filters.sort) {
     case 'popular': result.sort((a: any, b: any) => (b.popularityScore || b.sales || 0) - (a.popularityScore || a.sales || 0)); break
     case 'newest': result.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break
@@ -243,6 +249,13 @@ const filteredProducts = computed(() => {
 })
 
 onMounted(async () => {
+  // Read sort from query param (e.g. /catalogue?sort=discount)
+  const route = useRoute()
+  const qSort = route.query.sort as string
+  if (qSort && sortOptions.some(o => o.value === qSort)) {
+    filters.sort = qSort
+  }
+
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
   if (gsap) pageEntrance(gsap, pageRef.value)

@@ -44,40 +44,48 @@
     <!-- Collaborateurs -->
     <section v-if="collabItems.length" class="section collab-section"><div class="container">
       <div class="collab-header">
-        <div class="collab-tag">PARTENAIRES</div>
-        <h2>Ils nous font confiance</h2>
-        <p>Des créateurs et studios qui misent sur GSA pour distribuer leurs assets.</p>
+        <div class="collab-tag">COLLABORATEURS</div>
+        <h2>Collaborateurs</h2>
+        <p>Des créateurs qui nous font confiance et proposent leurs services.</p>
       </div>
-      <div class="collab-grid">
-        <div v-for="(item, i) in collabItems" :key="i" class="collab-card" :style="{ transitionDelay: i * 0.06 + 's' }">
-          <div class="collab-ring">
-            <div class="collab-avatar"><img :src="item.image" :alt="item.name" loading="lazy" /></div>
-          </div>
-          <div class="collab-label">
-            <span class="collab-name">{{ item.name }}</span>
-            <span class="collab-role">Collaborateur</span>
+      <div ref="collabStageRef" class="carousel-stage" @mouseenter="pauseCarousel('collab')" @mouseleave="resumeCarousel('collab')">
+        <div ref="collabTrackRef" class="carousel-track" @mousedown="dragStart($event,'collab')" @mousemove="dragMove($event,'collab')" @mouseup="dragEnd('collab')" @mouseleave="dragEnd('collab')" @touchstart="dragStart($event,'collab')" @touchmove="dragMove($event,'collab')" @touchend="dragEnd('collab')">
+          <div v-for="(item, i) in collabItems" :key="'collab-'+i" class="collab-card">
+            <div class="collab-ring">
+              <div class="collab-avatar"><img :src="item.image" :alt="item.name" loading="lazy" /></div>
+            </div>
+            <div class="collab-label">
+              <span class="collab-name">{{ item.name }}</span>
+              <span class="collab-role">Collaborateur</span>
+            </div>
           </div>
         </div>
+        <button class="carousel-arrow carousel-arrow-left" @click="slideCarousel('collab',1)" aria-label="Précédent"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="carousel-arrow carousel-arrow-right" @click="slideCarousel('collab',-1)" aria-label="Suivant"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>
     </div></section>
 
-    <!-- Communauté -->
+    <!-- Déjà client chez nous -->
     <section v-if="commItems.length" class="section comm-section"><div class="container">
       <div class="collab-header">
         <div class="collab-tag" style="--tag-clr:var(--accent)">SERVEURS</div>
-        <h2>Communautés partenaires</h2>
+        <h2>Déjà client chez nous</h2>
         <p>Des serveurs qui utilisent et recommandent nos assets.</p>
       </div>
-      <div class="collab-grid">
-        <div v-for="(item, i) in commItems" :key="i" class="collab-card" :style="{ transitionDelay: i * 0.06 + 's' }">
-          <div class="collab-ring">
-            <div class="collab-avatar"><img :src="item.image" :alt="item.name" loading="lazy" /></div>
-          </div>
-          <div class="collab-label">
-            <span class="collab-name">{{ item.name }}</span>
-            <span class="collab-role">Serveur</span>
+      <div ref="commStageRef" class="carousel-stage" @mouseenter="pauseCarousel('comm')" @mouseleave="resumeCarousel('comm')">
+        <div ref="commTrackRef" class="carousel-track" @mousedown="dragStart($event,'comm')" @mousemove="dragMove($event,'comm')" @mouseup="dragEnd('comm')" @mouseleave="dragEnd('comm')" @touchstart="dragStart($event,'comm')" @touchmove="dragMove($event,'comm')" @touchend="dragEnd('comm')">
+          <div v-for="(item, i) in commItems" :key="'comm-'+i" class="collab-card">
+            <div class="collab-ring">
+              <div class="collab-avatar"><img :src="item.image" :alt="item.name" loading="lazy" /></div>
+            </div>
+            <div class="collab-label">
+              <span class="collab-name">{{ item.name }}</span>
+              <span class="collab-role">Serveur</span>
+            </div>
           </div>
         </div>
+        <button class="carousel-arrow carousel-arrow-left" @click="slideCarousel('comm',1)" aria-label="Précédent"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="carousel-arrow carousel-arrow-right" @click="slideCarousel('comm',-1)" aria-label="Suivant"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>
     </div></section>
   </div>
@@ -118,34 +126,106 @@ const commItems = computed(() => {
   return c?.metadata?.items || []
 })
 
-// GSAP — Timeline with stagger, custom ease, utils
+// ─── GSAP entrance ───
 const categoryRef = ref(null)
 const catRefs = ref([])
+
+// ─── Carrousels ───
 const collabStageRef = ref<HTMLElement | null>(null)
 const collabTrackRef = ref<HTMLElement | null>(null)
 const commStageRef = ref<HTMLElement | null>(null)
 const commTrackRef = ref<HTMLElement | null>(null)
 
-function startAutoCarousel(track: HTMLElement, speed: number) {
-  const items = track.querySelectorAll('.people-card')
-  if (items.length < 2) return
-  const itemW = (items[0] as HTMLElement).offsetWidth + 16 // card + gap
-  let x = 0
-  const maxX = -(items.length / 2) * itemW // half is clones
-  let animId: number
-
-  function step() {
-    x -= speed
-    if (x <= maxX) x = 0
-    track.style.transform = `translateX(${x}px)`
-    animId = requestAnimationFrame(step)
-  }
-
-  collabAnims.push(() => cancelAnimationFrame(animId))
-  step()
+interface CarouselState { x: number; speed: number; paused: boolean; animId: number; dragging: boolean; dragStartX: number; dragStartPos: number; itemW: number; track: HTMLElement | null }
+const carousels: Record<string, CarouselState> = {
+  collab: { x: 0, speed: 0.6, paused: false, animId: 0, dragging: false, dragStartX: 0, dragStartPos: 0, itemW: 0, track: null },
+  comm:  { x: 0, speed: 0.4, paused: false, animId: 0, dragging: false, dragStartX: 0, dragStartPos: 0, itemW: 0, track: null }
 }
 
-const collabAnims: (() => void)[] = []
+function cloneItems(track: HTMLElement) {
+  const cards = track.querySelectorAll('.collab-card')
+  if (cards.length === 0) return
+  // Clone each card twice to fill enough for infinite scroll
+  const fragment = document.createDocumentFragment()
+  for (let clone = 0; clone < 3; clone++) {
+    cards.forEach(card => fragment.appendChild(card.cloneNode(true)))
+  }
+  track.appendChild(fragment)
+}
+
+function initCarousel(key: string) {
+  const state = carousels[key]
+  if (!state.track) return
+  // Reset
+  state.x = 0
+  state.paused = false
+  state.dragging = false
+
+  cloneItems(state.track)
+
+  const cards = state.track.querySelectorAll('.collab-card')
+  if (cards.length < 2) return
+  const first = cards[0] as HTMLElement
+  state.itemW = first.offsetWidth + getGap(state.track)
+
+  // Animate
+  requestAnimationFrame(() => step(key))
+}
+
+function getGap(el: HTMLElement): number {
+  const style = getComputedStyle(el)
+  const gap = parseFloat(style.columnGap || style.gap || '0')
+  return isNaN(gap) ? 32 : gap
+}
+
+function step(key: string) {
+  const state = carousels[key]
+  if (!state.track || state.paused) return
+  state.x -= state.speed
+  if (state.x <= -state.itemW * 4) state.x = 0 // reset to seamless loop
+  state.track.style.transform = `translateX(${state.x}px)`
+  state.animId = requestAnimationFrame(() => step(key))
+}
+
+function pauseCarousel(key: string) { carousels[key].paused = true }
+function resumeCarousel(key: string) {
+  const state = carousels[key]
+  if (!state.track) return
+  state.paused = false
+  requestAnimationFrame(() => step(key))
+}
+
+function slideCarousel(key: string, dir: number) {
+  const state = carousels[key]
+  if (!state.track) return
+  state.x += dir * state.itemW * 2
+  if (state.x > 0) state.x = 0
+  state.track.style.transform = `translateX(${state.x}px)`
+}
+
+// ─── Drag ───
+function dragStart(e: MouseEvent | TouchEvent, key: string) {
+  const state = carousels[key]
+  state.dragging = true
+  state.paused = true
+  const evt = 'touches' in e ? e.touches[0] : e
+  state.dragStartX = evt.clientX
+  state.dragStartPos = state.x
+}
+function dragMove(e: MouseEvent | TouchEvent, key: string) {
+  const state = carousels[key]
+  if (!state.dragging || !state.track) return
+  const evt = 'touches' in e ? e.touches[0] : e
+  const dx = evt.clientX - state.dragStartX
+  state.x = state.dragStartPos + dx
+  state.track.style.transform = `translateX(${state.x}px)`
+}
+function dragEnd(key: string) {
+  const state = carousels[key]
+  state.dragging = false
+  state.paused = false
+  requestAnimationFrame(() => step(key))
+}
 
 onMounted(async () => {
   let gsap: any
@@ -154,18 +234,14 @@ onMounted(async () => {
     gsap = mod.default
   } catch {}
 
-  // Entrance animations
   if (gsap) {
-    // Hero timeline (existing)
     const heroTl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.6 } })
-    heroTl.fromTo('.hero-tag', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 })
-      .fromTo('.title-line', { y: 30, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08 })
+    heroTl.fromTo('.title-line', { y: 30, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08 })
       .fromTo('.hero-desc', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, '-=0.2')
       .fromTo('.hero-actions', { y: 20, opacity: 0 }, { y: 0, opacity: 1 }, '-=0.1')
       .fromTo('.hero-metrics', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 })
       .fromTo('.hero-visual > *', { x: 40, opacity: 0 }, { x: 0, opacity: 1, stagger: 0.1, duration: 0.5 }, '-=0.3')
 
-    // Categories
     gsap.fromTo('.cat-card',
       { y: 30, opacity: 0, scale: 0.95 },
       { y: 0, opacity: 1, scale: 1, stagger: { amount: 0.5, from: 'start' }, duration: 0.5, ease: 'back.out(1.4)',
@@ -173,7 +249,6 @@ onMounted(async () => {
       }
     )
 
-    // Products
     gsap.fromTo('.animate-in',
       { y: 40, opacity: 0 },
       { y: 0, opacity: 1, stagger: { amount: 0.6, from: 'start' }, duration: 0.5, ease: 'power2.out',
@@ -181,31 +256,27 @@ onMounted(async () => {
       }
     )
 
-    // Section headers
     gsap.utils.toArray('.section-header').forEach((hdr: any) => {
       gsap.fromTo(hdr, { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4,
         scrollTrigger: { trigger: hdr, start: 'top 92%', toggleActions: 'play none none none' }
       })
     })
 
-    // People section entrance
+    // Carrousel entrance
     gsap.utils.toArray('.collab-section, .comm-section').forEach((section: any) => {
       gsap.fromTo(section, { opacity: 0, y: 40 }, {
         opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
         scrollTrigger: { trigger: section, start: 'top 85%', toggleActions: 'play none none none' }
       })
-      // Stagger cards inside grid
-      const cards = section.querySelectorAll('.collab-card')
-      gsap.fromTo(cards, { opacity: 0, scale: .85, y: 20 }, {
-        opacity: 1, scale: 1, y: 0, stagger: 0.1, duration: 0.5, ease: 'back.out(1.6)',
-        scrollTrigger: { trigger: section.querySelector('.collab-grid'), start: 'top 85%', toggleActions: 'play none none none' }
-      })
     })
   }
 
-  // Start auto carousels
-  if (collabTrackRef.value) startAutoCarousel(collabTrackRef.value, 0.8)
-  if (commTrackRef.value) startAutoCarousel(commTrackRef.value, 0.6)
+  // Init carousels
+  await nextTick()
+  carousels.collab.track = collabTrackRef.value
+  carousels.comm.track = commTrackRef.value
+  if (collabTrackRef.value) initCarousel('collab')
+  if (commTrackRef.value) initCarousel('comm')
 })
 
 watch(featured, () => {
@@ -213,7 +284,7 @@ watch(featured, () => {
 })
 
 onBeforeUnmount(() => {
-  collabAnims.forEach(fn => fn())
+  Object.values(carousels).forEach(s => s.animId && cancelAnimationFrame(s.animId))
 })
 </script>
 <style scoped>
@@ -275,27 +346,82 @@ onBeforeUnmount(() => {
 .loading { text-align:center; padding:60px; color:var(--text-muted); }
 .products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
 
-/* ─── Collaborateurs premium ─── */
-.collab-section, .comm-section { padding:48px 0;position:relative;overflow:hidden; }
+/* ─── Sections ─── */
+.collab-section, .comm-section { padding:48px 0; }
 
-.collab-header { text-align:center;margin-bottom:36px; }
-.collab-tag { display:inline-block;padding:4px 14px;border-radius:999px;background:rgba(47,125,246,0.08);border:1px solid rgba(47,125,246,0.15);color:var(--tag-clr,var(--primary));font-size:.68rem;font-weight:700;letter-spacing:.08em;margin-bottom:10px;text-transform:uppercase; }
-.collab-header h2 { font-size:1.6rem;font-weight:900;letter-spacing:-.03em; }
-.collab-header p { color:var(--text-secondary);font-size:.92rem;margin-top:6px; }
+.collab-header { text-align:center; margin-bottom:36px; }
+.collab-tag { display:inline-block; padding:4px 14px; border-radius:999px; background:rgba(47,125,246,0.08); border:1px solid rgba(47,125,246,0.15); color:var(--tag-clr,var(--primary)); font-size:.68rem; font-weight:700; letter-spacing:.08em; margin-bottom:10px; text-transform:uppercase; }
+.collab-header h2 { font-size:1.6rem; font-weight:900; letter-spacing:-.03em; }
+.collab-header p { color:var(--text-secondary); font-size:.92rem; margin-top:6px; }
 
-.collab-grid { display:flex;flex-wrap:wrap;gap:32px;justify-content:center;padding:8px 0; }
+/* ─── Carrousel ─── */
+.carousel-stage {
+  position: relative;
+  overflow: hidden;
+  padding: 8px 0;
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  display: grid; place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .25s, background .2s;
+}
+.carousel-stage:hover .carousel-arrow { opacity: 1; }
+.carousel-arrow:hover { background: var(--border); }
+.carousel-arrow-left { left: 4px; }
+.carousel-arrow-right { right: 4px; }
 
-.collab-card { display:grid;gap:14px;text-align:center;transition:all .3s;width:150px; }
-.collab-card:hover { transform:translateY(-6px); }
+.carousel-track {
+  display: flex;
+  gap: 32px;
+  will-change: transform;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+.carousel-track:active { cursor: grabbing; }
 
-.collab-ring { position:relative;width:120px;height:120px;margin:0 auto;border-radius:50%;padding:4px;background:conic-gradient(var(--primary),var(--accent),#a78bfa,var(--primary)); }
-.comm-section .collab-ring { background:conic-gradient(var(--accent),#a78bfa,var(--primary),var(--accent)); }
+.collab-card {
+  flex: 0 0 150px;
+  display: grid;
+  gap: 14px;
+  text-align: center;
+  transition: transform .3s;
+}
+.collab-card:hover { transform: translateY(-6px); }
 
-.collab-avatar { width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--bg);display:grid;place-items:center; }
-.collab-avatar img { width:100%;height:100%;object-fit:cover;transition:transform .35s; }
+.collab-ring {
+  position: relative;
+  width: 120px; height: 120px;
+  margin: 0 auto;
+  border-radius: 50%;
+  padding: 4px;
+  background: conic-gradient(var(--primary),var(--accent),#a78bfa,var(--primary));
+}
+.comm-section .collab-ring { background: conic-gradient(var(--accent),#a78bfa,var(--primary),var(--accent)); }
+
+.collab-avatar {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg);
+  display: grid; place-items: center;
+}
+.collab-avatar img { width:100%; height:100%; object-fit:cover; transition:transform .35s; }
 .collab-card:hover .collab-avatar img { transform:scale(1.08); }
 
-.collab-label { display:grid;gap:2px; }
-.collab-name { font-size:.9rem;font-weight:800;letter-spacing:-.01em; }
-.collab-role { font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600; }
+.collab-label { display:grid; gap:2px; }
+.collab-name { font-size:.9rem; font-weight:800; letter-spacing:-.01em; }
+.collab-role { font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
 </style>

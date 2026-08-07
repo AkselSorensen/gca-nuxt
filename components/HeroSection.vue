@@ -7,16 +7,12 @@
     <div class="container">
       <div class="hero-layout">
         <div class="hero-main">
-          <div class="hero-tag">
-            <span class="tag-dot"></span>
-            Marketplace Garry's Mod
-          </div>
           <h1 class="hero-title">
             <span class="title-line">Des assets</span>
             <span class="title-line accent">premium,</span>
             <span class="title-line">prêts à déployer.</span>
           </h1>
-          <p class="hero-desc">DarkRP, HUDs, maps, scripts — une marketplace pensée par et pour la communauté Garry's Mod. Tous les produits sont vérifiés et optimisés.</p>
+          <p class="hero-desc">Du mapping aux particules — GSA est pensé par un créateur pour les créateurs. Vérification humaine sur tous les produits.</p>
           <div class="hero-actions">
             <NuxtLink to="/catalogue" class="btn-primary">
               Explorer
@@ -58,11 +54,11 @@
         <div class="hero-showcase">
           <div class="showcase-card card-1">
             <div class="sc-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             </div>
             <div class="sc-body">
-              <strong>DarkRP</strong>
-              <span>HUDs, jobs, admin tools</span>
+              <strong>Thèmes</strong>
+              <span>Dark RP · Médiéval · BaseWars · Manga</span>
             </div>
           </div>
           <div class="showcase-card card-2">
@@ -70,26 +66,26 @@
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             </div>
             <div class="sc-body">
-              <strong>Maps & UI</strong>
-              <span>Environnements et interfaces</span>
+              <strong>Environnement</strong>
+              <span>Map &amp; Props prêts à l'emploi</span>
             </div>
           </div>
           <div class="showcase-card card-3">
             <div class="sc-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             </div>
             <div class="sc-body">
-              <strong>Scripts</strong>
-              <span>Optimisés, prêts à l'emploi</span>
+              <strong>Développement</strong>
+              <span>Outils · Systèmes · SWEP</span>
             </div>
           </div>
           <div class="showcase-card card-4">
             <div class="sc-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </div>
             <div class="sc-body">
-              <strong>Véhicules</strong>
-              <span>Pack optimisés LOD</span>
+              <strong>Visuel</strong>
+              <span>3D models · Particules · Animation · UI</span>
             </div>
           </div>
         </div>
@@ -145,31 +141,6 @@ defineProps({ totalProducts: Number, totalSales: Number, avgRating: String })
 
 /* Left side */
 .hero-main { display: grid; gap: 20px; }
-.hero-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(47,125,246,0.08);
-  border: 1px solid rgba(47,125,246,0.15);
-  color: var(--primary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  justify-self: start;
-}
-.tag-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--primary);
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
 
 .hero-title { display: grid; gap: 0; }
 .title-line {
@@ -318,6 +289,5 @@ defineProps({ totalProducts: Number, totalSales: Number, avgRating: String })
   .hero-layout { grid-template-columns: 1fr; }
   .hero-showcase { display: none; }
   .hero-metrics { flex-wrap: wrap; gap: 16px; }
-  .metric-divider { display: none; }
 }
 </style>

@@ -4,11 +4,11 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <NuxtLink to="/" class="footer-logo"><img src="/logo.png" alt="GSA" class="logo-img" /></NuxtLink>
-          <p>GSA — marketplace premium pour assets Garry's Mod.</p>
+          <p>GSA — Un standard à venir.</p>
         </div>
         <div class="footer-links"><h4>Plateforme</h4><NuxtLink to="/catalogue">Marketplace</NuxtLink><NuxtLink to="/prestation">Prestation</NuxtLink><NuxtLink to="/about">À propos</NuxtLink></div>
         <div class="footer-links"><h4>Légal</h4><a href="#">CGV</a><a href="#">Confidentialité</a><a href="#">Mentions légales</a></div>
-        <div class="footer-links"><h4>Support</h4><a href="#">Discord</a><a href="#">Contact</a><a href="#">FAQ</a></div>
+        <div class="footer-links"><h4>Support</h4><a href="https://discord.gg/KDsEzGRnKs" target="_blank" rel="noopener">Discord</a><a href="#">Contact</a></div>
       </div>
       <div class="footer-bottom">
         <p>&copy; {{ new Date().getFullYear() }} GSA. Tous droits réservés.</p>
