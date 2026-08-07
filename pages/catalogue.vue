@@ -255,11 +255,15 @@ const filteredProducts = computed(() => {
 })
 
 onMounted(async () => {
-  // Read sort from query param (e.g. /catalogue?sort=discount)
+  // Read query params
   const route = useRoute()
   const qSort = route.query.sort as string
   if (qSort && sortOptions.some(o => o.value === qSort)) {
     filters.sort = qSort
+  }
+  const qCat = route.query.c as string
+  if (qCat) {
+    filters.category = qCat
   }
 
   const { load, pageEntrance } = await import('~/composables/useAnimation')
