@@ -147,8 +147,8 @@ const commTrackRef = ref<HTMLElement | null>(null)
 
 interface CarouselState { x: number; speed: number; paused: boolean; animId: number; dragging: boolean; dragStartX: number; dragStartPos: number; itemW: number; track: HTMLElement | null }
 const carousels: Record<string, CarouselState> = {
-  collab: { x: 0, speed: 0.6, paused: false, animId: 0, dragging: false, dragStartX: 0, dragStartPos: 0, itemW: 0, track: null },
-  comm:  { x: 0, speed: 0.4, paused: false, animId: 0, dragging: false, dragStartX: 0, dragStartPos: 0, itemW: 0, track: null }
+  collab: { x: 0, speed: 0.25, paused: false, animId: 0, dragging: false, dragStartX: 0, dragStartPos: 0, itemW: 0, track: null },
+  comm:  { x: 0, speed: 0.2, paused: false, animId: 0, dragging: false, dragStartX: 0, dragStartPos: 0, itemW: 0, track: null }
 }
 
 function cloneItems(track: HTMLElement) {
