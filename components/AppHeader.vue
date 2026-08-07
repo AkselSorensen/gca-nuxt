@@ -15,6 +15,14 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/><path d="M20 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           <span v-if="cartCount" class="cart-badge">{{ cartCount }}</span>
         </NuxtLink>
+        <div class="lang-switcher" @click.stop="langOpen = !langOpen">
+          <button class="lang-btn">{{ flagEmoji[locale] }}</button>
+          <Transition name="drop">
+            <div v-if="langOpen" class="lang-dropdown">
+              <button v-for="l in (['fr','en','tr'] as const)" :key="l" class="lang-item" :class="{ active: locale === l }" @click.stop="setLocale(l); langOpen = false">{{ flagEmoji[l] }} {{ { fr: 'Français', en: 'English', tr: 'Türkçe' }[l] }}</button>
+            </div>
+          </Transition>
+        </div>
         <template v-if="!user">
           <NuxtLink to="/login" class="btn btn-ghost">Connexion</NuxtLink>
           <NuxtLink to="/register" class="btn btn-primary">S'inscrire</NuxtLink>
@@ -46,16 +54,22 @@
 
 <script setup lang="ts">
 const { user, logout } = useAuth()
+const { locale, flagEmoji, setLocale, initLocale } = useLang()
 const dropdownOpen = ref(false)
+const langOpen = ref(false)
 const cartCount = ref(0)
 
 function onClickOutside(e: MouseEvent) {
   const target = e.target as HTMLElement
   if (!target.closest('.user-dropdown')) dropdownOpen.value = false
+  if (!target.closest('.lang-switcher')) langOpen.value = false
 }
 
 onMounted(() => document.addEventListener('click', onClickOutside))
 onUnmounted(() => document.removeEventListener('click', onClickOutside))
+
+// Init locale
+initLocale()
 
 // Update cart count from localStorage
 function updateCartCount() {
@@ -96,6 +110,15 @@ onUnmounted(() => {
 .cart-icon { position:relative;padding:6px;border-radius:8px;color:var(--text-secondary);transition:all .2s;margin-right:4px; }
 .cart-icon:hover { color:var(--text);background:rgba(255,255,255,0.04); }
 .cart-badge { position:absolute;top:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:var(--primary);color:#fff;font-size:.62rem;font-weight:800;display:grid;place-items:center; }
+
+/* Lang switcher */
+.lang-switcher { position:relative; }
+.lang-btn { width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:1.1rem;cursor:pointer;display:grid;place-items:center;transition:border-color .2s;padding:0; }
+.lang-btn:hover { border-color:var(--border-hover); }
+.lang-dropdown { position:absolute;top:calc(100% + 6px);right:0;min-width:160px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.3);padding:4px; }
+.lang-item { display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:6px;font-size:.83rem;color:var(--text);cursor:pointer;border:none;background:transparent;width:100%;text-align:left;font-family:inherit;transition:background .15s; }
+.lang-item:hover { background:rgba(255,255,255,0.04); }
+.lang-item.active { background:rgba(47,125,246,0.08);color:var(--primary); }
 .btn-admin { background:linear-gradient(135deg,#dc2626,#4f46e5);color:#fff;font-size:.82rem; }
 .btn-seller { background:linear-gradient(135deg,#6ee7b7,#2f7df6);color:#fff;font-size:.82rem; }
 .btn-admin:hover,.btn-seller:hover { opacity:.9; }
