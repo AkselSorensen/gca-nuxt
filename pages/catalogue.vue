@@ -128,7 +128,7 @@
               <h4 class="filter-title">Prix max.</h4>
               <div class="price-slider-wrap">
                 <input type="range" min="0" max="1000" step="5" v-model.number="filters.priceMax" class="single-range" />
-                <div class="price-labels"><span class="price-val">{{ filters.priceMax }}€</span><span>0€ — 1000€</span></div>
+                <div class="price-labels"><span class="price-val">{{ filters.priceMax }}€</span><span>0€ à 1000€</span></div>
               </div>
             </div>
             <div class="filter-group">

@@ -22,12 +22,12 @@ async function handleLogin() {
       return
     }
     if (tab.value === 'seller' && role === 'admin') {
-      error.value = 'Compte administrateur — utilisez l\'onglet Administrateur.'
+      error.value = "Compte administrateur, utilisez l'onglet Administrateur."
       submitting.value = false
       return
     }
     if (tab.value === 'user' && role === 'admin') {
-      error.value = 'Compte administrateur — utilisez l\'onglet Administrateur.'
+      error.value = "Compte administrateur, utilisez l'onglet Administrateur."
       submitting.value = false
       return
     }

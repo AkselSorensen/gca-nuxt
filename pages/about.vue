@@ -3,7 +3,7 @@
     <div class="container">
       <div class="page-header anim-up">
         <h1>À propos</h1>
-        <p>GSA — Pas une boutique, un standard.</p>
+        <p>GSA, pas une boutique, un standard.</p>
       </div>
       <div class="about-content anim-card">
         <section class="about-block">
@@ -20,7 +20,7 @@
         </section>
         <section class="about-block">
           <h2>Pourquoi la non exclusivité ?</h2>
-          <p>Nous croyons que les créateurs doivent pouvoir vendre où ils le souhaitent. GSA n'impose pas d'exclusivité — c'est un canal de vente supplémentaire, sans contrainte.</p>
+          <p>Nous croyons que les créateurs doivent pouvoir vendre où ils le souhaitent. GSA n'impose pas d'exclusivité, c'est un canal de vente supplémentaire, sans contrainte.</p>
           <ul><li>Liberté totale pour les créateurs</li><li>Aucun frais caché</li><li>Visibilité sur une marketplace dédiée</li><li>Communauté active et bienveillante</li></ul>
         </section>
       </div>

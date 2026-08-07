@@ -66,7 +66,7 @@
       <!-- ==================== MISE EN AVANT ==================== -->
       <div v-if="activeTab === 'featured'" class="tab-content">
         <div class="tab-header"><h2>Mise en avant</h2></div>
-        <p class="tab-desc">Gérez les bannières affichées sur la page d'accueil — photos uniquement, sans texte ni produit.</p>
+        <p class="tab-desc">Gérez les bannières affichées sur la page d'accueil, photos uniquement, sans texte ni produit.</p>
         
         <div class="featured-groups">
           <!-- Collaborateur -->

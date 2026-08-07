@@ -61,7 +61,7 @@
               <span v-if="product.discountPercent > 0" class="price-old">{{ Number(product.oldPrice || product.price).toFixed(2) }}€</span>
               <span v-if="product.discountPercent > 0" class="price-badge">−{{ product.discountPercent }}%</span>
             </div>
-            <div class="price-info">Paiement unique — accès à vie</div>
+            <div class="price-info">Paiement unique, accès à vie</div>
           </div>
 
           <!-- Actions -->

@@ -12,7 +12,7 @@
             <span class="title-line accent">premium,</span>
             <span class="title-line">prêts à déployer.</span>
           </h1>
-          <p class="hero-desc">Du mapping aux particules — GSA est pensé par un créateur pour les créateurs. Vérification humaine sur tous les produits.</p>
+          <p class="hero-desc">Du mapping aux particules, GSA est pensé par un créateur pour les créateurs. Vérification humaine sur tous les produits.</p>
           <div class="hero-actions">
             <NuxtLink to="/catalogue" class="btn-primary">
               Explorer

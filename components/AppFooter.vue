@@ -4,7 +4,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <NuxtLink to="/" class="footer-logo"><img src="/logo.png" alt="GSA" class="logo-img" /></NuxtLink>
-          <p>GSA — Un standard à venir.</p>
+          <p>GSA, un standard à venir.</p>
         </div>
         <div class="footer-links"><h4>Plateforme</h4><NuxtLink to="/catalogue">Marketplace</NuxtLink><NuxtLink to="/prestation">Prestation</NuxtLink><NuxtLink to="/about">À propos</NuxtLink></div>
         <div class="footer-links"><h4>Légal</h4><a href="#">CGV</a><a href="#">Confidentialité</a><a href="#">Mentions légales</a></div>

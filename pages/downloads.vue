@@ -103,7 +103,7 @@ async function fetchPurchases() {
     if (code === 401) {
       error.value = 'Vous devez être connecté pour voir vos achats.'
     } else if (code === 'NETWORK' || !code) {
-      error.value = 'Erreur réseau — vérifiez votre connexion. (' + String(msg).slice(0, 80) + ')'
+      error.value = 'Erreur réseau, vérifiez votre connexion. (' + String(msg).slice(0, 80) + ')'
     } else {
       error.value = 'Erreur serveur (' + code + '). Réessayez plus tard.'
     }
@@ -207,7 +207,7 @@ onMounted(async () => {
     const { gsap } = await load()
     if (gsap) pageEntrance(gsap, pageRef.value)
   } catch (animErr) {
-    // Animation non critique — on continue sans
+    // Animation non critique, on continue sans
   }
 
   try {
