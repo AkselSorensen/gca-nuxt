@@ -15,14 +15,6 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/><path d="M20 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           <span v-if="cartCount" class="cart-badge">{{ cartCount }}</span>
         </NuxtLink>
-        <div class="lang-switcher" @click.stop="langOpen = !langOpen">
-          <button class="lang-btn">{{ flagEmoji[locale] }}</button>
-          <Transition name="drop">
-            <div v-if="langOpen" class="lang-dropdown">
-              <button v-for="l in (['fr','en','tr'] as const)" :key="l" class="lang-item" :class="{ active: locale === l }" @click.stop="setLocale(l); langOpen = false">{{ flagEmoji[l] }} {{ { fr: 'Français', en: 'English', tr: 'Türkçe' }[l] }}</button>
-            </div>
-          </Transition>
-        </div>
         <template v-if="!user">
           <NuxtLink to="/login" class="btn btn-ghost">{{ t('nav.login') }}</NuxtLink>
           <NuxtLink to="/register" class="btn btn-primary">{{ t('nav.register') }}</NuxtLink>
@@ -47,6 +39,14 @@
             </Transition>
           </div>
         </template>
+        <div class="lang-switcher" @click.stop="langOpen = !langOpen">
+          <button class="lang-btn">{{ flagEmoji[locale] }}</button>
+          <Transition name="drop">
+            <div v-if="langOpen" class="lang-dropdown">
+              <button v-for="l in (['fr','en','tr'] as const)" :key="l" class="lang-item" :class="{ active: locale === l }" @click.stop="setLocale(l); langOpen = false">{{ flagEmoji[l] }} {{ { fr: 'Français', en: 'English', tr: 'Türkçe' }[l] }}</button>
+            </div>
+          </Transition>
+        </div>
       </div>
     </div>
   </header>
@@ -113,7 +113,7 @@ onUnmounted(() => {
 
 /* Lang switcher */
 .lang-switcher { position:relative; }
-.lang-btn { width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:1.1rem;cursor:pointer;display:grid;place-items:center;transition:border-color .2s;padding:0;color:#fff; }
+.lang-btn { width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s;padding:0;color:#fff;line-height:1; }
 .lang-btn:hover { border-color:var(--border-hover); }
 .lang-dropdown { position:absolute;top:calc(100% + 6px);right:0;min-width:160px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.3);padding:4px; }
 .lang-item { display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:6px;font-size:.83rem;color:var(--text);cursor:pointer;border:none;background:transparent;width:100%;text-align:left;font-family:inherit;transition:background .15s; }
