@@ -29,15 +29,17 @@
     <section class="section"><div class="container">
       <div class="section-header"><h2>{{ t('home.trending') }}</h2><NuxtLink to="/catalogue?sort=trending" class="section-link">Voir tout →</NuxtLink></div>
       <div v-if="loading" class="loading">{{ t('home.loading') }}</div>
-      <div v-else class="prod-carousel" ref="trendingStageRef">
-        <div class="prod-track" ref="trendingTrackRef">
-          <ProductCard v-for="p in featured" :key="p.id" :product="p" class="prod-slide" />
+      <div v-else class="prod-carousel-wrap">
+        <button class="prod-arrow prod-arrow-left" @click="slideProd('trending',-1)" :disabled="prodPage.trending === 0" :aria-label="t('home.prev')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="prod-carousel" ref="trendingStageRef">
+          <div class="prod-track" ref="trendingTrackRef">
+            <ProductCard v-for="p in featured" :key="p.id" :product="p" class="prod-slide" />
+          </div>
         </div>
-        <button class="carousel-arrow carousel-arrow-left" @click="slideProd('trending',-1)" :aria-label="t('home.prev')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
-        <button class="carousel-arrow carousel-arrow-right" @click="slideProd('trending',1)" :aria-label="t('home.next')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
-        <div class="prod-dots">
-          <button v-for="(_, i) in prodPages('trending')" :key="i" class="prod-dot" :class="{ active: prodPage['trending'] === i }" @click="goProdPage('trending', i)"></button>
-        </div>
+        <button class="prod-arrow prod-arrow-right" @click="slideProd('trending',1)" :disabled="prodPage.trending >= prodPages('trending') - 1" :aria-label="t('home.next')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="prod-dots">
+        <button v-for="(_, i) in prodPages('trending')" :key="i" class="prod-dot" :class="{ active: prodPage['trending'] === i }" @click="goProdPage('trending', i)"></button>
       </div>
     </div></section>
 
@@ -67,15 +69,17 @@
 
     <section v-if="discounts.length" class="section"><div class="container">
       <div class="section-header"><h2>{{ t('home.promotions') }}</h2><NuxtLink to="/catalogue?sort=discount" class="section-link">Voir tout →</NuxtLink></div>
-      <div class="prod-carousel" ref="discountStageRef">
-        <div class="prod-track" ref="discountTrackRef">
-          <ProductCard v-for="p in discounts" :key="p.id" :product="p" class="prod-slide" />
+      <div class="prod-carousel-wrap">
+        <button class="prod-arrow prod-arrow-left" @click="slideProd('discount',-1)" :disabled="prodPage.discount === 0" :aria-label="t('home.prev')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="prod-carousel" ref="discountStageRef">
+          <div class="prod-track" ref="discountTrackRef">
+            <ProductCard v-for="p in discounts" :key="p.id" :product="p" class="prod-slide" />
+          </div>
         </div>
-        <button class="carousel-arrow carousel-arrow-left" @click="slideProd('discount',-1)" :aria-label="t('home.prev')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
-        <button class="carousel-arrow carousel-arrow-right" @click="slideProd('discount',1)" :aria-label="t('home.next')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
-        <div class="prod-dots">
-          <button v-for="(_, i) in prodPages('discount')" :key="i" class="prod-dot" :class="{ active: prodPage['discount'] === i }" @click="goProdPage('discount', i)"></button>
-        </div>
+        <button class="prod-arrow prod-arrow-right" @click="slideProd('discount',1)" :disabled="prodPage.discount >= prodPages('discount') - 1" :aria-label="t('home.next')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="prod-dots">
+        <button v-for="(_, i) in prodPages('discount')" :key="i" class="prod-dot" :class="{ active: prodPage['discount'] === i }" @click="goProdPage('discount', i)"></button>
       </div>
     </div></section>
 
@@ -408,10 +412,15 @@ onBeforeUnmount(() => {
 .products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
 
 /* ─── Product carousels ─── */
+.prod-carousel-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
 .prod-carousel {
-  position: relative;
+  flex: 1;
   overflow: hidden;
-  padding: 4px 0;
+  min-width: 0;
 }
 .prod-track {
   display: flex;
@@ -422,6 +431,22 @@ onBeforeUnmount(() => {
   flex: 0 0 calc((100% - 32px) / 3);
   min-width: 0;
 }
+
+.prod-arrow {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.prod-arrow:hover:not(:disabled) { background: var(--border); color: #fff; }
+.prod-arrow:disabled { opacity: 0.3; cursor: default; }
+.prod-arrow-left { margin-right: 12px; }
+.prod-arrow-right { margin-left: 12px; }
 
 .prod-dots {
   display: flex;
@@ -445,6 +470,7 @@ onBeforeUnmount(() => {
 }
 @media (max-width: 480px) {
   .prod-slide { flex: 0 0 100%; }
+  .prod-arrow { display: none; }
 }
 
 /* ─── Sections ─── */
@@ -478,8 +504,7 @@ onBeforeUnmount(() => {
   opacity: 0;
   transition: opacity .25s, background .2s;
 }
-.carousel-stage:hover .carousel-arrow,
-.prod-carousel:hover .carousel-arrow { opacity: 1; }
+.carousel-stage:hover .carousel-arrow { opacity: 1; }
 .carousel-arrow:hover { background: var(--border); }
 .carousel-arrow-left { left: 4px; }
 .carousel-arrow-right { right: 4px; }
