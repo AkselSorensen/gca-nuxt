@@ -29,8 +29,15 @@
     <section class="section"><div class="container">
       <div class="section-header"><h2>{{ t('home.trending') }}</h2><NuxtLink to="/catalogue?sort=trending" class="section-link">Voir tout →</NuxtLink></div>
       <div v-if="loading" class="loading">{{ t('home.loading') }}</div>
-      <div v-else class="products-grid">
-        <ProductCard v-for="p in featured" :key="p.id" :product="p" class="animate-in" />
+      <div v-else class="prod-carousel" ref="trendingStageRef">
+        <div class="prod-track" ref="trendingTrackRef">
+          <ProductCard v-for="p in featured" :key="p.id" :product="p" class="prod-slide" />
+        </div>
+        <button class="carousel-arrow carousel-arrow-left" @click="slideProd('trending',-1)" :aria-label="t('home.prev')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="carousel-arrow carousel-arrow-right" @click="slideProd('trending',1)" :aria-label="t('home.next')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <div class="prod-dots">
+          <button v-for="(_, i) in prodPages('trending')" :key="i" class="prod-dot" :class="{ active: prodPage['trending'] === i }" @click="goProdPage('trending', i)"></button>
+        </div>
       </div>
     </div></section>
 
@@ -60,8 +67,15 @@
 
     <section v-if="discounts.length" class="section"><div class="container">
       <div class="section-header"><h2>{{ t('home.promotions') }}</h2><NuxtLink to="/catalogue?sort=discount" class="section-link">Voir tout →</NuxtLink></div>
-      <div class="products-grid">
-        <ProductCard v-for="p in discounts" :key="p.id" :product="p" class="animate-in" />
+      <div class="prod-carousel" ref="discountStageRef">
+        <div class="prod-track" ref="discountTrackRef">
+          <ProductCard v-for="p in discounts" :key="p.id" :product="p" class="prod-slide" />
+        </div>
+        <button class="carousel-arrow carousel-arrow-left" @click="slideProd('discount',-1)" :aria-label="t('home.prev')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="carousel-arrow carousel-arrow-right" @click="slideProd('discount',1)" :aria-label="t('home.next')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <div class="prod-dots">
+          <button v-for="(_, i) in prodPages('discount')" :key="i" class="prod-dot" :class="{ active: prodPage['discount'] === i }" @click="goProdPage('discount', i)"></button>
+        </div>
       </div>
     </div></section>
 
@@ -144,6 +158,42 @@ const collabStageRef = ref<HTMLElement | null>(null)
 const collabTrackRef = ref<HTMLElement | null>(null)
 const commStageRef = ref<HTMLElement | null>(null)
 const commTrackRef = ref<HTMLElement | null>(null)
+
+// ─── Product carousels (trending + discounts) ───
+const trendingStageRef = ref<HTMLElement | null>(null)
+const trendingTrackRef = ref<HTMLElement | null>(null)
+const discountStageRef = ref<HTMLElement | null>(null)
+const discountTrackRef = ref<HTMLElement | null>(null)
+const VISIBLE = 3
+const prodPage = reactive<Record<string, number>>({ trending: 0, discount: 0 })
+
+function prodPages(key: string) {
+  const count = key === 'trending' ? featured.value.length : discounts.value.length
+  return Math.max(1, Math.ceil(count / VISIBLE))
+}
+
+function slideProd(key: string, dir: number) {
+  const newPage = prodPage[key] + dir
+  if (newPage >= 0 && newPage < prodPages(key)) {
+    prodPage[key] = newPage
+    updateProdTrack(key)
+  }
+}
+
+function goProdPage(key: string, page: number) {
+  prodPage[key] = page
+  updateProdTrack(key)
+}
+
+function updateProdTrack(key: string) {
+  const track = key === 'trending' ? trendingTrackRef.value : discountTrackRef.value
+  if (!track) return
+  const slideW = track.querySelector('.prod-slide') as HTMLElement | null
+  if (!slideW) return
+  const gap = 16
+  const offset = -(prodPage[key] * VISIBLE * (slideW.offsetWidth + gap))
+  track.style.transform = `translateX(${offset}px)`
+}
 
 interface CarouselState { x: number; speed: number; paused: boolean; animId: number; dragging: boolean; dragStartX: number; dragStartPos: number; itemW: number; track: HTMLElement | null; origCount: number }
 const carousels: Record<string, CarouselState> = {
@@ -260,10 +310,10 @@ onMounted(async () => {
       }
     )
 
-    gsap.fromTo('.animate-in',
+    gsap.fromTo('.prod-slide',
       { y: 40, opacity: 0 },
       { y: 0, opacity: 1, stagger: { amount: 0.6, from: 'start' }, duration: 0.5, ease: 'power2.out',
-        scrollTrigger: { trigger: '.animate-in', start: 'top 92%', toggleActions: 'play none none none' }
+        scrollTrigger: { trigger: '.prod-carousel', start: 'top 92%', toggleActions: 'play none none none' }
       }
     )
 
@@ -291,7 +341,7 @@ onMounted(async () => {
 })
 
 watch(featured, () => {
-  if (useNuxtApp().$gsap) setTimeout(() => useNuxtApp().$gsap.fromTo('.animate-in', { y: 40, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.06, duration: 0.5 }), 200)
+  if (useNuxtApp().$gsap) setTimeout(() => useNuxtApp().$gsap.fromTo('.prod-slide', { y: 40, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.06, duration: 0.5 }), 200)
 })
 
 onBeforeUnmount(() => {
@@ -357,6 +407,46 @@ onBeforeUnmount(() => {
 .loading { text-align:center; padding:60px; color:var(--text-muted); }
 .products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
 
+/* ─── Product carousels ─── */
+.prod-carousel {
+  position: relative;
+  overflow: hidden;
+  padding: 4px 0;
+}
+.prod-track {
+  display: flex;
+  gap: 16px;
+  transition: transform 0.4s ease;
+}
+.prod-slide {
+  flex: 0 0 calc((100% - 32px) / 3);
+  min-width: 0;
+}
+
+.prod-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+.prod-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--border);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s;
+}
+.prod-dot.active { background: var(--primary); }
+
+@media (max-width: 768px) {
+  .prod-slide { flex: 0 0 calc((100% - 16px) / 2); }
+}
+@media (max-width: 480px) {
+  .prod-slide { flex: 0 0 100%; }
+}
+
 /* ─── Sections ─── */
 .collab-section, .comm-section { padding:48px 0; }
 
@@ -388,7 +478,8 @@ onBeforeUnmount(() => {
   opacity: 0;
   transition: opacity .25s, background .2s;
 }
-.carousel-stage:hover .carousel-arrow { opacity: 1; }
+.carousel-stage:hover .carousel-arrow,
+.prod-carousel:hover .carousel-arrow { opacity: 1; }
 .carousel-arrow:hover { background: var(--border); }
 .carousel-arrow-left { left: 4px; }
 .carousel-arrow-right { right: 4px; }
