@@ -18,7 +18,6 @@
               Explorer
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg>
             </NuxtLink>
-            <NuxtLink to="/catalogue" class="btn-ghost">Voir les catégories</NuxtLink>
           </div>
           <div class="hero-metrics">
             <div class="metric-item" style="--hue:210">
@@ -186,16 +185,6 @@ defineProps({ totalProducts: Number, totalSales: Number, avgRating: String })
   box-shadow: 0 4px 20px rgba(47,125,246,0.3);
 }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(47,125,246,0.4); }
-.btn-ghost {
-  padding: 12px 20px;
-  border-radius: 10px;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s;
-  text-decoration: none;
-}
-.btn-ghost:hover { color: var(--text); background: rgba(255,255,255,0.04); }
 
 .hero-metrics {
   display: flex;
