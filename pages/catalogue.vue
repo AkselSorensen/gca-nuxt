@@ -176,6 +176,7 @@ const sortOptions = [
   { value: 'price-desc', label: 'Prix décroissant', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 7 7 3 11 7"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="21" y1="17" x2="21" y2="21"/><line x1="17" y1="21" x2="21" y2="21"/></svg>' },
   { value: 'rating', label: 'Mieux notés', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' },
   { value: 'discount', label: 'Promotions', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
+  { value: 'trending', label: 'Tendances', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>' },
 ]
 
 const ratingOptions = [0, 3, 4, 4.5]
@@ -237,6 +238,11 @@ const filteredProducts = computed(() => {
   if (filters.sort === 'discount') {
     result = result.filter((p: any) => p.discountPercent > 0)
     result.sort((a: any, b: any) => (b.discountPercent || 0) - (a.discountPercent || 0))
+  }
+  // trending: filter + sort by popularity
+  if (filters.sort === 'trending') {
+    result = result.filter((p: any) => p.isTrending || p.popularityScore > 80)
+    result.sort((a: any, b: any) => (b.popularityScore || b.sales || 0) - (a.popularityScore || a.sales || 0))
   }
   switch (filters.sort) {
     case 'popular': result.sort((a: any, b: any) => (b.popularityScore || b.sales || 0) - (a.popularityScore || a.sales || 0)); break

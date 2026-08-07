@@ -27,7 +27,7 @@
     </div></section>
 
     <section class="section"><div class="container">
-      <div class="section-header"><h2>Tendances</h2><NuxtLink to="/catalogue" class="section-link">Voir tout →</NuxtLink></div>
+      <div class="section-header"><h2>Tendances</h2><NuxtLink to="/catalogue?sort=trending" class="section-link">Voir tout →</NuxtLink></div>
       <div v-if="loading" class="loading">Chargement…</div>
       <div v-else class="products-grid">
         <ProductCard v-for="p in featured" :key="p.id" :product="p" class="animate-in" />
