@@ -15,7 +15,7 @@
           <p class="hero-desc">{{ t('hero.desc') }}</p>
           <div class="hero-actions">
             <NuxtLink to="/catalogue" class="btn-primary">
-              >{{ t('hero.explore') }}<
+              {{ t('hero.explore') }}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg>
             </NuxtLink>
           </div>
