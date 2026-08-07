@@ -1,8 +1,8 @@
 <template>
   <section class="hero">
     <div class="hero-bg">
-      <div class="hero-glow"></div>
-      <div class="hero-glow-secondary"></div>
+      <div class="hero-dots"></div>
+      <div class="hero-vignette"></div>
     </div>
     <div class="container">
       <div class="hero-layout">
@@ -111,29 +111,22 @@ defineProps({ totalProducts: Number, totalSales: Number, avgRating: String })
 }
 .hero-glow {
   position: absolute;
-  top: -200px;
-  right: -100px;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(47,125,246,0.12) 0%, rgba(108,92,231,0.04) 50%, transparent 70%);
-  filter: blur(80px);
-  animation: glowPulse 8s ease-in-out infinite;
+  inset: 0;
+  pointer-events: none;
 }
-.hero-glow-secondary {
+.hero-dots {
   position: absolute;
-  bottom: -150px;
-  left: -80px;
-  width: 500px;
-  height: 500px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(110,231,183,0.06) 0%, rgba(167,139,250,0.03) 50%, transparent 70%);
-  filter: blur(70px);
-  animation: glowPulse 10s ease-in-out infinite reverse;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse at 60% 50%, black 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 60% 50%, black 30%, transparent 70%);
 }
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.1); }
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 60% 50%, transparent 40%, rgba(0,0,0,0.4) 100%);
+  pointer-events: none;
 }
 
 .hero-layout {
