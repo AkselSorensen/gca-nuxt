@@ -5,10 +5,10 @@
         <img src="/logo.png" alt="GSA" class="logo-img" />
       </NuxtLink>
       <nav class="nav-links">
-        <NuxtLink to="/" class="nav-link">Accueil</NuxtLink>
-        <NuxtLink to="/catalogue" class="nav-link">Marketplace</NuxtLink>
-        <NuxtLink to="/prestation" class="nav-link">Prestation</NuxtLink>
-        <NuxtLink to="/about" class="nav-link">À propos</NuxtLink>
+        <NuxtLink to="/" class="nav-link">{{ t('nav.home') }}</NuxtLink>
+        <NuxtLink to="/catalogue" class="nav-link">{{ t('nav.marketplace') }}</NuxtLink>
+        <NuxtLink to="/prestation" class="nav-link">{{ t('nav.services') }}</NuxtLink>
+        <NuxtLink to="/about" class="nav-link">{{ t('nav.about') }}</NuxtLink>
       </nav>
       <div class="header-actions">
         <NuxtLink to="/cart" class="cart-icon">
@@ -24,8 +24,8 @@
           </Transition>
         </div>
         <template v-if="!user">
-          <NuxtLink to="/login" class="btn btn-ghost">Connexion</NuxtLink>
-          <NuxtLink to="/register" class="btn btn-primary">S'inscrire</NuxtLink>
+          <NuxtLink to="/login" class="btn btn-ghost">{{ t('nav.login') }}</NuxtLink>
+          <NuxtLink to="/register" class="btn btn-primary">{{ t('nav.register') }}</NuxtLink>
         </template>
         <template v-else>
           <div class="user-dropdown" @click="dropdownOpen = !dropdownOpen" v-click-outside="() => dropdownOpen = false">
@@ -36,13 +36,13 @@
             </div>
             <Transition name="drop">
               <div v-if="dropdownOpen" class="dropdown-menu">
-                <NuxtLink to="/seller/account" class="drop-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Mon profil</NuxtLink>
-                <NuxtLink v-if="user.slug && (user.role === 'seller' || user.role === 'admin')" :to="'/seller/' + user.slug" class="drop-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Ma boutique</NuxtLink>
-                <NuxtLink to="/downloads" class="drop-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Mes téléchargements</NuxtLink>
-                <NuxtLink v-if="user.role === 'seller' || user.role === 'admin'" to="/seller/account" class="drop-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Espace vendeur</NuxtLink>
-                <NuxtLink v-if="user.role === 'admin'" to="/admin" class="drop-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Administration</NuxtLink>
+                <NuxtLink to="/seller/account" class="drop-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> {{ t('nav.profile') }}</NuxtLink>
+                <NuxtLink v-if="user.slug && (user.role === 'seller' || user.role === 'admin')" :to="'/seller/' + user.slug" class="drop-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> {{ t('nav.shop') }}</NuxtLink>
+                <NuxtLink to="/downloads" class="drop-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> {{ t('nav.downloads') }}</NuxtLink>
+                <NuxtLink v-if="user.role === 'seller' || user.role === 'admin'" to="/seller/account" class="drop-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> {{ t('nav.seller') }}</NuxtLink>
+                <NuxtLink v-if="user.role === 'admin'" to="/admin" class="drop-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> {{ t('nav.admin') }}</NuxtLink>
                 <div class="drop-divider"></div>
-                <button @click="logout" class="drop-item danger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Déconnexion</button>
+                <button @click="logout" class="drop-item danger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> {{ t('nav.logout') }}</button>
               </div>
             </Transition>
           </div>
@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 const { user, logout } = useAuth()
-const { locale, flagEmoji, setLocale, initLocale } = useLang()
+const { locale, flagEmoji, setLocale, initLocale, t } = useLang()
 const dropdownOpen = ref(false)
 const langOpen = ref(false)
 const cartCount = ref(0)
@@ -113,7 +113,7 @@ onUnmounted(() => {
 
 /* Lang switcher */
 .lang-switcher { position:relative; }
-.lang-btn { width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:1.1rem;cursor:pointer;display:grid;place-items:center;transition:border-color .2s;padding:0; }
+.lang-btn { width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;font-size:1.1rem;cursor:pointer;display:grid;place-items:center;transition:border-color .2s;padding:0;color:#fff; }
 .lang-btn:hover { border-color:var(--border-hover); }
 .lang-dropdown { position:absolute;top:calc(100% + 6px);right:0;min-width:160px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.3);padding:4px; }
 .lang-item { display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:6px;font-size:.83rem;color:var(--text);cursor:pointer;border:none;background:transparent;width:100%;text-align:left;font-family:inherit;transition:background .15s; }
