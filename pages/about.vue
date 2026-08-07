@@ -2,13 +2,13 @@
   <div ref="pageRef" class="page-static">
     <div class="container">
       <div class="page-header anim-up">
-        <h1>À propos</h1>
-        <p>GSA, pas une boutique, un standard.</p>
+        <h1>{{ t('about.title') }}</h1>
+        <p>{{ t('about.subtitle') }}</p>
       </div>
       <div class="about-content anim-card">
         <section class="about-block">
-          <h2>Notre mission</h2>
-          <p>GSA structure la distribution d'assets Garry's Mod, les prestations et l'accompagnement de projet dans une marketplace premium pensée par et pour la communauté.</p>
+          <h2>{{ t('about.mission_title') }}</h2>
+          {{ t('about.mission1') }}
         </section>
         <section class="about-block">
           <h2>Pourquoi GSA ?</h2>
@@ -16,12 +16,12 @@
         </section>
         <section class="about-block">
           <h2>Ce que GSA prend en charge</h2>
-          <ul><li>Mise en avant des assets de qualité</li><li>Gestion des paiements sécurisés</li><li>Système de notation et d'avis vérifiés</li><li>Accompagnement des créateurs</li><li>Support client dédié</li></ul>
+          <ul><li>{{ t('about.list1') }}</li><li>{{ t('about.list2') }}</li><li>{{ t('about.list3') }}</li><li>{{ t('about.list4') }}</li><li>{{ t('about.list5') }}</li></ul>
         </section>
         <section class="about-block">
-          <h2>Pourquoi la non exclusivité ?</h2>
-          <p>Nous croyons que les créateurs doivent pouvoir vendre où ils le souhaitent. GSA n'impose pas d'exclusivité, c'est un canal de vente supplémentaire, sans contrainte.</p>
-          <ul><li>Liberté totale pour les créateurs</li><li>Aucun frais caché</li><li>Visibilité sur une marketplace dédiée</li><li>Communauté active et bienveillante</li></ul>
+          <h2>{{ t('about.nonexcl_title') }}</h2>
+          <p>{{ t('about.nonexcl_desc') }}</p>
+          <ul><li>{{ t('about.nonexcl1') }}</li><li>{{ t('about.nonexcl2') }}</li><li>{{ t('about.nonexcl3') }}</li><li>{{ t('about.nonexcl4') }}</li></ul>
         </section>
       </div>
     </div>
@@ -35,6 +35,8 @@ onMounted(async () => {
   const { gsap } = await load()
   if (gsap) pageEntrance(gsap, pageRef.value)
 })
+const { t } = useLang()
+
 </script>
 
 <style scoped>

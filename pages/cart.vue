@@ -2,8 +2,8 @@
   <div ref="pageRef" class="cart-page">
     <div class="container">
       <div class="page-header anim-up">
-        <h1>Panier</h1>
-        <p>Paiement sécurisé · Livraison instantanée</p>
+        <h1>{{ t('cart.step1') }}</h1>
+        <p>{{ t('cart.secure') }}</p>
       </div>
 
       <!-- Steps -->
@@ -12,24 +12,24 @@
         <div class="step-line"></div>
         <div class="step"><span class="step-num">2</span> Paiement</div>
         <div class="step-line"></div>
-        <div class="step"><span class="step-num">3</span> Terminé</div>
+        <div class="step"><span class="step-num">3</span> {{ t('cart.step3') }}</div>
       </div>
 
       <!-- Success state -->
       <div v-if="checkoutSuccess" class="success-banner anim-scale">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <h2>Paiement réussi !</h2>
-        <p>Votre commande a été confirmée. Vous pouvez dès maintenant télécharger vos produits.</p>
-        <NuxtLink to="/downloads" class="btn-success">Mes téléchargements</NuxtLink>
+        <h2>{{ t('cart.success') }}</h2>
+        <p>{{ t('cart.success_msg') }}</p>
+        <NuxtLink to="/downloads" class="btn-success">{{ t('cart.my_downloads') }}</NuxtLink>
       </div>
 
       <!-- Retry state -->
       <div v-if="checkoutSessionId && !checkoutSuccess" class="retry-banner anim-scale">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <h2>Paiement en attente de confirmation</h2>
-        <p>Votre paiement a bien été reçu, mais la confirmation prend quelques instants.</p>
-        <button class="btn-retry" @click="confirmCheckout(checkoutSessionId)">Réessayer</button>
-        <NuxtLink to="/downloads" class="link-dl">Voir mes téléchargements</NuxtLink>
+        <p>{{ t('cart.pending') }}</p>
+        <button class="btn-retry" @click="confirmCheckout(checkoutSessionId)">{{ t('cart.retry') }}</button>
+        <NuxtLink to="/downloads" class="link-dl">{{ t('cart.see_downloads') }}</NuxtLink>
       </div>
 
       <div class="cart-layout" v-if="items.length && !checkoutSuccess">
@@ -53,10 +53,10 @@
           </div>
         </div>
         <div class="cart-summary anim-right">
-          <h3>Récapitulatif</h3>
+          <h3>{{ t('cart.summary') }}</h3>
           <div class="summary-row"><span>Sous-total</span><span>{{ subtotal.toFixed(2) }}€</span></div>
-          <div v-if="promoDiscount > 0" class="summary-row promo-valid"><span>Réduction</span><span>-{{ promoDiscount.toFixed(2) }}€</span></div>
-          <div class="summary-total"><span>Total</span><strong>{{ total.toFixed(2) }}€</strong></div>
+          <div v-if="promoDiscount > 0" class="summary-row promo-valid"><span>{{ t('cart.discount') }}</span><span>-{{ promoDiscount.toFixed(2) }}€</span></div>
+          <div class="summary-total"><span>{{ t('cart.total') }}</span><strong>{{ total.toFixed(2) }}€</strong></div>
           <div class="promo-row">
             <input v-model="promoCode" placeholder="Code promo" class="promo-input" :class="{ error: promoStatus === 'error', valid: promoStatus === 'valid' }" />
             <button class="promo-btn" :disabled="promoStatus === 'loading'" @click="applyPromo">{{ promoStatus === 'loading' ? '…' : 'Appliquer' }}</button>
@@ -72,8 +72,8 @@
       <!-- Empty state -->
       <div v-else class="cart-empty anim-fade">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        <h2>Votre panier est vide</h2>
-        <p>Découvrez nos produits et trouvez ce qu'il vous faut.</p>
+        {{ t('cart.empty') }}
+        <p>{{ t('cart.empty_sub') }}</p>
         <NuxtLink to="/catalogue" class="btn-browse">Parcourir le catalogue</NuxtLink>
       </div>
     </div>
@@ -103,11 +103,11 @@ async function applyPromo() {
     if (res.valid) {
       promoStatus.value = 'valid'
       promoDiscount.value = res.discountAmount || 0
-      promoMsg.value = `Code appliqué ! -${res.discountAmount.toFixed(2)}€`
+      promoMsg.value = t('cart.promo_applied') + ` -${res.discountAmount.toFixed(2)}€`
     } else {
       promoStatus.value = 'error'
       promoDiscount.value = 0
-      promoMsg.value = res.message || 'Code invalide ou expiré'
+      promoMsg.value = res.message || t('cart.promo_invalid')
     }
   } catch (e: any) {
     promoStatus.value = 'error'
@@ -145,7 +145,9 @@ onMounted(async () => {
 
 async function confirmCheckout(sid: string) {
   try {
-    const config = useRuntimeConfig()
+    const { t } = useLang()
+
+const config = useRuntimeConfig()
     const api = config.public.apiOrigin
     await $fetch(api + '/api/checkout/confirm-session', { method: 'POST', credentials: 'include', body: { sessionId: sid } })
     checkoutSuccess.value = true

@@ -3,7 +3,7 @@
     <HeroSection :total-products="stats.totalProducts" :total-sales="stats.totalSales" :avg-rating="stats.avgRating" />
 
     <section class="section"><div class="container">
-      <div class="section-header"><h2>Explorer par catégorie</h2><NuxtLink to="/catalogue" class="section-link">Tout voir →</NuxtLink></div>
+      <div class="section-header"><h2>{{ t('home.categories') }}</h2><NuxtLink to="/catalogue" class="section-link">{{ t('home.see_all') }} →</NuxtLink></div>
       <div ref="categoryRef" class="categories-strip">
         <NuxtLink v-for="c in categories" :key="c.id" :to="'/catalogue?c='+c.slug" class="cat-card" :ref="el => catRefs.push(el)">
           <div class="cat-bg" :style="{ background: c.bg }"></div>
@@ -20,15 +20,15 @@
           </div>
           <div class="cat-info">
             <span class="cat-name">Tout voir</span>
-            <span class="cat-count">Parcourir le catalogue</span>
+            <span class="cat-count">{{ t('home.browse_catalog') }}</span>
           </div>
         </NuxtLink>
       </div>
     </div></section>
 
     <section class="section"><div class="container">
-      <div class="section-header"><h2>Tendances</h2><NuxtLink to="/catalogue?sort=trending" class="section-link">Voir tout →</NuxtLink></div>
-      <div v-if="loading" class="loading">Chargement…</div>
+      <div class="section-header"><h2>{{ t('home.trending') }}</h2><NuxtLink to="/catalogue?sort=trending" class="section-link">Voir tout →</NuxtLink></div>
+      <div v-if="loading" class="loading">{{ t('home.loading') }}</div>
       <div v-else class="products-grid">
         <ProductCard v-for="p in featured" :key="p.id" :product="p" class="animate-in" />
       </div>
@@ -37,9 +37,9 @@
     <!-- Déjà client chez nous -->
     <section v-if="commItems.length" class="section comm-section"><div class="container">
       <div class="collab-header">
-        <div class="collab-tag" style="--tag-clr:var(--accent)">SERVEURS</div>
-        <h2>Déjà client chez nous</h2>
-        <p>Des serveurs qui utilisent et recommandent nos assets.</p>
+        <div class="collab-tag" style="--tag-clr:var(--accent)">{{ t('home.servers_tag') }}</div>
+        <h2>{{ t('home.servers_title') }}</h2>
+        <p>{{ t('home.servers_desc') }}</p>
       </div>
       <div ref="commStageRef" class="carousel-stage" @mouseenter="pauseCarousel('comm')" @mouseleave="resumeCarousel('comm')">
         <div ref="commTrackRef" class="carousel-track" @mousedown="dragStart($event,'comm')" @mousemove="dragMove($event,'comm')" @mouseup="dragEnd('comm')" @mouseleave="dragEnd('comm')" @touchstart="dragStart($event,'comm')" @touchmove="dragMove($event,'comm')" @touchend="dragEnd('comm')">
@@ -49,7 +49,7 @@
             </div>
             <div class="collab-label">
               <span class="collab-name">{{ item.name }}</span>
-              <span class="collab-role">Serveur</span>
+              <span class="collab-role">{{ t('home.servers_role') }}</span>
             </div>
           </div>
         </div>
@@ -59,7 +59,7 @@
     </div></section>
 
     <section v-if="discounts.length" class="section"><div class="container">
-      <div class="section-header"><h2>Promotions</h2><NuxtLink to="/catalogue?sort=discount" class="section-link">Voir tout →</NuxtLink></div>
+      <div class="section-header"><h2>{{ t('home.promotions') }}</h2><NuxtLink to="/catalogue?sort=discount" class="section-link">Voir tout →</NuxtLink></div>
       <div class="products-grid">
         <ProductCard v-for="p in discounts" :key="p.id" :product="p" class="animate-in" />
       </div>
@@ -68,9 +68,9 @@
     <!-- Collaborateurs -->
     <section v-if="collabItems.length" class="section collab-section"><div class="container">
       <div class="collab-header">
-        <div class="collab-tag">COLLABORATEURS</div>
-        <h2>Collaborateurs</h2>
-        <p>Des créateurs qui nous font confiance et proposent leurs services.</p>
+        <div class="collab-tag">{{ t('home.collab_tag') }}</div>
+        <h2>{{ t('home.collab_title') }}</h2>
+        <p>{{ t('home.collab_desc') }}</p>
       </div>
       <div ref="collabStageRef" class="carousel-stage" @mouseenter="pauseCarousel('collab')" @mouseleave="resumeCarousel('collab')">
         <div ref="collabTrackRef" class="carousel-track" @mousedown="dragStart($event,'collab')" @mousemove="dragMove($event,'collab')" @mouseup="dragEnd('collab')" @mouseleave="dragEnd('collab')" @touchstart="dragStart($event,'collab')" @touchmove="dragMove($event,'collab')" @touchend="dragEnd('collab')">
@@ -80,7 +80,7 @@
             </div>
             <div class="collab-label">
               <span class="collab-name">{{ item.name }}</span>
-              <span class="collab-role">Collaborateur</span>
+              <span class="collab-role">{{ t('home.collab_role') }}</span>
             </div>
           </div>
         </div>
@@ -95,6 +95,7 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
+const { t } = useLang()
 const { data: bootstrap } = await useFetch(api + '/api/bootstrap')
 const state = computed(() => bootstrap.value || {})
 

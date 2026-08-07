@@ -22,12 +22,12 @@ async function handleLogin() {
       return
     }
     if (tab.value === 'seller' && role === 'admin') {
-      error.value = "Compte administrateur, utilisez l'onglet Administrateur."
+      error.value = t('login.admin_error')
       submitting.value = false
       return
     }
     if (tab.value === 'user' && role === 'admin') {
-      error.value = "Compte administrateur, utilisez l'onglet Administrateur."
+      error.value = t('login.admin_error')
       submitting.value = false
       return
     }
@@ -57,7 +57,7 @@ onMounted(async () => {
     <div class="auth-card anim-scale">
       <div class="auth-header anim-up">
         <NuxtLink to="/" class="auth-logo"><span class="logo-icon">G</span></NuxtLink>
-        <h1>Connexion</h1>
+        <h1>{{ t('login.title') }}</h1>
       </div>
       <div class="auth-tabs">
         <button class="tab-btn" :class="{ active: tab === 'user' }" @click="tab = 'user'">Utilisateur</button>
@@ -79,7 +79,7 @@ onMounted(async () => {
         <div class="field anim-up"><label>Email</label><input v-model="email" type="email" placeholder="vous@exemple.com" required /></div>
         <div class="field anim-up"><label>Mot de passe</label><input v-model="password" type="password" placeholder="••••••••" required /></div>
         <p v-if="error" class="auth-error anim-fade">{{ error }}</p>
-        <button type="submit" class="btn-submit anim-up" :disabled="submitting">{{ submitting ? 'Connexion…' : 'Se connecter' }}</button>
+        <button type="submit" class="btn-submit anim-up" :disabled="submitting">{{ submitting ? 'Connexion…' : t('login.submit') }}</button>
         <p class="auth-footer anim-fade">Pas encore de compte ? <NuxtLink to="/register">S'inscrire</NuxtLink></p>
       </form>
 
@@ -87,7 +87,7 @@ onMounted(async () => {
       <form v-if="tab === 'seller'" @submit.prevent="handleLogin" class="auth-form">
         <div class="seller-notice">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-          <span>Espace dédié aux créateurs et vendeurs de la plateforme.</span>
+          <span>{{ t('login.seller_sub') }}</span>
         </div>
         <div class="field anim-up"><label>Email</label><input v-model="email" type="email" placeholder="vendeur@gsa.fr" required /></div>
         <div class="field anim-up"><label>Mot de passe</label><input v-model="password" type="password" placeholder="••••••••" required /></div>
@@ -99,7 +99,7 @@ onMounted(async () => {
       <form v-if="tab === 'admin'" @submit.prevent="handleLogin" class="auth-form">
         <div class="admin-notice anim-left">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span>Accès réservé aux administrateurs.</span>
+          <span>{{ t('login.admin_sub') }}</span>
         </div>
         <div class="field anim-up"><label>Email</label><input v-model="email" type="email" placeholder="GSA" required /></div>
         <div class="field anim-up"><label>Mot de passe</label><input v-model="password" type="password" placeholder="••••••••" required /></div>

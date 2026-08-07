@@ -2,8 +2,8 @@
   <div ref="pageRef" class="downloads-page">
     <div class="container">
       <div class="page-header anim-up">
-        <h1>Mes téléchargements</h1>
-        <p>Retrouvez tous vos achats et téléchargez vos fichiers.</p>
+        <h1>{{ t('downloads.title') }}</h1>
+        <p>{{ t('downloads.subtitle') }}</p>
       </div>
 
       <div v-if="loading" class="loading-state anim-up">
@@ -16,7 +16,7 @@
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <h2>Erreur</h2>
         <p>{{ error }}</p>
-        <button class="btn-retry" @click="fetchPurchases">Réessayer</button>
+        <button class="btn-retry" @click="fetchPurchases">{{ t('downloads.retry') }}</button>
       </div>
 
       <!-- Manuel : coller l'ID de session Stripe -->
@@ -32,13 +32,13 @@
         <!-- Paiement en attente de confirmation -->
         <div v-if="checkoutSessionId" class="confirm-banner">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f5b342" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <div><strong>Paiement reçu !</strong><span>Confirmation en cours…</span></div>
-          <button class="btn-confirm" @click="retryConfirm">Vérifier</button>
+          <div><strong>{{ t('downloads.pay_received') }}</strong><span>{{ t('downloads.processing') }}</span></div>
+          <button class="btn-confirm" @click="retryConfirm">{{ t('downloads.verify') }}</button>
           <button v-if="checkoutSessionId && !retrying" class="btn-force" @click="forceConfirm" style="background:#ef4444;padding:8px 14px;border-radius:6px;border:none;color:#fff;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;">Force</button>
         </div>
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <h2>Aucun téléchargement</h2>
-        <p>Vous n'avez encore rien acheté sur la marketplace.</p>
+        <h2>{{ t('downloads.none') }}</h2>
+        <p>{{ t('downloads.none_sub') }}</p>
         <NuxtLink to="/catalogue" class="btn-browse">Parcourir le catalogue</NuxtLink>
       </div>
 
@@ -51,7 +51,7 @@
             <h3>{{ item.title }}</h3>
             <div class="purchase-meta">
               <span class="meta-cat">{{ item.category_name }}</span>
-              <span class="meta-date">Acheté le {{ formatDate(item.purchase_date) }}</span>
+              <span class="meta-date">{{ t('downloads.purchased') }} {{ formatDate(item.purchase_date) }}</span>
               <span class="meta-price">{{ Number(item.price).toFixed(2) }}€</span>
             </div>
             <div v-if="item.files?.length" class="purchase-files">
@@ -61,7 +61,7 @@
                 <span class="file-size">{{ formatSize(f.file_size) }}</span>
                 <button class="btn-dl" @click="download(item.order_item_id)" :disabled="downloading === item.order_item_id">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  {{ downloading === item.order_item_id ? 'Téléchargement…' : 'Télécharger' }}
+                  {{ downloading === item.order_item_id ? t('downloads.downloading') : t('downloads.download') }}
                 </button>
               </div>
             </div>
@@ -78,6 +78,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'default' })
+
+const { t } = useLang()
 
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin

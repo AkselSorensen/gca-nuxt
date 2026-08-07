@@ -3,16 +3,16 @@
     <div class="auth-card anim-scale">
       <div class="auth-header anim-up">
         <NuxtLink to="/" class="auth-logo"><span class="logo-icon">G</span></NuxtLink>
-        <h1>Créer un compte</h1>
+        <h1>{{ t('register.title') }}</h1>
       </div>
       <div class="account-options anim-up">
         <div class="option-card" :class="{ active: accountType === 'buyer' }" @click="accountType = 'buyer'; termsAccepted = false">
           <div class="opt-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.87"/></svg></div>
-          <div><strong>Acheteur</strong><span>Accéder à la marketplace</span></div>
+          <div><strong>{{ t('register.buyer') }}</strong><span>{{ t('register.buyer_sub') }}</span></div>
         </div>
         <div class="option-card" :class="{ active: accountType === 'seller' }" @click="accountType = 'seller'">
           <div class="opt-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
-          <div><strong>Vendeur</strong><span>Vendre vos créations</span></div>
+          <div><strong>Vendeur</strong><span>{{ t('register.seller_sub') }}</span></div>
         </div>
       </div>
 
@@ -25,7 +25,7 @@
           <div class="field"><label>Discord</label>
             <div v-if="discordLinked" class="discord-linked">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="#5865f2"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/></svg>
-              <span>Compte Discord lié</span>
+              <span>{{ t('register.discord_linked') }}</span>
               <small>{{ discordLinked }}</small>
             </div>
             <button v-else type="button" class="btn-discord-link" @click="linkDiscord">
@@ -33,19 +33,19 @@
               Lier mon compte Discord
             </button>
           </div>
-          <div class="field"><label>Présentez-vous</label><textarea v-model="sellerDescription" rows="4" placeholder="Parlez-nous de vous, votre expérience, ce que vous créez…" maxlength="1000"></textarea></div>
+          <div class="field"><label>{{ t('register.intro') }}</label><textarea v-model="sellerDescription" rows="4" placeholder="Parlez-nous de vous, votre expérience, ce que vous créez…" maxlength="1000"></textarea></div>
         </div>
         <p v-if="error" class="auth-error anim-fade">{{ error }}</p>
-        <p v-if="success" class="auth-success anim-fade">Compte créé !</p>
+        <p v-if="success" class="auth-success anim-fade">{{ t('register.success') }}</p>
         <button type="submit" class="btn-submit anim-up" :disabled="submitting">
-          {{ submitting ? '…' : accountType === 'seller' ? 'Créer mon compte vendeur' : 'Créer mon compte' }}
+          {{ submitting ? '…' : accountType === 'seller' ? t('register.create_seller') : t('register.create_buyer') }}
         </button>
         <div class="divider anim-fade"><span>ou</span></div>
         <div class="social-btns anim-up">
           <button type="button" class="btn-social btn-steam" @click="socialLogin('steam')"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11.5 2C7 2 3.3 5.2 2.5 9.5l4.3 1.8c.6-.4 1.4-.5 2.2-.3.9.2 1.6.8 2 1.6l2.9 7.1c.1.2.1.5.1.7 0 1.1-.9 2-2 2-.7 0-1.4-.4-1.7-1l-3.9-1.6c-.3 1.2-1 2.3-2.1 3.1C7.7 23.5 9.5 24 11.3 24c3.8 0 7.1-2.7 7.9-6.5l3.8-1.5.5-4.2L11.5 2zM6.6 13.4l-2.8-1.2c.2 2.4 2 4.3 4.4 4.5l2.4-1.1c.4.9 1.3 1.5 2.3 1.5 1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5c-1 0-1.9.6-2.3 1.5L8.7 14c-.2-1-.7-1.9-1.5-2.5l1.4 1.9z"/></svg> Steam</button>
           <button type="button" class="btn-social btn-discord" @click="socialLogin('discord')"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/></svg> Discord</button>
         </div>
-        <p class="auth-footer anim-fade">Déjà un compte ? <NuxtLink to="/login">Se connecter</NuxtLink></p>
+        <p class="auth-footer anim-fade">{{ t('register.has_account') }} <NuxtLink to="/login">{{ t('register.login_link') }}</NuxtLink></p>
       </form>
     </div>
 
@@ -82,7 +82,7 @@
           <div class="modal-footer">
             <label class="terms-check" :class="{ disabled: !termsScrolled }">
               <input type="checkbox" v-model="termsAccepted" :disabled="!termsScrolled" />
-              <span>J'accepte les conditions générales de vente</span>
+              <span>{{ t('register.cgv_accept') }}</span>
             </label>
             <button class="btn-accept" :disabled="!termsAccepted" @click="confirmTerms">Confirmer et continuer</button>
           </div>

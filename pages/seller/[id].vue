@@ -14,7 +14,7 @@
               <h1>{{ seller.displayName }}</h1>
               <span class="sp-badge verified">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9" stroke="#fff" stroke-width="2" fill="none"/></svg>
-                Vérifié
+                {{ t('seller.verified') }}'
               </span>
             </div>
             <p v-if="seller.bio" class="sp-bio">{{ seller.bio }}</p>
@@ -37,7 +37,7 @@
             <div class="sp-stat">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
               <div class="sp-stat-val">{{ products.length }}</div>
-              <div class="sp-stat-lbl">Produits</div>
+              <div class="sp-stat-lbl">{{ t('seller.products') }}</div>
             </div>
             <div class="sp-stat">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
@@ -91,8 +91,8 @@
         <div class="sp-card">
           <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Détails</h3>
           <div class="sp-details">
-            <div class="sp-detail"><span class="dl-label">Membre depuis</span><span>{{ formatDate(seller.joinedAt) }}</span></div>
-            <div class="sp-detail"><span class="dl-label">Statut</span><span class="verified-text">Vérifié par GSA</span></div>
+            <div class="sp-detail"><span class="dl-label">{{ t('seller.member_since') }}</span><span>{{ formatDate(seller.joinedAt) }}</span></div>
+            <div class="sp-detail"><span class="dl-label">Statut</span><span class="verified-text">{{ t('seller.verified_by') }}</span></div>
             <div class="sp-detail"><span class="dl-label">Vendeur ID</span><span>#{{ seller.id || sellerSlug }}</span></div>
           </div>
         </div>
@@ -109,7 +109,7 @@
 
         <div v-if="!products.length" class="sp-empty">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-          <p>Aucun produit pour le moment.</p>
+          <p>{{ t('seller.no_products') }}</p>
         </div>
 
         <div v-else class="sp-products-grid">
@@ -146,6 +146,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'default' })
+
+const { t } = useLang()
 
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
@@ -207,7 +209,7 @@ function copyDiscord() {
 
 function shareProfile() {
   navigator.clipboard.writeText(window.location.href)
-  toastRef.value?.show('success', 'Lien copié !')
+  toastRef.value?.show('success', t('seller.link_copied'))
 }
 
 onMounted(async () => {

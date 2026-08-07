@@ -4,12 +4,12 @@
       <!-- Header -->
       <div class="mp-header anim-up">
         <div class="mp-title-block">
-          <h1>MARKETPLACE</h1>
-          <p>TOUT CE DONT TU AS BESOIN AU MÊME ENDROIT</p>
+          <h1>{{ t('cat.title') }}</h1>
+          <p>{{ t('cat.subtitle') }}</p>
         </div>
         <div class="mp-search" @click="focusSearch">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input ref="searchRef" v-model="filters.search" type="text" placeholder="Rechercher scripts, models, maps…" />
+          <input ref="searchRef" v-model="filters.search" type="text" :placeholder="t('cat.search')" />
         </div>
       </div>
 
@@ -50,9 +50,9 @@
 
           <div class="filter-group">
             <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg> Options</h4>
-            <label class="toggle-row"><input type="checkbox" v-model="filters.onSale" /><span class="check-box"></span> En soldes seulement</label>
+            <label class="toggle-row"><input type="checkbox" v-model="filters.onSale" /><span class="check-box"></span> {{ t('cat.on_sale') }}</label>
             <label class="toggle-row"><input type="checkbox" v-model="filters.verified" /><span class="check-box"></span> Vendeurs vérifiés</label>
-            <label class="toggle-row"><input type="checkbox" v-model="filters.trending" /><span class="check-box"></span> Tendance seulement</label>
+            <label class="toggle-row"><input type="checkbox" v-model="filters.trending" /><span class="check-box"></span> {{ t('cat.trending_only') }}</label>
           </div>
 
           <div class="filter-group">
@@ -64,7 +64,7 @@
           </div>
 
           <button class="btn-reset" @click="clearFilters">Réinitialiser</button>
-          <button class="btn-apply" @click="sidebarOpen = false">Appliquer les filtres</button>
+          <button class="btn-apply" @click="sidebarOpen = false">{{ t('cat.apply') }}</button>
         </aside>
 
         <!-- Mobile filter toggle -->
@@ -76,20 +76,20 @@
 
         <!-- Product grid -->
         <main class="mp-main">
-          <div v-if="loading" class="mp-empty">Chargement…</div>
-          <div v-else-if="!filteredProducts.length" class="mp-empty">Aucun résultat trouvé.</div>
+          <div v-if="loading" class="mp-empty">{{ t('cat.loading') }}</div>
+          <div v-else-if="!filteredProducts.length" class="mp-empty">{{ t('cat.no_results') }}</div>
           <div v-else class="mp-grid">
             <article v-for="(p, i) in filteredProducts" :key="p.id" class="mp-card" :style="{ animationDelay: (i % 12) * 0.04 + 's' }">
               <a :href="'/product/' + p.slug" class="card-img">
                 <img :src="p.thumbnail || p.media?.[0]?.thumbnail || p.media?.[0]?.url || ''" :alt="p.title" loading="lazy" />
                 <div v-if="p.discountPercent > 0" class="badge-sale">−{{ p.discountPercent }}%</div>
-                <div v-if="p.isNew || p.is_new" class="badge-new">NOUVEAU</div>
+                <div v-if="p.isNew || p.is_new" class="badge-new">{{ t('cat.new') }}</div>
               </a>
               <div class="card-info">
                 <span class="card-cat">{{ p.category || p.categoryName || p.categorySlug || '' }}</span>
                 <h3><a :href="'/product/' + p.slug">{{ p.title }}</a></h3>
                 <div class="card-meta">
-                  <span class="card-seller">{{ p.sellerName || p.seller || 'Vendeur' }}</span>
+                  <span class="card-seller">{{ p.sellerName || p.seller || t('cat.seller') }}</span>
                   <span class="card-rating" v-if="p.rating">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5b342"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                     {{ Number(p.rating).toFixed(1) }}
@@ -157,6 +157,7 @@
 
 <script setup lang="ts">
 const config = useRuntimeConfig()
+const { t } = useLang()
 const api = config.public.apiOrigin
 
 const { data: prodData } = await useFetch(api + '/api/products?limit=100')

@@ -8,14 +8,14 @@
       <div class="hero-layout">
         <div class="hero-main">
           <h1 class="hero-title">
-            <span class="title-line">Des assets</span>
-            <span class="title-line accent">premium,</span>
-            <span class="title-line">prêts à déployer.</span>
+            <span class="title-line">{{ t('hero.title1') }}</span>
+            <span class="title-line accent">{{ t('hero.title2') }}</span>
+            <span class="title-line">{{ t('hero.title3') }}</span>
           </h1>
-          <p class="hero-desc">Du mapping aux particules, GSA est pensé par un créateur pour les créateurs. Vérification humaine sur tous les produits.</p>
+          <p class="hero-desc">{{ t('hero.desc') }}</p>
           <div class="hero-actions">
             <NuxtLink to="/catalogue" class="btn-primary">
-              Explorer
+              >{{ t('hero.explore') }}<
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg>
             </NuxtLink>
           </div>
@@ -25,28 +25,28 @@
                 <svg viewBox="0 0 40 40"><circle class="track" cx="20" cy="20" r="17"/><circle class="fill" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="26.7"/></svg>
                 <span class="metric-val">{{ totalProducts }}</span>
               </div>
-              <span class="metric-lbl">Assets</span>
+              <span class="metric-lbl">{{ t('hero.assets') }}</span>
             </div>
             <div class="metric-item" style="--hue:270">
               <div class="metric-ring">
                 <svg viewBox="0 0 40 40"><circle class="track" cx="20" cy="20" r="17"/><circle class="fill" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="10.7"/></svg>
                 <span class="metric-val">{{ totalSales }}+</span>
               </div>
-              <span class="metric-lbl">Ventes</span>
+              <span class="metric-lbl">{{ t('hero.sales') }}</span>
             </div>
             <div class="metric-item" style="--hue:150">
               <div class="metric-ring">
                 <svg viewBox="0 0 40 40"><circle class="track" cx="20" cy="20" r="17"/><circle class="fill" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="37.4"/></svg>
                 <span class="metric-val">{{ avgRating }}</span>
               </div>
-              <span class="metric-lbl">Note</span>
+              <span class="metric-lbl">{{ t('hero.rating') }}</span>
             </div>
             <div class="metric-item" style="--hue:330">
               <div class="metric-ring">
                 <svg viewBox="0 0 40 40"><circle class="track" cx="20" cy="20" r="17"/><circle class="fill" cx="20" cy="20" r="17" stroke-dasharray="106.8" stroke-dashoffset="21.4"/></svg>
                 <span class="metric-val">25+</span>
               </div>
-              <span class="metric-lbl">Créateurs</span>
+              <span class="metric-lbl">{{ t('hero.creators') }}</span>
             </div>
           </div>
         </div>
@@ -56,8 +56,8 @@
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             </div>
             <div class="sc-body">
-              <strong>Thèmes</strong>
-              <span>Dark RP · Médiéval · BaseWars · Manga</span>
+              <strong>{{ t('hero.themes') }}</strong>
+              <span>{{ t('hero.themes_sub') }}</span>
             </div>
           </div>
           <div class="showcase-card card-2">
@@ -65,8 +65,8 @@
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             </div>
             <div class="sc-body">
-              <strong>Environnement</strong>
-              <span>Map &amp; Props prêts à l'emploi</span>
+              <strong>{{ t('hero.env') }}</strong>
+              <span>{{ t('hero.env_sub') }}</span>
             </div>
           </div>
           <div class="showcase-card card-3">
@@ -74,8 +74,8 @@
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             </div>
             <div class="sc-body">
-              <strong>Développement</strong>
-              <span>Outils · Systèmes · SWEP</span>
+              <strong>{{ t('hero.dev') }}</strong>
+              <span>{{ t('hero.dev_sub') }}</span>
             </div>
           </div>
           <div class="showcase-card card-4">
@@ -83,8 +83,8 @@
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </div>
             <div class="sc-body">
-              <strong>Visuel</strong>
-              <span>3D models · Particules · Animation · UI</span>
+              <strong>{{ t('hero.visual') }}</strong>
+              <span>{{ t('hero.visual_sub') }}</span>
             </div>
           </div>
         </div>
@@ -94,6 +94,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useLang()
 defineProps({ totalProducts: Number, totalSales: Number, avgRating: String })
 </script>
 
