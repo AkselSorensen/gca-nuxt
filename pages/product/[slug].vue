@@ -74,9 +74,6 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
               Achat rapide
             </button>
-            <button class="btn-wish" @click="toggleWish">
-              <svg width="18" height="18" viewBox="0 0 24 24" :fill="inWish ? '#f87171' : 'none'" :stroke="inWish ? '#f87171' : 'currentColor'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            </button>
           </div>
           <p v-if="buyError" class="buy-error">{{ buyError }}</p>
 
@@ -148,7 +145,6 @@ const product = computed(() => prodData.value?.product || prodData.value || null
 
 const currentImg = ref('')
 const activeTab = ref('description')
-const inWish = ref(false)
 
 const images = computed(() => {
   const p = product.value
@@ -224,7 +220,6 @@ function addToCart() {
     }
   } catch {}
 }
-function toggleWish() { inWish.value = !inWish.value }
 
 onMounted(async () => {
   const { load, pageEntrance } = await import('~/composables/useAnimation')
@@ -286,8 +281,6 @@ onMounted(async () => {
 .btn-cart-add:hover { border-color:var(--border-hover);background:rgba(255,255,255,0.04); }
 .btn-buy { flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s; }
 .btn-buy:hover { opacity:.9;transform:translateY(-1px); }
-.btn-wish { width:48px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);display:grid;place-items:center;cursor:pointer;transition:all .2s;flex-shrink:0; }
-.btn-wish:hover { border-color:var(--border-hover);background:rgba(248,113,113,0.04); }
 .buy-error { color:var(--red);font-size:.82rem;font-weight:600;margin:0; }
 
 .info-badges { display:flex;gap:14px; }

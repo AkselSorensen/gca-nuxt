@@ -59,12 +59,11 @@
             <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Note minimale</h4>
             <label v-for="r in ratingOptions" :key="r" class="radio-row" :class="{ active: filters.minRating === r }">
               <input type="radio" v-model="filters.minRating" :value="r" />
-              <span class="stars">{{ '★'.repeat(r === 0 ? 0 : r) }}{{ r === 0 ? 'Toutes' : '' }}</span>
+              <span class="stars">{{ '★'.repeat(r === 0 ? 0 : Math.round(r)) }}{{ r === 0 ? 'Toutes' : '' }}</span>
             </label>
           </div>
 
           <button class="btn-reset" @click="clearFilters">Réinitialiser</button>
-          <button class="btn-apply" @click="sidebarOpen = false">{{ t('cat.apply') }}</button>
         </aside>
 
         <!-- Mobile filter toggle -->
@@ -145,7 +144,6 @@
               </label>
             </div>
             <div style="display:grid;gap:8px;padding:16px;">
-              <button class="btn-apply" @click="sidebarOpen = false">Appliquer</button>
               <button class="btn-reset" @click="clearFilters">Réinitialiser</button>
             </div>
           </div>
@@ -180,7 +178,7 @@ const sortOptions = [
   { value: 'trending', label: 'Tendances', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>' },
 ]
 
-const ratingOptions = [0, 3, 4, 4.5]
+const ratingOptions = [0, 3, 4, 4.5, 5]
 
 const filters = reactive({
   search: '', category: '', sort: 'popular',
