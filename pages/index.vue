@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <HeroSection :total-products="stats.totalProducts" :total-sales="stats.totalSales" :avg-rating="stats.avgRating" />
+    <HeroSection :total-products="stats.totalProducts" :total-sales="stats.totalSales" :avg-rating="stats.avgRating" :total-creators="stats.totalCreators" />
 
     <section class="section"><div class="container">
       <div class="section-header"><h2>{{ t('home.categories') }}</h2><NuxtLink to="/catalogue" class="section-link">{{ t('home.see_all') }} →</NuxtLink></div>
@@ -120,7 +120,8 @@ const state = computed(() => bootstrap.value || {})
 const stats = computed(() => ({
   totalProducts: state.value.totalProducts || 51,
   totalSales: state.value.totalSales || 149,
-  avgRating: (state.value.avgRating || 4.8).toFixed(1)
+  avgRating: (state.value.avgRating || 4.8).toFixed(1),
+  totalCreators: state.value.totalCreators || state.value.totalSellers || 25
 }))
 
 const categoryDefs = [

@@ -33,7 +33,7 @@
           <span class="stat-lbl">{{ t('hero.rating') }}</span>
         </div>
         <div class="stat">
-          <span class="stat-val">25+</span>
+          <span class="stat-val">{{ totalCreators }}+</span>
           <span class="stat-lbl">{{ t('hero.creators') }}</span>
         </div>
       </div>
@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 const { t } = useLang()
-defineProps({ totalProducts: Number, totalSales: Number, avgRating: String })
+defineProps({ totalProducts: Number, totalSales: Number, avgRating: String, totalCreators: Number })
 </script>
 
 <style scoped>
