@@ -72,15 +72,15 @@
             </button>
             <button class="btn-buy" @click="buyNow">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-              Achat rapide
+              {{ t('product.buy_now_label') }}
             </button>
           </div>
           <p v-if="buyError" class="buy-error">{{ buyError }}</p>
 
           <!-- Secure badges -->
           <div class="info-badges">
-            <div class="badge-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Paiement sécurisé</div>
-            <div class="badge-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Accès immédiat</div>
+            <div class="badge-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> {{ t('product.secure_payment') }}</div>
+            <div class="badge-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> {{ t('product.instant_access') }}</div>
           </div>
 
           <!-- Seller card -->
@@ -110,9 +110,9 @@
           <div v-if="activeTab === 'description'" class="tab-panel">
             <div class="desc-text" v-html="descriptionHtml"></div>
             <div class="features-grid">
-              <div class="feature-card"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><strong>Protégé par GSA</strong><span>Paiement sécurisé via Stripe</span></div>
-              <div class="feature-card"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><strong>Accès à vie</strong><span>Téléchargeable et mis à jour</span></div>
-              <div class="feature-card"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><strong>Documentation</strong><span>Guide d'installation inclus</span></div>
+              <div class="feature-card"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><strong>{{ t('product.gsa_protected') }}</strong><span>{{ t('product.stripe_secure') }}</span></div>
+              <div class="feature-card"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><strong>{{ t('product.lifetime_access') }}</strong><span>{{ t('product.downloadable_updated') }}</span></div>
+              <div class="feature-card"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><strong>{{ t('product.documentation') }}</strong><span>{{ t('product.install_guide') }}</span></div>
             </div>
           </div>
           <!-- Installation -->

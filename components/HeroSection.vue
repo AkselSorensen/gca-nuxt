@@ -7,10 +7,10 @@
     <div class="container hero-inner">
       <div class="hero-badge">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        {{ totalProducts }}+ assets vérifiés
+        {{ totalProducts }}+ {{ t('hero.assets_verified') }}
       </div>
       <h1 class="hero-title">
-        Des assets premium,<br /><span class="accent">prêts à déployer.</span>
+        {{ t('hero.title1') }} {{ t('hero.title2') }}<br /><span class="accent">{{ t('hero.title3') }}</span>
       </h1>
       <p class="hero-desc">{{ t('hero.desc') }}</p>
       <div class="hero-actions">

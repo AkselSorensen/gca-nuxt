@@ -8,7 +8,7 @@
         </div>
         <div class="footer-links"><h4>{{ t('footer.platform') }}</h4><NuxtLink to="/catalogue">{{ t('nav.marketplace') }}</NuxtLink><NuxtLink to="/prestation">{{ t('nav.services') }}</NuxtLink><NuxtLink to="/about">{{ t('nav.about') }}</NuxtLink></div>
         <div class="footer-links"><h4>{{ t('footer.legal') }}</h4><a href="#">{{ t('footer.cgv') }}</a><a href="#">{{ t('footer.privacy') }}</a><a href="#">{{ t('footer.legal_notice') }}</a></div>
-        <div class="footer-links"><h4>{{ t('footer.support') }}</h4><a href="https://discord.gg/KDsEzGRnKs" target="_blank" rel="noopener">Discord</a><a href="#">Contact</a></div>
+        <div class="footer-links"><h4>{{ t('footer.support') }}</h4><a href="https://discord.gg/KDsEzGRnKs" target="_blank" rel="noopener">{{ t('footer.discord') }}</a><a href="#">{{ t('footer.contact') }}</a></div>
       </div>
       <div class="footer-bottom">
         <p>&copy; {{ new Date().getFullYear() }} GSA. {{ t('footer.rights') }}</p>
