@@ -64,7 +64,7 @@
           <p v-if="promoMsg" class="promo-msg" :class="promoStatus">{{ promoMsg }}</p>
           <button class="btn-checkout" @click="checkout">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 1.693 0 3.033.642 3.964 1.219l.295-1.812c-.789-.537-2.303-1.088-4.105-1.088-2.645 0-4.475 1.356-4.475 3.562 0 2.248 1.928 3.21 4.344 4.033 2.154.734 3.226 1.342 3.226 2.416 0 .86-.695 1.446-2.077 1.446-1.909 0-3.548-.791-4.399-1.454l-.325 1.845c.902.66 2.663 1.283 4.794 1.283 2.995 0 4.81-1.522 4.81-3.799 0-2.318-1.798-3.246-4.212-4.077zM3.575 16.138V7.828h-1.78v9.489h4.916v-1.179H3.575zM20.205 16.138c.627 0 1.196-.049 1.795-.182v-1.702c-.53.144-1.066.218-1.605.218-2.636 0-4.259-1.67-4.259-4.211 0-2.43 1.691-4.256 4.135-4.256.614 0 1.195.127 1.795.327V4.584c-.583-.17-1.17-.249-1.795-.249-3.523 0-6.124 2.518-6.124 6.072 0 3.538 2.527 5.731 6.058 5.731z"/></svg>
-            Payer {{ subtotal }}€
+            Payer {{ total.toFixed(2) }}€
           </button>
         </div>
       </div>
@@ -81,6 +81,10 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useLang()
+const config = useRuntimeConfig()
+const api = config.public.apiOrigin
+
 const pageRef = ref<HTMLElement | null>(null)
 const items = ref<any[]>([])
 const promoCode = ref('')
@@ -89,6 +93,7 @@ const promoMsg = ref('')
 const promoDiscount = ref(0)
 const checkoutSuccess = ref(false)
 const checkoutSessionId = ref('')
+const checkingOut = ref(false)
 const subtotal = computed(() => items.value.reduce((s, i) => s + Number(i.price), 0))
 const total = computed(() => Math.max(0, subtotal.value - promoDiscount.value))
 
@@ -96,10 +101,10 @@ function removeItem(i: number) { items.value.splice(i, 1); promoStatus.value = '
 
 async function applyPromo() {
   const code = promoCode.value.trim()
-  if (!code) { promoStatus.value = 'error'; promoMsg.value = 'Entrez un code promo'; return }
+  if (!code) { promoStatus.value = 'error'; promoMsg.value = t('cart.promo_empty', 'Entrez un code promo'); return }
   promoStatus.value = 'loading'
   try {
-    const res = await $fetch('/api/promo/validate', { method: 'POST', body: { code, items: items.value.map(i => i.slug) } })
+    const res = await $fetch(api + '/api/promo/validate', { method: 'POST', body: { code, items: items.value.map(i => i.slug) } })
     if (res.valid) {
       promoStatus.value = 'valid'
       promoDiscount.value = res.discountAmount || 0
@@ -112,11 +117,31 @@ async function applyPromo() {
   } catch (e: any) {
     promoStatus.value = 'error'
     promoDiscount.value = 0
-    promoMsg.value = e?.data?.message || 'Code promo introuvable ou invalide'
+    promoMsg.value = e?.data?.message || t('cart.promo_invalid')
   }
 }
 
-function checkout() { /* TODO */ }
+async function checkout() {
+  if (checkingOut.value || !items.value.length) return
+  const { user } = useAuth()
+  if (!user.value?.id) return navigateTo('/login?redirect=' + encodeURIComponent(useRoute().fullPath))
+  checkingOut.value = true
+  try {
+    const res = await $fetch(api + '/api/checkout/create-session', {
+      method: 'POST',
+      credentials: 'include',
+      body: {
+        items: items.value.map(i => ({ slug: i.slug, price: i.price })),
+        promoCode: promoDiscount.value > 0 ? promoCode.value.trim() : undefined
+      }
+    })
+    if (res.url) window.location.href = res.url
+  } catch (e: any) {
+    console.error('Checkout error:', e?.data || e)
+  } finally {
+    checkingOut.value = false
+  }
+}
 
 function addToCart(slug: string, title: string, price: number, img?: string) {
   const exists = items.value.find(i => i.slug === slug)
@@ -145,10 +170,6 @@ onMounted(async () => {
 
 async function confirmCheckout(sid: string) {
   try {
-    const { t } = useLang()
-
-const config = useRuntimeConfig()
-    const api = config.public.apiOrigin
     await $fetch(api + '/api/checkout/confirm-session', { method: 'POST', credentials: 'include', body: { sessionId: sid } })
     checkoutSuccess.value = true
     localStorage.removeItem('gsa-cart')
