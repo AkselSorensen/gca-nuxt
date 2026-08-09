@@ -8,23 +8,23 @@
 
       <div v-if="loading" class="loading-state anim-up">
         <div class="loader"></div>
-        <span>Chargement de vos achats…</span>
+        <span>{{ t('downloads.loading') }}</span>
         <small v-if="waitMsg" class="wait-msg">{{ waitMsg }}</small>
       </div>
 
       <div v-else-if="error" class="error-state anim-up">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <h2>Erreur</h2>
+        <h2>{{ t('generic.error') }}</h2>
         <p>{{ error }}</p>
         <button class="btn-retry" @click="fetchPurchases">{{ t('downloads.retry') }}</button>
       </div>
 
       <!-- Manuel : coller l'ID de session Stripe -->
       <div v-if="!checkoutSessionId && !purchases.length" class="manual-confirm anim-up">
-        <p>Vous avez payé mais rien ne s'affiche ? Collez l'ID de session Stripe ici :</p>
+        <p>{{ t('downloads.manual_sub') }}</p>
         <div class="manual-row">
           <input v-model="manualSessionId" placeholder="cs_test_..." class="manual-input" />
-          <button class="btn-confirm" @click="confirmManual">Confirmer</button>
+          <button class="btn-confirm" @click="confirmManual">{{ t('downloads.verify') }}</button>
         </div>
       </div>
 
@@ -34,12 +34,12 @@
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f5b342" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <div><strong>{{ t('downloads.pay_received') }}</strong><span>{{ t('downloads.processing') }}</span></div>
           <button class="btn-confirm" @click="retryConfirm">{{ t('downloads.verify') }}</button>
-          <button v-if="checkoutSessionId && !retrying" class="btn-force" @click="forceConfirm" style="background:#ef4444;padding:8px 14px;border-radius:6px;border:none;color:#fff;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;">Force</button>
+          <button v-if="checkoutSessionId && !retrying" class="btn-force" @click="forceConfirm" style="background:#ef4444;padding:8px 14px;border-radius:6px;border:none;color:#fff;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;">{{ t('downloads.force_confirm') }}</button>
         </div>
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <h2>{{ t('downloads.none') }}</h2>
         <p>{{ t('downloads.none_sub') }}</p>
-        <NuxtLink to="/catalogue" class="btn-browse">Parcourir le catalogue</NuxtLink>
+        <NuxtLink to="/catalogue" class="btn-browse">{{ t('home.browse_catalog') }}</NuxtLink>
       </div>
 
       <div v-else class="purchases-list anim-up">
@@ -103,11 +103,11 @@ async function fetchPurchases() {
     const code = e?.statusCode || e?.status || 'NETWORK'
     const msg = e?.data?.message || e?.message || String(e)
     if (code === 401) {
-      error.value = 'Vous devez être connecté pour voir vos achats.'
+      error.value = t('downloads.auth_error')
     } else if (code === 'NETWORK' || !code) {
-      error.value = 'Erreur réseau, vérifiez votre connexion. (' + String(msg).slice(0, 80) + ')'
+      error.value = t('downloads.net_error') + ' (' + String(msg).slice(0, 80) + ')'
     } else {
-      error.value = 'Erreur serveur (' + code + '). Réessayez plus tard.'
+      error.value = t('downloads.srv_error') + ' (' + code + ')'
     }
   } finally {
     loading.value = false
@@ -126,9 +126,9 @@ async function download(orderItemId: number) {
       // Multiples fichiers → ouvrir dans des nouveaux onglets
       data.files.forEach((f: any) => window.open(f.url, '_blank'))
     }
-    toastRef.value?.show('success', 'Téléchargement démarré ✓')
+    toastRef.value?.show('success', t('downloads.dl_started'))
   } catch (e: any) {
-    const msg = e?.data?.message || e?.message || 'Erreur de téléchargement'
+    const msg = e?.data?.message || e?.message || t('downloads.dl_error')
     toastRef.value?.show('error', msg)
   } finally {
     downloading.value = null
@@ -156,7 +156,7 @@ async function retryConfirm() {
       const res = await $fetch(api + '/api/checkout/confirm-session', {
         method: 'POST', credentials: 'include', body: { sessionId: checkoutSessionId.value }
       })
-      toastRef.value?.show('success', 'Paiement confirmé !')
+      toastRef.value?.show('success', t('downloads.pay_confirmed'))
       checkoutSessionId.value = ''
       localStorage.removeItem('gsa-pending-session')
       fetchPurchases()
@@ -164,7 +164,7 @@ async function retryConfirm() {
     } catch (e: any) {
       console.error('Confirm attempt', attempt + 1, 'failed:', e?.data?.message || e)
       if (attempt === 2) {
-        toastRef.value?.show('error', 'Cliquez sur "Vérifier" pour confirmer le paiement')
+        toastRef.value?.show('error', t('downloads.confirm_hint'))
       }
     }
   }
@@ -176,12 +176,12 @@ async function forceConfirm() {
     const res = await $fetch(api + '/api/checkout/confirm-session', {
       method: 'POST', credentials: 'include', body: { sessionId: checkoutSessionId.value }
     })
-    toastRef.value?.show('success', 'Commande confirmée !')
+    toastRef.value?.show('success', t('downloads.order_confirmed'))
     checkoutSessionId.value = ''
     localStorage.removeItem('gsa-pending-session')
     fetchPurchases()
   } catch (e: any) {
-    toastRef.value?.show('error', e?.data?.message || 'Erreur')
+    toastRef.value?.show('error', e?.data?.message || t('generic.error'))
   }
 }
 
@@ -192,7 +192,7 @@ async function confirmManual() {
     const res = await $fetch(api + '/api/checkout/confirm-session', {
       method: 'POST', credentials: 'include', body: { sessionId: sid }
     })
-    toastRef.value?.show('success', 'Commande confirmée !')
+    toastRef.value?.show('success', t('downloads.order_confirmed'))
     manualSessionId.value = ''
     localStorage.removeItem('gsa-pending-session')
     await new Promise(r => setTimeout(r, 500))

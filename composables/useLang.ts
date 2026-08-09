@@ -194,6 +194,7 @@ const messages: Record<Locale, Record<string, string>> = {
     'cart.promo_invalid': 'Code invalide ou expiré',
     'cart.remove': 'Retirer',
     // Downloads
+    'downloads.loading': 'Chargement…',
     'downloads.title': 'Mes téléchargements',
     'downloads.subtitle': 'Retrouvez tous vos achats et téléchargez vos fichiers.',
     'downloads.none': 'Aucun téléchargement',
@@ -286,6 +287,7 @@ const messages: Record<Locale, Record<string, string>> = {
     'nav.register': 'Sign up',
     'nav.profile': 'My profile',
     'nav.shop': 'My shop',
+    'downloads.loading': 'Loading…',
     'nav.downloads': 'My downloads',
     'nav.seller': 'Seller dashboard',
     'nav.admin': 'Administration',
@@ -708,6 +710,7 @@ const messages: Record<Locale, Record<string, string>> = {
     'cart.promo_applied': 'Kod uygulandı!',
     'cart.promo_invalid': 'Geçersiz veya süresi dolmuş kod',
     'cart.remove': 'Kaldır',
+    'downloads.loading': 'Yükleniyor…',
     'downloads.title': 'İndirdiklerim',
     'downloads.subtitle': 'Tüm satın almalarınızı bulun ve dosyalarınızı indirin.',
     'downloads.none': 'İndirme yok',
