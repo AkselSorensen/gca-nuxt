@@ -5,12 +5,12 @@
     <section class="section"><div class="container">
       <div class="section-header"><h2>{{ t('home.categories') }}</h2><NuxtLink to="/catalogue" class="section-link">{{ t('home.see_all') }} →</NuxtLink></div>
       <div ref="categoryRef" class="categories-strip">
-        <NuxtLink v-for="c in categories" :key="c.id" :to="'/catalogue?c='+c.slug" class="cat-card" :ref="el => catRefs.push(el)">
+        <NuxtLink v-for="c in categories" :key="c.slug" :to="'/catalogue?c='+c.slug" class="cat-card" :ref="el => catRefs.push(el)">
           <div class="cat-bg" :style="{ background: c.bg }"></div>
           <div class="cat-icon" v-html="c.icon"></div>
           <div class="cat-info">
             <span class="cat-name">{{ c.name }}</span>
-            <span class="cat-count">{{ c.count }} {{ c.count > 1 ? 'ressources' : 'ressource' }}</span>
+            <span class="cat-count">{{ c.count }} {{ c.count > 1 ? t('home.resources') : t('home.resource') }}</span>
           </div>
         </NuxtLink>
         <NuxtLink to="/catalogue" class="cat-card cat-all">
@@ -46,7 +46,6 @@
     <!-- Projets -->
     <section v-if="commItems.length" class="section comm-section"><div class="container">
       <div class="collab-header">
-        <div class="collab-tag" style="--tag-clr:var(--accent)">{{ t('home.servers_tag') }}</div>
         <h2>{{ t('home.servers_title') }}</h2>
         <p>{{ t('home.servers_desc') }}</p>
       </div>
@@ -118,26 +117,30 @@ const { data: bootstrap } = await useFetch(api + '/api/bootstrap')
 const state = computed(() => bootstrap.value || {})
 
 const stats = computed(() => ({
-  totalProducts: state.value.totalProducts || 51,
-  totalSales: state.value.totalSales || 149,
-  avgRating: (state.value.avgRating || 4.8).toFixed(1),
-  totalCreators: state.value.totalCreators || state.value.totalSellers || 25
+  totalProducts: state.value.totalProducts ?? 51,
+  totalSales: state.value.totalSales ?? 149,
+  avgRating: (state.value.avgRating ?? 4.8).toFixed(1),
+  totalCreators: state.value.totalCreators ?? state.value.totalSellers ?? 25
 }))
 
-const categoryDefs = [
-  { id:1, name:'DarkRP', slug:'darkrp', icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f7df6" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>', color:'#2f7df6', bg:'rgba(47,125,246,0.08)' },
-  { id:2, name:'HUDs', slug:'huds', icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>', color:'#6c5ce7', bg:'rgba(108,92,231,0.08)' },
-  { id:3, name:'Maps', slug:'maps', icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="1.5"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>', color:'#6ee7b7', bg:'rgba(110,231,183,0.08)' },
-  { id:4, name:'Scripts', slug:'scripts', icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>', color:'#fbbf24', bg:'rgba(251,191,36,0.08)' },
-  { id:5, name:'Véhicules', slug:'vehicules', icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.5"><path d="M5 17a2 2 0 0 1-2 2H2a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h1.5"/><path d="M19 17a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1.5"/><path d="M3 14l1.5-5.5A2 2 0 0 1 6.5 7H10l2-3h3l-1 3h2.5a2 2 0 0 1 2 1.5L21 14"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>', color:'#f87171', bg:'rgba(248,113,113,0.08)' },
-  { id:6, name:'Armes', slug:'armes', icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.5"><path d="M20 6L9 17l-5-5 3-3 8 8 3-3-5-5 2-2 5 5 3-3-3-3 2-2 5 5-3 3z"/></svg>', color:'#a78bfa', bg:'rgba(167,139,250,0.08)' }
-]
+const categoryIcons: Record<string, { icon: string; color: string; bg: string }> = {
+  map: { icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="1.5"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>', color: '#6ee7b7', bg: 'rgba(110,231,183,0.08)' },
+  '3d-model': { icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f7df6" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>', color: '#2f7df6', bg: 'rgba(47,125,246,0.08)' },
+  particle: { icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.5"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>', color: '#a78bfa', bg: 'rgba(167,139,250,0.08)' },
+  animation: { icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>', color: '#f87171', bg: 'rgba(248,113,113,0.08)' },
+  ui: { icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>', color: '#6c5ce7', bg: 'rgba(108,92,231,0.08)' },
+  '3d-import': { icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>', color: '#fbbf24', bg: 'rgba(251,191,36,0.08)' },
+}
+
+const categoryFallback = { icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f7df6" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>', color: '#2f7df6', bg: 'rgba(47,125,246,0.08)' }
 
 const categories = computed(() => {
-  const apiCats: Record<string, number> = {}
-  const cats = state.value.categories || []
-  cats.forEach((c: any) => { apiCats[c.slug] = c._count?.products ?? c.count ?? 0 })
-  return categoryDefs.map(c => ({ ...c, count: apiCats[c.slug] || 0 }))
+  return (state.value.categories || []).map((c: any) => ({
+    slug: c.slug,
+    name: c.name,
+    count: Number(c.productCount ?? c.product_count ?? c._count?.products ?? 0),
+    ...(categoryIcons[c.slug] || categoryFallback),
+  }))
 })
 
 const featured = computed(() => (state.value.trending || []).slice(0, 8))
