@@ -65,9 +65,11 @@
           </div>
 
           <!-- Actions -->
-          <div v-if="owned" class="owned-banner">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            {{ t('product.owned') }}
+          <div v-if="owned" class="owned-actions">
+            <NuxtLink to="/downloads" class="btn-download">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              {{ t('product.download') }}
+            </NuxtLink>
           </div>
           <div v-else class="info-actions">
             <button class="btn-cart-add" @click="addToCart">
@@ -287,8 +289,10 @@ onMounted(async () => {
 .btn-buy { flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s; }
 .btn-buy:hover { opacity:.9;transform:translateY(-1px); }
 .buy-error { color:var(--red);font-size:.82rem;font-weight:600;margin:0; }
-.owned-banner { display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:10px;border:1px solid rgba(110,231,183,0.2);background:rgba(110,231,183,0.06);color:var(--green);font-size:.88rem;font-weight:700; }
-.owned-banner svg { flex-shrink:0; }
+.owned-actions { display:grid;gap:8px; }
+.btn-download { display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:10px;border:1px solid rgba(110,231,183,0.3);background:rgba(110,231,183,0.1);color:var(--green);font-size:.88rem;font-weight:700;text-decoration:none;transition:all .2s; }
+.btn-download:hover { background:rgba(110,231,183,0.18);border-color:rgba(110,231,183,0.5); }
+.btn-download svg { flex-shrink:0; }
 
 .info-badges { display:flex;gap:14px; }
 .badge-item { display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--text-secondary); }

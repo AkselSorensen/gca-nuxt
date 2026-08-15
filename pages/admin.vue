@@ -253,6 +253,16 @@
               </div>
               <input ref="thumbInput" type="file" accept="image/png,image/jpeg" style="display:none" @change="handleThumbUpload" />
             </div>
+            <div v-if="editingId" class="field">
+              <label>Images existantes</label>
+              <div class="media-grid">
+                <div v-for="m in productMedia" :key="m.id" class="media-item">
+                  <img :src="m.thumbnail || m.url" alt="" />
+                  <button class="media-remove" @click="removeMedia(m.id)" title="Retirer cette image"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                </div>
+                <button class="media-add" @click="addMediaImage" title="Ajouter une image"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+              </div>
+            </div>
             <div class="field"><label>Tags</label>
               <div class="tag-dropdown">
                 <div class="tag-trigger" @click="tagOpen = !tagOpen">
@@ -412,6 +422,7 @@ const productForm = reactive({
   tags:'', thumbnail:'', isHidden:false
 })
 const editingId = ref<number | null>(null)
+const productMedia = ref<any[]>([])
 
 const toastRef = ref<InstanceType<typeof ToastNotif> | null>(null)
 const confirmRef = ref<InstanceType<typeof ConfirmModal> | null>(null)
@@ -428,6 +439,7 @@ async function animateProdIn() {
 }
 function openProductForm() {
   editingId.value = null
+  productMedia.value = []
   Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', sellerSlug:'', price:0, discountPercent:0, tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
@@ -436,6 +448,7 @@ function openProductForm() {
 }
 function editProduct(p: any) {
   editingId.value = p.id
+  productMedia.value = (p.media || []).map((m: any) => ({ id: m.id, url: m.url, thumbnail: m.thumbnail }))
   Object.assign(productForm, {
     title: p.title || '',
     shortDescription: p.short_description || '',
@@ -447,7 +460,7 @@ function editProduct(p: any) {
     discountPercent: Number(p.discount_percent || 0),
     tags: (p.tags || []).join(', '),
     thumbnail: '',
-    isHidden: false
+    isHidden: Boolean(p.is_hidden)
   })
   selectedTags.value = p.tags || []
   newTag.value = ''
@@ -455,6 +468,37 @@ function editProduct(p: any) {
   removeFile()
   showProductForm.value = true
   nextTick(() => animateProdIn())
+}
+async function removeMedia(mediaId: number) {
+  if (!editingId.value) return
+  try {
+    await $fetch(api + '/api/admin/products/' + editingId.value + '/media/' + mediaId, { credentials: 'include', method: 'DELETE' })
+    productMedia.value = productMedia.value.filter(m => m.id !== mediaId)
+    toastRef.value?.show('success', 'Image retirée')
+    loadProducts()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur')
+  }
+}
+function addMediaImage() {
+  if (!editingId.value) return
+  const input = document.createElement('input')
+  input.type = 'file'; input.accept = 'image/png,image/jpeg,image/webp'
+  input.onchange = async (e: any) => {
+    const file = e.target?.files?.[0]
+    if (!file) return
+    if (file.size > 2*1024*1024) return toastRef.value?.show('error', 'Max 2 Mo')
+    try {
+      const compressed = await compressImage(file, 1400, 0.82)
+      const res = await $fetch(api + '/api/admin/products/' + editingId.value + '/media', { credentials: 'include', method: 'POST', body: { url: compressed } })
+      productMedia.value.push({ id: res.id, url: compressed, thumbnail: compressed })
+      toastRef.value?.show('success', 'Image ajoutée')
+      loadProducts()
+    } catch (err: any) {
+      toastRef.value?.show('error', err?.data?.message || 'Erreur')
+    }
+  }
+  input.click()
 }
 function closeProductForm() { showProductForm.value = false }
 
@@ -565,7 +609,7 @@ async function loadFormData() {
 
 async function loadProducts() {
   try {
-    const res = await $fetch(api + '/api/products?limit=100', { credentials: 'include' })
+    const res = await $fetch(api + '/api/admin/products', { credentials: 'include' })
     products.value = res.items || res.products || res
   } catch { products.value = [] }
 }
@@ -897,6 +941,15 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .thumb-preview img { width:100%;display:block;border-radius:10px; }
 .thumb-remove { position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);color:#fff;cursor:pointer;display:grid;place-items:center; }
 .thumb-remove:hover { background:rgba(248,113,113,0.8); }
+
+/* Media gallery (édition produit) */
+.media-grid { display:flex;flex-wrap:wrap;gap:8px; }
+.media-item { position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--border); }
+.media-item img { width:100%;height:100%;object-fit:cover; }
+.media-remove { position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(0,0,0,0.55);color:#fff;cursor:pointer;display:grid;place-items:center; }
+.media-remove:hover { background:rgba(248,113,113,0.9); }
+.media-add { width:72px;height:72px;border-radius:8px;border:2px dashed var(--border);background:transparent;color:var(--text-muted);cursor:pointer;display:grid;place-items:center;transition:all .15s; }
+.media-add:hover { border-color:var(--primary);color:var(--primary); }
 
 .checkbox-row { display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid var(--border);cursor:pointer;font-size:.85rem;color:var(--text-secondary); }
 .checkbox-row input[type=checkbox] { width:18px;height:18px;accent-color:var(--primary);flex-shrink:0;cursor:pointer; }
