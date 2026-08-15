@@ -65,7 +65,11 @@
           </div>
 
           <!-- Actions -->
-          <div class="info-actions">
+          <div v-if="owned" class="owned-banner">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            {{ t('product.owned') }}
+          </div>
+          <div v-else class="info-actions">
             <button class="btn-cart-add" @click="addToCart">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/><path d="M20 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
               {{ t('product.add_cart') }}
@@ -140,7 +144,7 @@ const route = useRoute()
 const pageRef = ref<HTMLElement | null>(null)
 const slug = route.params.slug as string
 
-const { data: prodData } = await useFetch(api + '/api/products/' + slug, { lazy: true })
+const { data: prodData } = await useFetch(api + '/api/products/' + slug, { lazy: true, credentials: 'include' })
 const product = computed(() => prodData.value?.product || prodData.value || null)
 
 const currentImg = ref('')
@@ -173,6 +177,7 @@ watch(images, (imgs) => { if (!currentImg.value) currentImg.value = imgs[0] }, {
 const categoryName = computed(() => product.value?.categoryName || product.value?.categorySlug || product.value?.category || 'Produit')
 const sellerName = computed(() => product.value?.sellerName || product.value?.seller || 'Vendeur')
 const sellerProductCount = computed(() => product.value?.sellerProductCount || 0)
+const owned = computed(() => Boolean(product.value?.owned))
 
 const productTags = computed(() => {
   if (product.value?.tags) return product.value.tags
@@ -282,6 +287,8 @@ onMounted(async () => {
 .btn-buy { flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s; }
 .btn-buy:hover { opacity:.9;transform:translateY(-1px); }
 .buy-error { color:var(--red);font-size:.82rem;font-weight:600;margin:0; }
+.owned-banner { display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:10px;border:1px solid rgba(110,231,183,0.2);background:rgba(110,231,183,0.06);color:var(--green);font-size:.88rem;font-weight:700; }
+.owned-banner svg { flex-shrink:0; }
 
 .info-badges { display:flex;gap:14px; }
 .badge-item { display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--text-secondary); }

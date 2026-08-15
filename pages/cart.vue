@@ -183,6 +183,7 @@ async function confirmCheckout(sid: string) {
 
 watch(items, (val) => {
   localStorage.setItem('gsa-cart', JSON.stringify(val))
+  window.dispatchEvent(new Event('cart-updated'))
 }, { deep: true })
 </script>
 

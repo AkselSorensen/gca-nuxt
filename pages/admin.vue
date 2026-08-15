@@ -222,7 +222,7 @@
   <!-- Product form modal -->
   <div v-if="showProductForm" ref="prodOverlay" class="modal-overlay" @click.self="closeProductForm">
     <div ref="prodCard" class="form-modal form-modal-lg">
-      <div class="modal-header"><h3>Créer un produit</h3><button class="modal-close" @click="closeProductForm"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      <div class="modal-header"><h3>{{ editingId ? 'Modifier le produit' : 'Créer un produit' }}</h3><button class="modal-close" @click="closeProductForm"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
       <div class="modal-body form-body">
         <div class="form-grid-2">
           <div class="form-left">
@@ -297,7 +297,7 @@
         <label class="check-field"><input type="checkbox" v-model="productForm.isHidden" /> Masqué (caché du catalogue)</label>
         <div class="modal-action-btns">
           <button class="btn-cancel" @click="closeProductForm">Annuler</button>
-          <button class="btn-primary" @click="saveProduct">{{ uploadFile ? 'Créer et uploader' : 'Créer le produit' }}</button>
+          <button class="btn-primary" @click="saveProduct">{{ editingId ? 'Enregistrer les modifications' : (uploadFile ? 'Créer et uploader' : 'Créer le produit') }}</button>
         </div>
       </div>
     </div>
@@ -411,6 +411,7 @@ const productForm = reactive({
   categorySlug:'', sellerSlug:'', price:0, discountPercent:0,
   tags:'', thumbnail:'', isHidden:false
 })
+const editingId = ref<number | null>(null)
 
 const toastRef = ref<InstanceType<typeof ToastNotif> | null>(null)
 const confirmRef = ref<InstanceType<typeof ConfirmModal> | null>(null)
@@ -426,9 +427,32 @@ async function animateProdIn() {
   gsap.to(prodCard.value, { opacity: 1, scale: 1, y: 0, duration: .3, ease: 'back.out(1.6)', delay: .05 })
 }
 function openProductForm() {
+  editingId.value = null
   Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', sellerSlug:'', price:0, discountPercent:0, tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
+  showProductForm.value = true
+  nextTick(() => animateProdIn())
+}
+function editProduct(p: any) {
+  editingId.value = p.id
+  Object.assign(productForm, {
+    title: p.title || '',
+    shortDescription: p.short_description || '',
+    description: p.description || '',
+    installation: p.installation || '',
+    categorySlug: p.category_slug || '',
+    sellerSlug: p.seller_slug || '',
+    price: Number(p.old_price || p.price || 0),
+    discountPercent: Number(p.discount_percent || 0),
+    tags: (p.tags || []).join(', '),
+    thumbnail: '',
+    isHidden: false
+  })
+  selectedTags.value = p.tags || []
+  newTag.value = ''
+  uploadThumb.value = ''
+  removeFile()
   showProductForm.value = true
   nextTick(() => animateProdIn())
 }
@@ -491,14 +515,18 @@ function formatSize(bytes: number) {
 
 async function saveProduct() {
   if (!productForm.title || !productForm.price) return toastRef.value?.show('error', 'Titre et prix requis')
+  const isEdit = !!editingId.value
   try {
-    const res = await $fetch(api + '/api/admin/products', { credentials: 'include', method:'POST', body: {
+    const payload = {
       ...productForm,
       tags: productForm.tags.split(',').map((t:string) => t.trim()).filter(Boolean)
-    }})
+    }
+    const res = isEdit
+      ? await $fetch(api + '/api/admin/products/' + editingId.value, { credentials: 'include', method:'PATCH', body: payload })
+      : await $fetch(api + '/api/admin/products', { credentials: 'include', method:'POST', body: payload })
 
     // Upload fichier produit vers R2 si un fichier a été sélectionné
-    const productId = res?.id || res?.productId
+    const productId = res?.id || res?.productId || res?.product?.id || editingId.value
     if (uploadFile.value && productId) {
       const reader = new FileReader()
       const base64 = await new Promise<string>((resolve, reject) => {
@@ -519,8 +547,9 @@ async function saveProduct() {
       })
     }
 
+    editingId.value = null
     showProductForm.value = false; loadProducts()
-    toastRef.value?.show('success', 'Produit créé' + (uploadFile.value ? ' + fichier uploadé' : ''))
+    toastRef.value?.show('success', isEdit ? 'Produit modifié' : ('Produit créé' + (uploadFile.value ? ' + fichier uploadé' : '')))
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || e?.message || 'Erreur')
   }
