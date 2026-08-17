@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 const { login, user } = useAuth()
+const { t } = useLang()
 const tab = ref('user')
 const email = ref('')
 const password = ref('')

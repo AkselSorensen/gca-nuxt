@@ -95,6 +95,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 const { register } = useAuth()
+const { t } = useLang()
 const pageRef = ref<HTMLElement | null>(null)
 const termsScrollRef = ref<HTMLElement | null>(null)
 

@@ -20,7 +20,7 @@
           <NuxtLink to="/register" class="btn btn-primary">{{ t('nav.register') }}</NuxtLink>
         </template>
         <template v-else>
-          <div class="user-dropdown" @click="dropdownOpen = !dropdownOpen" v-click-outside="() => dropdownOpen = false">
+          <div class="user-dropdown" @click="dropdownOpen = !dropdownOpen">
             <div class="user-menu">
               <div class="user-avatar">{{ user.displayName?.[0] || user.username?.[0] || user.email?.[0] || '?' }}</div>
               <span class="user-name">{{ user.displayName || user.username || user.email?.split('@')[0] }}</span>
