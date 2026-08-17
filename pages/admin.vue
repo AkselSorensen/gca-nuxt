@@ -245,7 +245,7 @@
               <div v-if="!uploadThumb" class="thumb-zone" @click="thumbInput?.click()" @dragover.prevent @drop.prevent="handleThumbUpload">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 <span>Cliquez ou glissez une image</span>
-                <small>PNG, JPG (Max 2 Mo)</small>
+                <small>PNG, JPG, WEBP (Max 8 Mo)</small>
               </div>
               <div v-else class="thumb-preview">
                 <img :src="uploadThumb" alt="Preview" />
@@ -487,9 +487,9 @@ function addMediaImage() {
   input.onchange = async (e: any) => {
     const file = e.target?.files?.[0]
     if (!file) return
-    if (file.size > 2*1024*1024) return toastRef.value?.show('error', 'Max 2 Mo')
+    if (file.size > 8*1024*1024) return toastRef.value?.show('error', 'Max 8 Mo')
     try {
-      const compressed = await compressImage(file, 1400, 0.82)
+      const compressed = await compressImage(file, 1600, 0.82)
       const res = await $fetch(api + '/api/admin/products/' + editingId.value + '/media', { credentials: 'include', method: 'POST', body: { url: compressed } })
       productMedia.value.push({ id: res.id, url: compressed, thumbnail: compressed })
       toastRef.value?.show('success', 'Image ajoutée')
@@ -511,7 +511,7 @@ const thumbInput = ref<HTMLInputElement | null>(null)
 function handleThumbUpload(e: any) {
   const file = e.target?.files?.[0] || e.dataTransfer?.files?.[0]
   if (!file) return
-  if (file.size > 2*1024*1024) return toastRef.value?.show('error', 'Max 2 Mo')
+  if (file.size > 8*1024*1024) return toastRef.value?.show('error', 'Max 8 Mo')
   const reader = new FileReader()
   reader.onload = () => {
     uploadThumb.value = reader.result as string
@@ -944,7 +944,7 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 
 /* Media gallery (édition produit) */
 .media-grid { display:flex;flex-wrap:wrap;gap:8px; }
-.media-item { position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--border); }
+.media-item { position:relative;width:96px;aspect-ratio:16/9;height:auto;border-radius:8px;overflow:hidden;border:1px solid var(--border); }
 .media-item img { width:100%;height:100%;object-fit:cover; }
 .media-remove { position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(0,0,0,0.55);color:#fff;cursor:pointer;display:grid;place-items:center; }
 .media-remove:hover { background:rgba(248,113,113,0.9); }

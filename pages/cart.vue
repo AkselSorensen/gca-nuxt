@@ -175,16 +175,22 @@ onMounted(async () => {
 })
 
 async function confirmCheckout(sid: string) {
-  try {
-    await $fetch(api + '/api/checkout/confirm-session', { method: 'POST', credentials: 'include', body: { sessionId: sid } })
-    checkoutSuccess.value = true
-    localStorage.removeItem('gsa-cart')
-    items.value = []
-  } catch (e: any) {
-    console.error('Confirm error:', e?.data || e)
-    // Show retry option on failure
-    checkoutSessionId.value = sid
+  // Stripe peut mettre ~1-2s à marquer la session "paid" après le redirect :
+  // on retente 3× (2s d'attente entre chaque) avant d'afficher le bandeau de secours.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise(r => setTimeout(r, 2000))
+    try {
+      await $fetch(api + '/api/checkout/confirm-session', { method: 'POST', credentials: 'include', body: { sessionId: sid } })
+      checkoutSuccess.value = true
+      localStorage.removeItem('gsa-cart')
+      items.value = []
+      return
+    } catch (e: any) {
+      console.error('Confirm error:', e?.data || e)
+    }
   }
+  // Échec après 3 essais → bandeau "Paiement en attente de confirmation" avec bouton Vérifier
+  checkoutSessionId.value = sid
 }
 
 watch(items, (val) => {

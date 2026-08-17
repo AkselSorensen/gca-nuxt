@@ -146,7 +146,7 @@ const route = useRoute()
 const pageRef = ref<HTMLElement | null>(null)
 const slug = route.params.slug as string
 
-const { data: prodData } = await useFetch(api + '/api/products/' + slug, { lazy: true, credentials: 'include' })
+const { data: prodData, refresh } = await useFetch(api + '/api/products/' + slug, { lazy: true, credentials: 'include' })
 const product = computed(() => prodData.value?.product || prodData.value || null)
 
 const currentImg = ref('')
@@ -229,6 +229,13 @@ function addToCart() {
 }
 
 onMounted(async () => {
+  // Le fetch SSR part sans cookie → owned=false dans le payload et Nuxt ne re-fetch pas
+  // côté client. On re-valide avec le cookie de session si l'utilisateur est connecté
+  // pour afficher "Télécharger" au lieu des boutons d'achat.
+  const { user, checkAuth } = useAuth()
+  await checkAuth()
+  if (user.value?.id) await refresh()
+
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
   if (gsap) pageEntrance(gsap, pageRef.value)
