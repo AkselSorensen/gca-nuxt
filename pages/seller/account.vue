@@ -66,13 +66,13 @@
             <div v-else class="stripe-status">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <div>
-                <strong>{{ t('seller.stripe_unlinked') }}</strong>
+                <strong>{{ stripeHasAccount ? t('seller.stripe_incomplete') : t('seller.stripe_unlinked') }}</strong>
                 <span>{{ stripeMsg }}</span>
               </div>
             </div>
             <a v-if="!stripeLinked" class="btn-stripe" :class="{ loading: stripeLoading }" @click.prevent="connectStripe">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 1.693 0 3.033.642 3.964 1.219l.295-1.812c-.789-.537-2.303-1.088-4.105-1.088-2.645 0-4.475 1.356-4.475 3.562 0 2.248 1.928 3.21 4.344 4.033 2.154.734 3.226 1.342 3.226 2.416 0 .86-.695 1.446-2.077 1.446-1.909 0-3.548-.791-4.399-1.454l-.325 1.845c.902.66 2.663 1.283 4.794 1.283 2.995 0 4.81-1.522 4.81-3.799 0-2.318-1.798-3.246-4.212-4.077zM3.575 16.138V7.828h-1.78v9.489h4.916v-1.179H3.575zM20.205 16.138c.627 0 1.196-.049 1.795-.182v-1.702c-.53.144-1.066.218-1.605.218-2.636 0-4.259-1.67-4.259-4.211 0-2.43 1.691-4.256 4.135-4.256.614 0 1.195.127 1.795.327V4.584c-.583-.17-1.17-.249-1.795-.249-3.523 0-6.124 2.518-6.124 6.072 0 3.538 2.527 5.731 6.058 5.731z"/></svg>
-              {{ stripeLoading ? 'Redirection…' : t('seller.connect_stripe') }}
+              {{ stripeLoading ? 'Redirection…' : (stripeHasAccount ? t('seller.resume_onboarding') : t('seller.connect_stripe')) }}
             </a>
             <a v-else class="btn-stripe outlined" @click.prevent="openStripeDashboard">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
@@ -107,6 +107,7 @@ const config = useRuntimeConfig()
 const api = config.public.apiOrigin
 const pageRef = ref<HTMLElement | null>(null)
 const stripeLinked = ref(false)
+const stripeHasAccount = ref(false)
 const discordLinked = ref(false)
 const steamLinked = ref(false)
 const profileMsg = ref('')
@@ -139,6 +140,7 @@ async function checkStripeConnect() {
   stripeMsg.value = 'Vérification…'
   try {
     const res = await $fetch(api + '/api/stripe/connect/status', { credentials: 'include' })
+    stripeHasAccount.value = !!res.hasAccount
     if (res.connected) {
       stripeLinked.value = true
       stripeStatus.value = 'linked'
@@ -146,7 +148,9 @@ async function checkStripeConnect() {
     } else {
       stripeLinked.value = false
       stripeStatus.value = 'unlinked'
-      stripeMsg.value = `Non connecté (charges:${res.chargesEnabled ? '✓' : '✗'} payouts:${res.payoutsEnabled ? '✓' : '✗'} details:${res.detailsSubmitted ? '✓' : '✗'})`
+      stripeMsg.value = stripeHasAccount.value
+        ? t('seller.stripe_onboarding_hint') + ` (charges:${res.chargesEnabled ? '✓' : '✗'} payouts:${res.payoutsEnabled ? '✓' : '✗'} details:${res.detailsSubmitted ? '✓' : '✗'})`
+        : `Non connecté (charges:${res.chargesEnabled ? '✓' : '✗'} payouts:${res.payoutsEnabled ? '✓' : '✗'} details:${res.detailsSubmitted ? '✓' : '✗'})`
     }
   } catch (e: any) {
     stripeLinked.value = false
