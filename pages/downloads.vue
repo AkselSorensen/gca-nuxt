@@ -44,11 +44,13 @@
 
       <div v-else class="purchases-list anim-up">
         <article v-for="item in purchases" :key="item.order_item_id" class="purchase-card">
-          <div class="purchase-thumb">
+          <NuxtLink class="purchase-thumb" :to="'/product/' + item.slug">
             <img :src="item.thumbnail || '/placeholder.svg'" :alt="item.title" />
-          </div>
+          </NuxtLink>
           <div class="purchase-info">
-            <h3>{{ item.title }}</h3>
+            <NuxtLink :to="'/product/' + item.slug" class="purchase-title-link">
+              <h3>{{ item.title }}</h3>
+            </NuxtLink>
             <div class="purchase-meta">
               <span class="meta-cat">{{ item.category_name }}</span>
               <span class="meta-date">{{ t('downloads.purchased') }} {{ formatDate(item.purchase_date) }}</span>
@@ -393,11 +395,14 @@ if (process.client) {
 .purchase-card { display: flex; gap: 20px; padding: 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); }
 @media (max-width: 640px) { .purchase-card { flex-direction: column; } }
 
-.purchase-thumb { width: 120px; height: 80px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: var(--bg-surface); }
-.purchase-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.purchase-thumb { width: 120px; height: 80px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: var(--bg-surface); transition: border-color .2s; }
+.purchase-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.purchase-thumb:hover img { transform: scale(1.06); }
 
 .purchase-info { flex: 1; min-width: 0; display: grid; gap: 8px; }
-.purchase-info h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+.purchase-title-link { text-decoration: none; color: inherit; width: fit-content; }
+.purchase-title-link h3 { margin: 0; font-size: 1rem; font-weight: 700; transition: color .15s; }
+.purchase-title-link:hover h3 { color: var(--primary); }
 
 .purchase-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: .78rem; color: var(--text-muted); }
 .meta-cat { padding: 2px 8px; border-radius: 4px; background: rgba(47,125,246,0.06); border: 1px solid rgba(47,125,246,0.12); color: var(--primary); font-weight: 600; }
