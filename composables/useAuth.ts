@@ -14,7 +14,9 @@ export const useAuth = () => {
       const res = await $fetch(api + '/api/me', {
         credentials: 'include'
       })
-      user.value = res.user || res
+      // res = { authenticated, user, cart } — ne PAS affecter l'objet entier
+      // (res.user null => user.value = null, pas l'objet {authenticated:false})
+      user.value = res?.user || null
     } catch { user.value = null }
     finally { loading.value = false }
   }
