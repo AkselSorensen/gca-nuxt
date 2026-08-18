@@ -603,7 +603,10 @@ async function loadFormData() {
   try {
     const b = await $fetch(api + '/api/bootstrap', { credentials: 'include' })
     categories.value = b.categories || []
-    sellers.value = b.collaborators?.map((n:string) => ({ slug: n.toLowerCase().replace(/\s+/g,'-'), username: n })) || []
+    // Vrais vendeurs depuis la DB (slug réel), fallback sur l'ancienne liste
+    sellers.value = b.sellers?.length
+      ? b.sellers.map((s: any) => ({ slug: s.slug, username: s.username }))
+      : (b.collaborators?.map((n:string) => ({ slug: n.toLowerCase().replace(/\s+/g,'-'), username: n })) || [])
   } catch {}
 }
 
@@ -646,6 +649,7 @@ async function approveSeller(id: number) {
     await $fetch(api + '/api/admin/seller-requests/' + id + '/approve', { credentials: 'include', method: 'POST' })
     toastRef.value?.show('success', 'Vendeur approuvé ✓')
     loadSellerRequests()
+    loadFormData() // met à jour le dropdown vendeur du formulaire produit
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || 'Erreur')
   }
