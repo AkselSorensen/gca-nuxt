@@ -105,6 +105,10 @@
               <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 1.693 0 3.033.642 3.964 1.219l.295-1.812c-.789-.537-2.303-1.088-4.105-1.088-2.645 0-4.475 1.356-4.475 3.562 0 2.248 1.928 3.21 4.344 4.033 2.154.734 3.226 1.342 3.226 2.416 0 .86-.695 1.446-2.077 1.446-1.909 0-3.548-.791-4.399-1.454l-.325 1.845c.902.66 2.663 1.283 4.794 1.283 2.995 0 4.81-1.522 4.81-3.799 0-2.318-1.798-3.246-4.212-4.077zM3.575 16.138V7.828h-1.78v9.489h4.916v-1.179H3.575zM20.205 16.138c.627 0 1.196-.049 1.795-.182v-1.702c-.53.144-1.066.218-1.605.218-2.636 0-4.259-1.67-4.259-4.211 0-2.43 1.691-4.256 4.135-4.256.614 0 1.195.127 1.795.327V4.584c-.583-.17-1.17-.249-1.795-.249-3.523 0-6.124 2.518-6.124 6.072 0 3.538 2.527 5.731 6.058 5.731z"/></svg>
               {{ stripeLoading ? 'Redirection…' : (stripeHasAccount ? t('seller.resume_onboarding') : t('seller.connect_stripe')) }}
             </a>
+            <p v-if="stripeError" class="stripe-error">{{ stripeError }}</p>
+            <p v-if="!stripeLinked && stripeStatus === 'unlinked' && stripeHasAccount && stripeDetails" class="stripe-detail">
+              charges: {{ stripeDetails.charges ? '✓' : '✗' }} · payouts: {{ stripeDetails.payouts ? '✓' : '✗' }} · détails: {{ stripeDetails.details ? '✓' : '✗' }}
+            </p>
           </div>
         </div>
 
@@ -145,6 +149,7 @@ const stripeUrl = ref('/api/stripe/connect')
 const stripeMsg = ref('')
 const stripeStatus = ref('loading')
 const stripeError = ref('')
+const stripeDetails = ref<{ charges: boolean; payouts: boolean; details: boolean } | null>(null)
 const stripeLoading = ref(false)
 
 const profile = reactive({
@@ -173,6 +178,9 @@ async function checkStripeConnect() {
   try {
     const res = await $fetch(api + '/api/stripe/connect/status', { credentials: 'include', signal: controller.signal })
     stripeHasAccount.value = !!res.hasAccount
+    stripeDetails.value = res.hasAccount
+      ? { charges: !!res.chargesEnabled, payouts: !!res.payoutsEnabled, details: !!res.detailsSubmitted }
+      : null
     if (res.connected) {
       stripeLinked.value = true
       stripeStatus.value = 'linked'
@@ -197,11 +205,13 @@ async function checkStripeConnect() {
 
 async function connectStripe() {
   stripeLoading.value = true
+  stripeError.value = ''
   try {
     const res = await $fetch(api + '/api/stripe/connect', { method: 'POST', credentials: 'include' })
     if (res.url) window.location.href = res.url
+    else stripeError.value = 'Réponse inattendue du serveur'
   } catch (e: any) {
-    stripeError.value = e?.data?.message || 'Erreur de connexion Stripe'
+    stripeError.value = e?.data?.message || e?.message || 'Erreur de connexion Stripe'
   } finally {
     stripeLoading.value = false
   }
@@ -312,6 +322,8 @@ onMounted(async () => {
 .btn-stripe.disabled { opacity:.6; pointer-events:none; }
 .btn-stripe.outlined { background:transparent; color:#635bff; border:2px solid #635bff; box-shadow:none; }
 .btn-stripe.outlined:hover { background:#635bff; color:#fff; }
+.stripe-error { font-size:.78rem; color:var(--red); background:rgba(248,113,113,.06); border:1px solid rgba(248,113,113,.18); border-radius:8px; padding:8px 12px; }
+.stripe-detail { font-size:.72rem; color:var(--text-muted); font-family:ui-monospace,Consolas,monospace; }
 
 /* Stats */
 .stats-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
