@@ -27,25 +27,55 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
             <h2>{{ t('seller.linked') }}</h2>
           </div>
-          <div class="acard-body">
+          <div class="acard-body link-body">
             <!-- Discord -->
-            <div class="linked-row" v-if="discordLinked">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#5865f2"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/></svg>
-              <div class="linked-info"><strong>{{ t('seller.discord') }}</strong><span>Lié ✓</span></div>
+            <div class="link-item" :class="{ linked: discordLinked }">
+              <div class="link-brand brand-discord">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/></svg>
+              </div>
+              <div class="link-meta">
+                <div class="link-name">
+                  <strong>{{ t('seller.discord') }}</strong>
+                  <span class="link-status" :class="{ on: discordLinked }">{{ discordLinked ? t('seller.connected') : t('seller.not_connected') }}</span>
+                </div>
+                <p class="link-desc">{{ t('seller.discord_desc') }}</p>
+                <span v-if="userDiscordId" class="link-id">ID: {{ userDiscordId }}</span>
+              </div>
+              <div class="link-actions">
+                <button v-if="discordLinked" class="btn-link-ghost" @click="copyDiscordId">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  {{ discordCopied ? t('seller.copied') : t('seller.copy_id') }}
+                </button>
+                <button v-else class="btn-link-brand btn-discord-brand" @click="linkDiscord">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  {{ t('seller.link') }}
+                </button>
+              </div>
             </div>
-            <button v-else class="btn-link btn-discord" @click="linkDiscord">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/></svg>
-              Lier Discord
-            </button>
             <!-- Steam -->
-            <div class="linked-row" v-if="steamLinked">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#1b2838"><path d="M11.5 2C7 2 3.3 5.2 2.5 9.5l4.3 1.8c.6-.4 1.4-.5 2.2-.3.9.2 1.6.8 2 1.6l2.9 7.1c.1.2.1.5.1.7 0 1.1-.9 2-2 2-.7 0-1.4-.4-1.7-1l-3.9-1.6c-.3 1.2-1 2.3-2.1 3.1C7.7 23.5 9.5 24 11.3 24c3.8 0 7.1-2.7 7.9-6.5l3.8-1.5.5-4.2L11.5 2zM6.6 13.4l-2.8-1.2c.2 2.4 2 4.3 4.4 4.5l2.4-1.1c.4.9 1.3 1.5 2.3 1.5 1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5c-1 0-1.9.6-2.3 1.5L8.7 14c-.2-1-.7-1.9-1.5-2.5l1.4 1.9z"/></svg>
-              <div class="linked-info"><strong>{{ t('seller.steam') }}</strong><span>Lié ✓</span></div>
+            <div class="link-item" :class="{ linked: steamLinked }">
+              <div class="link-brand brand-steam">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M11.5 2C7 2 3.3 5.2 2.5 9.5l4.3 1.8c.6-.4 1.4-.5 2.2-.3.9.2 1.6.8 2 1.6l2.9 7.1c.1.2.1.5.1.7 0 1.1-.9 2-2 2-.7 0-1.4-.4-1.7-1l-3.9-1.6c-.3 1.2-1 2.3-2.1 3.1C7.7 23.5 9.5 24 11.3 24c3.8 0 7.1-2.7 7.9-6.5l3.8-1.5.5-4.2L11.5 2zM6.6 13.4l-2.8-1.2c.2 2.4 2 4.3 4.4 4.5l2.4-1.1c.4.9 1.3 1.5 2.3 1.5 1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5c-1 0-1.9.6-2.3 1.5L8.7 14c-.2-1-.7-1.9-1.5-2.5l1.4 1.9z"/></svg>
+              </div>
+              <div class="link-meta">
+                <div class="link-name">
+                  <strong>{{ t('seller.steam') }}</strong>
+                  <span class="link-status" :class="{ on: steamLinked }">{{ steamLinked ? t('seller.connected') : t('seller.not_connected') }}</span>
+                </div>
+                <p class="link-desc">{{ t('seller.steam_desc') }}</p>
+                <span v-if="userSteamId" class="link-id">ID: {{ userSteamId }}</span>
+              </div>
+              <div class="link-actions">
+                <button v-if="steamLinked" class="btn-link-ghost" disabled>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  {{ t('seller.connected') }}
+                </button>
+                <button v-else class="btn-link-brand btn-steam-brand" @click="linkSteam">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  {{ t('seller.link') }}
+                </button>
+              </div>
             </div>
-            <button v-else class="btn-link btn-steam" @click="linkSteam">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="#1b2838"><path d="M11.5 2C7 2 3.3 5.2 2.5 9.5l4.3 1.8c.6-.4 1.4-.5 2.2-.3.9.2 1.6.8 2 1.6l2.9 7.1c.1.2.1.5.1.7 0 1.1-.9 2-2 2-.7 0-1.4-.4-1.7-1l-3.9-1.6c-.3 1.2-1 2.3-2.1 3.1C7.7 23.5 9.5 24 11.3 24c3.8 0 7.1-2.7 7.9-6.5l3.8-1.5.5-4.2L11.5 2zM6.6 13.4l-2.8-1.2c.2 2.4 2 4.3 4.4 4.5l2.4-1.1c.4.9 1.3 1.5 2.3 1.5 1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5c-1 0-1.9.6-2.3 1.5L8.7 14c-.2-1-.7-1.9-1.5-2.5l1.4 1.9z"/></svg>
-              Lier Steam
-            </button>
           </div>
         </div>
 
@@ -110,6 +140,9 @@ const stripeLinked = ref(false)
 const stripeHasAccount = ref(false)
 const discordLinked = ref(false)
 const steamLinked = ref(false)
+const userDiscordId = ref('')
+const userSteamId = ref('')
+const discordCopied = ref(false)
 const profileMsg = ref('')
 const stripeUrl = ref('/api/stripe/connect')
 const stripeMsg = ref(t('seller.stripe_checking'))
@@ -187,6 +220,16 @@ function linkSteam() {
   window.location.href = 'https://gsa-tresingo.vercel.app/auth/steam?return_url=' + encodeURIComponent('https://gca-nuxt.vercel.app/seller/account')
 }
 
+async function copyDiscordId() {
+  const id = userDiscordId.value
+  if (!id) return
+  try {
+    await navigator.clipboard.writeText(id)
+    discordCopied.value = true
+    setTimeout(() => (discordCopied.value = false), 2000)
+  } catch { /* clipboard indisponible */ }
+}
+
 onMounted(async () => {
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
@@ -196,13 +239,13 @@ onMounted(async () => {
 
   // Check linked accounts from URL params (after OAuth callback)
   const params = new URLSearchParams(window.location.search)
-  if (params.get('discord_id')) discordLinked.value = true
-  if (params.get('steam_id')) steamLinked.value = true
+  if (params.get('discord_id')) { discordLinked.value = true; userDiscordId.value = params.get('discord_id') }
+  if (params.get('steam_id')) { steamLinked.value = true; userSteamId.value = params.get('steam_id') }
 
   // Check from user session
   const { user } = useAuth()
-  if (user.value?.discordId) discordLinked.value = true
-  if (user.value?.steamId) steamLinked.value = true
+  if (user.value?.discordId) { discordLinked.value = true; userDiscordId.value = user.value.discordId }
+  if (user.value?.steamId) { steamLinked.value = true; userSteamId.value = user.value.steamId }
 })
 </script>
 
@@ -227,18 +270,29 @@ onMounted(async () => {
 .msg { font-size:.82rem;color:var(--green); }
 
 /* Linked accounts */
-.linked-row { display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;background:var(--bg-surface);border:1px solid var(--border); }
-.linked-row svg { flex-shrink:0;width:20px;height:20px; }
-.linked-info { display:flex;align-items:center;gap:8px;flex:1; }
-.linked-info strong { font-size:.85rem;font-weight:600;color:var(--text); }
-.linked-info span { font-size:.75rem;color:var(--green);font-weight:700;margin-left:auto;padding:3px 10px;border-radius:20px;background:rgba(110,231,183,0.08);border:1px solid rgba(110,231,183,0.15); }
-.btn-link { display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;border:1px solid var(--border);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;width:100%;text-align:left;font-family:inherit;background:var(--bg-surface); }
-.btn-link:hover { transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.1); }
-.btn-link svg { width:20px;height:20px;flex-shrink:0; }
-.btn-discord { color:#5865f2;border-color:rgba(88,101,242,0.2); }
-.btn-discord:hover { border-color:rgba(88,101,242,0.4);background:rgba(88,101,242,0.04); }
-.btn-steam { color:#1b2838;border-color:rgba(27,40,56,0.2); }
-.btn-steam:hover { border-color:rgba(27,40,56,0.4);background:rgba(27,40,56,0.03); }
+.link-body { gap:10px; }
+.link-item { display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:14px; background:var(--bg-surface); border:1px solid var(--border); transition:border-color .2s, box-shadow .2s, background .2s; }
+.link-item.linked { border-color:rgba(110,231,183,.22); background:linear-gradient(135deg, rgba(110,231,183,.05), rgba(255,255,255,0) 65%); }
+.link-brand { width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.brand-discord { background:rgba(88,101,242,.15); color:#5865f2; }
+.brand-steam { background:linear-gradient(135deg, #2a475e, #1b2838); color:#66c0f4; border:1px solid rgba(102,192,244,.15); }
+.link-meta { flex:1; min-width:0; display:grid; gap:3px; }
+.link-name { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.link-name strong { font-size:.9rem; font-weight:700; }
+.link-status { font-size:.64rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; padding:3px 10px; border-radius:20px; color:var(--text-muted); background:rgba(255,255,255,.03); border:1px solid var(--border); }
+.link-status.on { color:#6ee7b7; background:rgba(110,231,183,.08); border-color:rgba(110,231,183,.2); }
+.link-desc { font-size:.76rem; color:var(--text-muted); line-height:1.4; }
+.link-id { font-size:.7rem; color:var(--text-secondary); font-family:ui-monospace,Consolas,monospace; letter-spacing:.02em; }
+.link-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.btn-link-brand { display:inline-flex; align-items:center; gap:7px; padding:9px 18px; border-radius:10px; border:none; font-size:.8rem; font-weight:700; cursor:pointer; color:#fff; transition:all .2s; font-family:inherit; }
+.btn-discord-brand { background:#5865f2; box-shadow:0 2px 10px rgba(88,101,242,.25); }
+.btn-discord-brand:hover { background:#4752c4; transform:translateY(-1px); box-shadow:0 4px 16px rgba(88,101,242,.4); }
+.btn-steam-brand { background:linear-gradient(135deg, #2a475e, #1b2838); border:1px solid rgba(102,192,244,.25); }
+.btn-steam-brand:hover { background:linear-gradient(135deg, #35586f, #23313f); transform:translateY(-1px); box-shadow:0 4px 16px rgba(27,40,56,.5); }
+.btn-link-ghost { display:inline-flex; align-items:center; gap:7px; padding:9px 14px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-size:.78rem; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit; }
+.btn-link-ghost:hover { color:var(--text); border-color:var(--text-muted); }
+.btn-link-ghost:disabled { opacity:.5; cursor:default; }
+@media(max-width:520px){ .link-item { flex-wrap:wrap; } .link-actions { width:100%; justify-content:flex-end; } }
 
 /* Stripe */
 .stripe-status { display:flex;align-items:center;gap:14px;padding:16px;border-radius:10px;background:rgba(255,255,255,0.02); }
