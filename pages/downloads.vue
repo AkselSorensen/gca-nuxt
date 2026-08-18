@@ -55,18 +55,18 @@
               <span class="meta-price">{{ Number(item.price).toFixed(2) }}€</span>
             </div>
             <div v-if="item.files?.length" class="purchase-files">
+              <button class="btn-dl-main" @click="download(item.order_item_id)" :disabled="downloading === item.order_item_id">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                {{ downloading === item.order_item_id ? t('downloads.downloading') : t('downloads.download') }}
+              </button>
               <div v-for="f in item.files" :key="f.id" class="file-row">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 <span class="file-name">{{ f.filename }}</span>
                 <span class="file-size">{{ formatSize(f.file_size) }}</span>
-                <button class="btn-dl" @click="download(item.order_item_id)" :disabled="downloading === item.order_item_id">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  {{ downloading === item.order_item_id ? t('downloads.downloading') : t('downloads.download') }}
-                </button>
               </div>
             </div>
             <div v-else class="no-files">
-              <span>Aucun fichier disponible pour ce produit.</span>
+              <span>{{ t('downloads.no_file') }}</span>
             </div>
             <div class="invoice-row">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -368,14 +368,13 @@ if (process.client) {
 .meta-price { font-weight: 700; color: var(--text); }
 
 .purchase-files { display: grid; gap: 6px; margin-top: 4px; }
+.btn-dl-main { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 18px; border-radius: 10px; border: 1px solid rgba(110,231,183,0.3); background: rgba(110,231,183,0.1); color: var(--green); font-size: .85rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; width: fit-content; }
+.btn-dl-main:hover:not(:disabled) { background: rgba(110,231,183,0.18); border-color: rgba(110,231,183,0.5); }
+.btn-dl-main:disabled { opacity: .5; cursor: not-allowed; }
 .file-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px; background: var(--bg-surface); border: 1px solid var(--border); font-size: .82rem; }
 .file-row svg { color: var(--primary); flex-shrink: 0; }
 .file-name { flex: 1; font-weight: 600; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .file-size { color: var(--text-muted); font-size: .75rem; flex-shrink: 0; }
-
-.btn-dl { display: flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 6px; border: none; background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; font-size: .78rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; flex-shrink: 0; }
-.btn-dl:hover:not(:disabled) { opacity: .9; }
-.btn-dl:disabled { opacity: .5; cursor: not-allowed; }
 
 .no-files { padding: 8px 0; font-size: .82rem; color: var(--text-muted); }
 
