@@ -148,6 +148,11 @@ function formatSize(bytes: number) {
   return (bytes / (1024 * 1024)).toFixed(1) + ' Mo'
 }
 
+function clearCartStorage() {
+  localStorage.removeItem('gsa-cart')
+  window.dispatchEvent(new Event('cart-updated'))
+}
+
 async function retryConfirm() {
   if (!checkoutSessionId.value) return
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -159,6 +164,7 @@ async function retryConfirm() {
       toastRef.value?.show('success', t('downloads.pay_confirmed'))
       checkoutSessionId.value = ''
       localStorage.removeItem('gsa-pending-session')
+      clearCartStorage()
       fetchPurchases()
       return
     } catch (e: any) {
@@ -179,6 +185,7 @@ async function forceConfirm() {
     toastRef.value?.show('success', t('downloads.order_confirmed'))
     checkoutSessionId.value = ''
     localStorage.removeItem('gsa-pending-session')
+    clearCartStorage()
     fetchPurchases()
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || t('generic.error'))
@@ -195,6 +202,7 @@ async function confirmManual() {
     toastRef.value?.show('success', t('downloads.order_confirmed'))
     manualSessionId.value = ''
     localStorage.removeItem('gsa-pending-session')
+    clearCartStorage()
     await new Promise(r => setTimeout(r, 500))
     window.location.reload()
   } catch (e: any) {

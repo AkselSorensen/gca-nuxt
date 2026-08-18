@@ -184,6 +184,8 @@ async function confirmCheckout(sid: string) {
       checkoutSuccess.value = true
       localStorage.removeItem('gsa-cart')
       items.value = []
+      // Redirige vers les téléchargements après un court délai (la bannière de succès s'affiche)
+      setTimeout(() => navigateTo('/downloads'), 1800)
       return
     } catch (e: any) {
       console.error('Confirm error:', e?.data || e)
