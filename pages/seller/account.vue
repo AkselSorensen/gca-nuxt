@@ -244,11 +244,14 @@ async function copyDiscordId() {
 }
 
 onMounted(async () => {
-  const { load, pageEntrance } = await import('~/composables/useAnimation')
-  const { gsap } = await load()
-  if (gsap) pageEntrance(gsap, pageRef.value)
-
+  // Stripe d'abord — indépendant de GSAP (si GSAP échoue, le statut part quand même)
   checkStripeConnect()
+
+  try {
+    const { load, pageEntrance } = await import('~/composables/useAnimation')
+    const { gsap } = await load()
+    if (gsap) pageEntrance(gsap, pageRef.value)
+  } catch { /* animations non bloquantes */ }
 
   // Check linked accounts from URL params (after OAuth callback)
   const params = new URLSearchParams(window.location.search)
