@@ -217,6 +217,31 @@ async function connectStripe() {
   }
 }
 
+// Associe le compte Stripe revenu de l'onboarding (via ?account=acct_xxx)
+async function linkStripeAccount(accountId: string) {
+  try {
+    const res = await $fetch(api + '/api/stripe/connect/link', { method: 'POST', credentials: 'include', body: { accountId } })
+    stripeHasAccount.value = true
+    stripeDetails.value = {
+      charges: !!res.chargesEnabled,
+      payouts: !!res.payoutsEnabled,
+      details: !!res.detailsSubmitted,
+    }
+    if (res.connected) {
+      stripeLinked.value = true
+      stripeStatus.value = 'linked'
+      stripeMsg.value = t('seller.stripe_ok')
+    } else {
+      stripeLinked.value = false
+      stripeStatus.value = 'unlinked'
+      stripeMsg.value = t('seller.stripe_onboarding_hint')
+    }
+  } catch (e: any) {
+    stripeError.value = e?.data?.message || e?.message || 'Erreur lors de la liaison Stripe'
+    checkStripeConnect()
+  }
+}
+
 async function openStripeDashboard() {
   try {
     const res = await $fetch(api + '/api/stripe/dashboard', { method: 'POST', credentials: 'include' })
@@ -255,6 +280,14 @@ onMounted(async () => {
 
   // Check linked accounts from URL params (after OAuth callback)
   const params = new URLSearchParams(window.location.search)
+
+  // Retour d'onboarding Stripe : ?account=acct_xxx => associer CE compte
+  // précis à l'utilisateur (indépendant de l'email), puis re-vérifier.
+  const stripeAccountParam = params.get('account')
+  if (stripeAccountParam && stripeAccountParam.startsWith('acct_')) {
+    linkStripeAccount(stripeAccountParam)
+  }
+
   if (params.get('discord_id')) { discordLinked.value = true; userDiscordId.value = params.get('discord_id') }
   if (params.get('steam_id')) { steamLinked.value = true; userSteamId.value = params.get('steam_id') }
 
