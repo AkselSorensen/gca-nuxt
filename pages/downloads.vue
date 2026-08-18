@@ -85,6 +85,29 @@
     </div>
     <ToastNotif ref="toastRef" />
 
+    <!-- Loader génération facture -->
+    <Transition name="fade">
+      <div v-if="invoiceLoading" class="invoice-loader-overlay">
+        <div class="invoice-loader-card">
+          <div class="invoice-loader-icon">
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <span class="loader-pulse"></span>
+          </div>
+          <h3 class="invoice-loader-title">{{ t('downloads.invoice_gen') }}</h3>
+          <p class="invoice-loader-sub">{{ t('downloads.invoice_gen_sub') }}</p>
+          <div class="invoice-progress-track">
+            <div class="invoice-progress-bar" :style="{ width: invoiceProgress + '%' }"></div>
+          </div>
+          <span class="invoice-progress-pct">{{ Math.round(invoiceProgress) }}%</span>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Popup : laisser un avis après achat -->
     <div v-if="showReviewModal" class="review-modal-overlay" @click.self="closeReviewModal">
       <div class="review-modal">
@@ -130,6 +153,9 @@ const loading = ref(true)
 const error = ref('')
 const waitMsg = ref('')
 const downloading = ref<number | null>(null)
+const invoiceLoading = ref(false)
+const invoiceProgress = ref(0)
+const invoiceTimer = ref<number | null>(null)
 const checkoutSessionId = ref('')
 const manualSessionId = ref('')
 const showReviewModal = ref(false)
@@ -201,8 +227,19 @@ async function download(orderItemId: number) {
 }
 
 function downloadInvoice(orderItemId: number) {
-  // Navigation directe (cookies cross-origin OK avec SameSite=None) → le PDF se télécharge
-  window.open(api + '/api/invoice/' + orderItemId, '_blank')
+  // Loader stylé ~5s pendant la génération, puis ouverture du PDF
+  invoiceLoading.value = true
+  invoiceProgress.value = 0
+  clearInterval(invoiceTimer.value)
+  invoiceTimer.value = window.setInterval(() => {
+    invoiceProgress.value = Math.min(100, invoiceProgress.value + 100 / 50) // 50 ticks * 100ms = 5s
+    if (invoiceProgress.value >= 100) {
+      clearInterval(invoiceTimer.value)
+      // Navigation directe (cookies cross-origin OK avec SameSite=None) → le PDF se télécharge
+      window.open(api + '/api/invoice/' + orderItemId, '_blank')
+      setTimeout(() => { invoiceLoading.value = false }, 400)
+    }
+  }, 100)
 }
 
 function formatDate(dateStr: string) {
@@ -414,4 +451,21 @@ if (process.client) {
 .btn-review:hover { opacity: .9; }
 .btn-later { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); font-size: .82rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s; }
 .btn-later:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+
+/* Loader génération facture */
+.invoice-loader-overlay { position: fixed; inset: 0; z-index: 99999; background: rgba(4,8,14,0.72); display: grid; place-items: center; padding: 20px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.invoice-loader-card { width: 100%; max-width: 360px; background: linear-gradient(160deg, var(--bg-card), rgba(20,26,38,0.96)); border: 1px solid rgba(47,125,246,0.22); border-radius: 20px; padding: 34px 28px; display: grid; justify-items: center; gap: 10px; text-align: center; box-shadow: 0 24px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.02) inset; position: relative; overflow: hidden; }
+.invoice-loader-card::before { content: ''; position: absolute; inset: -40% -20%; background: radial-gradient(circle at 30% 20%, rgba(47,125,246,0.12), transparent 50%), radial-gradient(circle at 70% 80%, rgba(124,92,231,0.10), transparent 50%); pointer-events: none; }
+.invoice-loader-icon { position: relative; display: grid; place-items: center; width: 86px; height: 86px; border-radius: 24px; background: linear-gradient(135deg, rgba(47,125,246,0.16), rgba(124,92,231,0.16)); border: 1px solid rgba(47,125,246,0.3); color: var(--primary); margin-bottom: 6px; }
+.invoice-loader-icon svg { animation: invoiceFloat 2.2s ease-in-out infinite; }
+.loader-pulse { position: absolute; inset: -6px; border-radius: 28px; border: 2px solid rgba(47,125,246,0.35); animation: invoicePulse 1.6s ease-out infinite; }
+@keyframes invoicePulse { 0% { transform: scale(0.92); opacity: 0.9; } 100% { transform: scale(1.18); opacity: 0; } }
+@keyframes invoiceFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.invoice-loader-title { margin: 4px 0 0; font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+.invoice-loader-sub { margin: 0; font-size: .82rem; color: var(--text-secondary); line-height: 1.5; }
+.invoice-progress-track { width: 100%; height: 8px; border-radius: 99px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.04); margin-top: 12px; overflow: hidden; }
+.invoice-progress-bar { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width .1s linear; box-shadow: 0 0 12px rgba(47,125,246,0.5); }
+.invoice-progress-pct { font-size: .72rem; font-weight: 700; color: var(--text-muted); font-variant-numeric: tabular-nums; letter-spacing: .05em; }
+.fade-enter-active, .fade-leave-active { transition: opacity .25s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>
