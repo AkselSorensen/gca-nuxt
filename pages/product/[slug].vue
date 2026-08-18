@@ -33,7 +33,7 @@
 
           <!-- Rating & Stats -->
           <div class="info-stats">
-            <div class="stars" v-if="product.rating">
+            <div class="stars" v-if="product.reviewCount > 0">
               <svg v-for="s in 5" :key="s" width="16" height="16" viewBox="0 0 24 24" :fill="s <= Math.round(product.rating) ? '#f5b342' : 'none'" :stroke="s <= Math.round(product.rating) ? '#f5b342' : 'var(--border)'" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               <strong>{{ Number(product.rating).toFixed(1) }}</strong>
               <span v-if="product.reviewCount">({{ product.reviewCount }})</span>
@@ -126,8 +126,8 @@
             <div class="desc-text" v-html="installationHtml || '<p>Aucune instruction d\'installation fournie.</p>'"></div>
           </div>
           <!-- Reviews -->
-          <div v-if="activeTab === 'reviews'" class="tab-panel">
-            <p class="tab-placeholder">{{ t('product.reviews_soon') }}</p>
+          <div v-if="activeTab === 'reviews'" class="tab-panel reviews-panel">
+            <ProductReviews :product="product" :owned="owned" @updated="refresh" />
           </div>
         </div>
       </div>
