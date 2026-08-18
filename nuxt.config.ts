@@ -23,8 +23,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBase: '/api',
-      apiOrigin: 'https://gsa-tresingo.vercel.app'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api',
+      apiOrigin: process.env.NUXT_PUBLIC_API_ORIGIN || 'https://gsa-tresingo.vercel.app'
     }
   }
 })
