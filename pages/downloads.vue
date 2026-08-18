@@ -68,6 +68,17 @@
             <div v-else class="no-files">
               <span>Aucun fichier disponible pour ce produit.</span>
             </div>
+            <div class="invoice-row">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <div class="invoice-info">
+                <span class="invoice-label">{{ t('downloads.invoice') }}</span>
+                <span class="invoice-sub">{{ t('downloads.invoice_sub') }}</span>
+              </div>
+              <button class="btn-invoice" @click="downloadInvoice(item.order_item_id)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                {{ t('downloads.invoice_pdf') }}
+              </button>
+            </div>
           </div>
         </article>
       </div>
@@ -133,6 +144,11 @@ async function download(orderItemId: number) {
   } finally {
     downloading.value = null
   }
+}
+
+function downloadInvoice(orderItemId: number) {
+  // Navigation directe (cookies cross-origin OK avec SameSite=None) → le PDF se télécharge
+  window.open(api + '/api/invoice/' + orderItemId, '_blank')
 }
 
 function formatDate(dateStr: string) {
@@ -306,6 +322,14 @@ if (process.client) {
 .btn-dl:disabled { opacity: .5; cursor: not-allowed; }
 
 .no-files { padding: 8px 0; font-size: .82rem; color: var(--text-muted); }
+
+.invoice-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; background: var(--bg-surface); border: 1px dashed rgba(47,125,246,0.25); margin-top: 4px; }
+.invoice-row > svg { color: var(--primary); flex-shrink: 0; }
+.invoice-info { display: grid; gap: 1px; flex: 1; min-width: 0; }
+.invoice-label { font-size: .82rem; font-weight: 700; color: var(--text); }
+.invoice-sub { font-size: .72rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-invoice { display: flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(47,125,246,0.35); background: rgba(47,125,246,0.1); color: var(--primary); font-size: .78rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; flex-shrink: 0; }
+.btn-invoice:hover { background: rgba(47,125,246,0.18); border-color: var(--primary); }
 .confirm-banner { display:flex;align-items:center;gap:12px;padding:16px 20px;border-radius:12px;border:1px solid rgba(245,179,66,0.2);background:rgba(245,179,66,0.04);width:100%;max-width:400px;margin-bottom:16px; }
 .confirm-banner div { display:grid;gap:2px;text-align:left;flex:1; }
 .confirm-banner strong { font-size:.85rem;font-weight:700; }
