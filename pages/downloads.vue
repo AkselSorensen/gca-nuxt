@@ -84,6 +84,34 @@
       </div>
     </div>
     <ToastNotif ref="toastRef" />
+
+    <!-- Popup : laisser un avis après achat -->
+    <div v-if="showReviewModal" class="review-modal-overlay" @click.self="closeReviewModal">
+      <div class="review-modal">
+        <button class="review-modal-close" @click="closeReviewModal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="review-modal-head">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <h3>{{ t('downloads.review_modal_title') }}</h3>
+        </div>
+        <p class="review-modal-sub">{{ t('downloads.review_modal_sub') }}</p>
+        <div class="review-modal-items">
+          <div v-for="item in reviewableItems" :key="item.order_item_id" class="review-modal-item">
+            <img :src="item.thumbnail || '/placeholder.svg'" :alt="item.title" />
+            <div class="rm-info">
+              <strong>{{ item.title }}</strong>
+              <span class="rm-price">{{ Number(item.price).toFixed(2) }}€</span>
+            </div>
+            <button class="btn-review" @click="goReview(item.slug)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              {{ t('downloads.review_modal_btn') }}
+            </button>
+          </div>
+        </div>
+        <button class="btn-later" @click="closeReviewModal">{{ t('downloads.review_modal_later') }}</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -104,6 +132,32 @@ const waitMsg = ref('')
 const downloading = ref<number | null>(null)
 const checkoutSessionId = ref('')
 const manualSessionId = ref('')
+const showReviewModal = ref(false)
+const reviewableItems = ref<any[]>([])
+
+const REVIEW_ASKED_KEY = 'gsa-review-asked'
+
+function askedReviewIds(): number[] {
+  try { return JSON.parse(localStorage.getItem(REVIEW_ASKED_KEY) || '[]') } catch { return [] }
+}
+function markReviewsAsked() {
+  const ids = [...askedReviewIds(), ...reviewableItems.value.map((p: any) => Number(p.order_item_id))]
+  localStorage.setItem(REVIEW_ASKED_KEY, JSON.stringify([...new Set(ids)]))
+}
+function openReviewModal() {
+  const asked = askedReviewIds()
+  reviewableItems.value = purchases.value.filter((p: any) => !asked.includes(Number(p.order_item_id)))
+  if (reviewableItems.value.length) showReviewModal.value = true
+}
+function closeReviewModal() {
+  markReviewsAsked()
+  showReviewModal.value = false
+}
+function goReview(slug: string) {
+  markReviewsAsked()
+  showReviewModal.value = false
+  navigateTo('/product/' + slug + '?tab=reviews')
+}
 
 async function fetchPurchases() {
   loading.value = true; error.value = ''
@@ -181,7 +235,8 @@ async function retryConfirm() {
       checkoutSessionId.value = ''
       localStorage.removeItem('gsa-pending-session')
       clearCartStorage()
-      fetchPurchases()
+      await fetchPurchases()
+      openReviewModal()
       return
     } catch (e: any) {
       console.error('Confirm attempt', attempt + 1, 'failed:', e?.data?.message || e)
@@ -202,7 +257,8 @@ async function forceConfirm() {
     checkoutSessionId.value = ''
     localStorage.removeItem('gsa-pending-session')
     clearCartStorage()
-    fetchPurchases()
+    await fetchPurchases()
+    openReviewModal()
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || t('generic.error'))
   }
@@ -339,5 +395,24 @@ if (process.client) {
 .manual-confirm p { font-size:.85rem;color:var(--text-secondary);margin-bottom:12px; }
 .manual-row { display:flex;gap:8px; }
 .manual-input { flex:1;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.85rem;outline:none;font-family:monospace; }
-.manual-input:focus { border-color:var(--primary); }
+.manual-input:focus { border-color: var(--primary); }
+
+/* Popup avis post-achat */
+.review-modal-overlay { position: fixed; inset: 0; z-index: 99997; background: rgba(0,0,0,0.65); display: grid; place-items: center; padding: 20px; backdrop-filter: blur(4px); }
+.review-modal { width: 100%; max-width: 420px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; position: relative; display: grid; gap: 12px; }
+.review-modal-close { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.04); color: var(--text-muted); cursor: pointer; display: grid; place-items: center; }
+.review-modal-close:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+.review-modal-head { display: flex; align-items: center; gap: 10px; }
+.review-modal-head h3 { margin: 0; font-size: 1.05rem; font-weight: 800; }
+.review-modal-sub { margin: 0; font-size: .85rem; color: var(--text-secondary); line-height: 1.5; }
+.review-modal-items { display: grid; gap: 8px; max-height: 260px; overflow-y: auto; }
+.review-modal-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-surface); }
+.review-modal-item img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: var(--bg-card); }
+.rm-info { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.rm-info strong { font-size: .84rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rm-price { font-size: .78rem; color: var(--text-muted); }
+.btn-review { display: flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: 8px; border: none; background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; font-size: .78rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; flex-shrink: 0; }
+.btn-review:hover { opacity: .9; }
+.btn-later { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); font-size: .82rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s; }
+.btn-later:hover { background: rgba(255,255,255,0.04); color: var(--text); }
 </style>

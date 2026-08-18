@@ -151,6 +151,8 @@ const product = computed(() => prodData.value?.product || prodData.value || null
 
 const currentImg = ref('')
 const activeTab = ref('description')
+// Ouverture directe de l'onglet Avis depuis le popup post-achat (?tab=reviews)
+if (route.query.tab === 'reviews') activeTab.value = 'reviews'
 
 const images = computed(() => {
   const p = product.value
