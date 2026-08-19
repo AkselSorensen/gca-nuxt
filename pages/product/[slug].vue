@@ -216,18 +216,23 @@ async function buyNow() {
 }
 function addToCart() {
   try {
-    const saved = JSON.parse(localStorage.getItem('gsa-cart') || '[]')
+    // localStorage corrompu (JSON invalide) → on repart d'un panier vide
+    // plutôt que d'échouer silencieusement.
+    let saved: any[] = []
+    try {
+      saved = JSON.parse(localStorage.getItem('gsa-cart') || '[]') || []
+    } catch { saved = [] }
+    if (!Array.isArray(saved)) saved = []
     const exists = saved.find((p: any) => p.slug === product.value?.slug)
     if (!exists && product.value) {
       saved.push({ slug: product.value.slug, title: product.value.title, price: product.value.price, oldPrice: product.value.oldPrice, discountPercent: product.value.discountPercent, thumbnail: product.value.thumbnail || product.value.media?.[0]?.thumbnail || product.value.media?.[0]?.url, sellerName: product.value.sellerName, media: product.value.media })
       localStorage.setItem('gsa-cart', JSON.stringify(saved))
-      window.dispatchEvent(new Event('storage'))
       window.dispatchEvent(new Event('cart-updated'))
       toastRef.value?.show('success', t('product.added_cart'))
     } else {
       toastRef.value?.show('info', t('product.already_cart'))
     }
-  } catch {}
+  } catch { /* stockage indisponible */ }
 }
 
 onMounted(async () => {

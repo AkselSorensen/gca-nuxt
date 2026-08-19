@@ -423,7 +423,7 @@
         <label class="check-field"><input type="checkbox" v-model="productForm.isHidden" /> Masqué (caché du catalogue)</label>
         <div class="modal-action-btns">
           <button class="btn-cancel" @click="closeProductForm">Annuler</button>
-          <button class="btn-primary" @click="saveProduct">{{ editingId ? 'Enregistrer les modifications' : (uploadFile ? 'Créer et uploader' : 'Créer le produit') }}</button>
+          <button class="btn-primary" :disabled="saving" @click="saveProduct">{{ saving ? 'Enregistrement…' : (editingId ? 'Enregistrer les modifications' : (uploadFile ? 'Créer et uploader' : 'Créer le produit')) }}</button>
         </div>
       </div>
     </div>
@@ -543,6 +543,7 @@ const productMedia = ref<any[]>([])
 
 const toastRef = ref<InstanceType<typeof ToastNotif> | null>(null)
 const confirmRef = ref<InstanceType<typeof ConfirmModal> | null>(null)
+const saving = ref(false)
 const prodOverlay = ref<HTMLElement | null>(null)
 const prodCard = ref<HTMLElement | null>(null)
 
@@ -675,8 +676,10 @@ function formatSize(bytes: number) {
 }
 
 async function saveProduct() {
+  if (saving.value) return // anti double-clic (évite les doublons de fichiers)
   if (!productForm.title || !productForm.price) return toastRef.value?.show('error', 'Titre et prix requis')
   const isEdit = !!editingId.value
+  saving.value = true
   try {
     const payload = {
       ...productForm,
@@ -713,6 +716,8 @@ async function saveProduct() {
     toastRef.value?.show('success', isEdit ? 'Produit modifié' : ('Produit créé' + (uploadFile.value ? ' + fichier uploadé' : '')))
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || e?.message || 'Erreur')
+  } finally {
+    saving.value = false
   }
 }
 
