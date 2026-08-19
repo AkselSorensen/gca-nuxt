@@ -232,13 +232,24 @@ function downloadInvoice(orderItemId: number) {
   // Loader stylé ~5s pendant la génération, puis ouverture du PDF
   invoiceLoading.value = true
   invoiceProgress.value = 0
+  // Ouvre l'onglet vierge DANS le geste utilisateur (sinon le navigateur
+  // bloque le popup : window.open async = silencieusement bloqué).
+  // Il sera redirigé vers le PDF une fois "généré".
+  const win = window.open('', '_blank')
   clearInterval(invoiceTimer.value)
   invoiceTimer.value = window.setInterval(() => {
     invoiceProgress.value = Math.min(100, invoiceProgress.value + 100 / 50) // 50 ticks * 100ms = 5s
     if (invoiceProgress.value >= 100) {
       clearInterval(invoiceTimer.value)
-      // Navigation directe (cookies cross-origin OK avec SameSite=None) → le PDF se télécharge
-      window.open(api + '/api/invoice/' + orderItemId, '_blank')
+      const url = api + '/api/invoice/' + orderItemId
+      if (win) {
+        // Navigation directe (cookies SameSite=None OK) → le PDF se télécharge
+        win.location.href = url
+      } else {
+        // Fallback : popup bloqué → téléchargement dans l'onglet courant
+        // (Content-Disposition: attachment → la page ne quitte pas)
+        window.location.href = url
+      }
       setTimeout(() => { invoiceLoading.value = false }, 400)
     }
   }, 100)
