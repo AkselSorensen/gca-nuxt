@@ -24,7 +24,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api',
-      apiOrigin: process.env.NUXT_PUBLIC_API_ORIGIN || 'https://gsa-tresingo.vercel.app'
+      // Backend Express désormais intégré dans le même déploiement Nuxt
+      apiOrigin: process.env.NUXT_PUBLIC_API_ORIGIN || ''
     }
   }
 })

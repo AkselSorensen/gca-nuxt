@@ -252,10 +252,10 @@ async function openStripeDashboard() {
 }
 
 function linkDiscord() {
-  window.location.href = 'https://gsa-tresingo.vercel.app/auth/discord?return_url=' + encodeURIComponent('https://gca-nuxt.vercel.app/seller/account')
+  window.location.href = '/auth/discord?return_url=' + encodeURIComponent('/seller/account')
 }
 function linkSteam() {
-  window.location.href = 'https://gsa-tresingo.vercel.app/auth/steam?return_url=' + encodeURIComponent('https://gca-nuxt.vercel.app/seller/account')
+  window.location.href = '/auth/steam?return_url=' + encodeURIComponent('/seller/account')
 }
 
 async function copyDiscordId() {

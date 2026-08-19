@@ -10,8 +10,16 @@
     "postinstall": "nuxt prepare || true"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1113.0",
+    "@aws-sdk/s3-request-presigner": "^3.1113.0",
+    "connect-pg-simple": "^10.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "gsap": "^3.15.0",
     "nuxt": "^3.15.4",
+    "pdfkit": "^0.19.1",
     "pg": "^8.22.0",
     "stripe": "^22.3.2",
     "vue": "^3.5.13",
