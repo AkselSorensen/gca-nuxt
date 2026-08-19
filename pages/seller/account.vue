@@ -4,9 +4,19 @@
       <div class="page-header anim-up">
         <h1>Mon compte vendeur</h1>
         <p>{{ t('seller.subtitle') }}</p>
+        <div class="tabs">
+          <button class="tab-btn" :class="{ active: activeTab === 'account' }" @click="activeTab = 'account'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            {{ t('seller.account_tab') }}
+          </button>
+          <button class="tab-btn" :class="{ active: activeTab === 'revenue' }" @click="activeTab = 'revenue'; loadRevenue()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            {{ t('seller.revenue_tab') }}
+          </button>
+        </div>
       </div>
 
-      <div class="account-grid">
+      <div v-if="activeTab === 'account'" class="account-grid">
         <!-- Profile card -->
         <div class="acard anim-card">
           <div class="acard-header">
@@ -126,6 +136,131 @@
           </div>
         </div>
       </div>
+
+      <!-- ═══ Onglet Revenus ═══ -->
+      <div v-else class="revenue-panel">
+        <div class="rev-header">
+          <div class="rev-title">
+            <h2>Revenus</h2>
+            <span v-if="revenue" class="rev-mode-badge" :class="revenue.stripeLinked ? 'test' : ''">
+              {{ revenue.stripeLinked ? '● STRIPE CONNECTÉ' : '● NON LIÉ' }}
+            </span>
+            <span v-if="revenue?.accountId" class="rev-account-id">{{ revenue.accountId }}</span>
+          </div>
+          <button class="rev-refresh" @click="loadRevenue" title="Rafraîchir">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+        </div>
+
+        <div v-if="revenueLoading" class="rev-loading">
+          <svg class="spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          Chargement des revenus…
+        </div>
+
+        <div v-else-if="revenueError" class="rev-error">{{ revenueError }}</div>
+
+        <template v-else-if="revenue">
+          <!-- Stripe non lié -->
+          <div v-if="!revenue.stripeLinked" class="rev-unlinked">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div>
+              <strong>Connectez votre compte Stripe</strong>
+              <p>Vos revenus (solde, transferts, paiements) s'afficheront ici une fois Stripe Connect lié.</p>
+            </div>
+            <button class="btn-stripe" @click="connectStripe">Connecter Stripe</button>
+          </div>
+
+          <template v-else>
+            <!-- Cartes stats -->
+            <div class="rev-cards">
+              <div class="rev-card">
+                <span class="rev-card-lbl">Solde disponible</span>
+                <strong class="rev-card-val">{{ fmtMoney(revenue.balance?.available?.[0]?.amount) }}</strong>
+                <span class="rev-card-sub">{{ revenue.balance?.available?.[0]?.currency?.toUpperCase() || 'EUR' }}</span>
+              </div>
+              <div class="rev-card">
+                <span class="rev-card-lbl">En attente</span>
+                <strong class="rev-card-val muted">{{ fmtMoney(revenue.balance?.pending?.[0]?.amount) }}</strong>
+                <span class="rev-card-sub">{{ revenue.balance?.pending?.[0]?.currency?.toUpperCase() || 'EUR' }}</span>
+              </div>
+              <div class="rev-card">
+                <span class="rev-card-lbl">Ventes totales</span>
+                <strong class="rev-card-val">{{ fmtMoney(revenue.stats?.salesTotal) }}</strong>
+                <span class="rev-card-sub">{{ revenue.stats?.ordersCount || 0 }} commande(s)</span>
+              </div>
+              <div class="rev-card">
+                <span class="rev-card-lbl">Commission plateforme ({{ revenue.platformPercent ?? 25 }}%)</span>
+                <strong class="rev-card-val muted">{{ fmtMoney(revenue.stats?.platformFees) }}</strong>
+                <span class="rev-card-sub">prélevée sur chaque vente</span>
+              </div>
+              <div class="rev-card accent">
+                <span class="rev-card-lbl">Net vendeur</span>
+                <strong class="rev-card-val">{{ fmtMoney(revenue.stats?.sellerNet) }}</strong>
+                <span class="rev-card-sub">après commission</span>
+              </div>
+              <div class="rev-card">
+                <span class="rev-card-lbl">Paiements reçus</span>
+                <strong class="rev-card-val">{{ revenue.payouts?.length || 0 }}</strong>
+                <span class="rev-card-sub">{{ revenue.payoutsEnabled ? 'encaissement actif' : 'encaissement inactif' }}</span>
+              </div>
+            </div>
+
+            <!-- Ventes récentes -->
+            <div class="rev-table-wrap" v-if="revenue.sales?.length">
+              <h3>Ventes récentes</h3>
+              <table class="rev-table">
+                <thead><tr><th>Date</th><th>Produit</th><th>Client</th><th>Prix</th><th>Commission</th><th>Net vendeur</th></tr></thead>
+                <tbody>
+                  <tr v-for="(s, i) in revenue.sales" :key="i">
+                    <td>{{ fmtDate(s.date) }}</td>
+                    <td class="rev-prod">{{ s.productTitle }}</td>
+                    <td class="rev-client">{{ s.client || '—' }}</td>
+                    <td>{{ fmtMoney(s.price * s.quantity) }}</td>
+                    <td class="muted">-{{ fmtMoney(s.platformFee) }}</td>
+                    <td class="rev-net">+{{ fmtMoney(s.sellerNet) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Transferts Stripe -->
+            <div class="rev-table-wrap" v-if="revenue.transfers?.length">
+              <h3>Transferts Stripe</h3>
+              <table class="rev-table">
+                <thead><tr><th>Date</th><th>Transfert</th><th>Montant</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr v-for="t in revenue.transfers" :key="t.id">
+                    <td>{{ fmtDate(t.created) }}</td>
+                    <td class="rev-prod">{{ t.id }}</td>
+                    <td>{{ fmtMoney(t.amount) }}</td>
+                    <td><span class="rev-status" :class="t.status">{{ t.status }}</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Payouts -->
+            <div class="rev-table-wrap" v-if="revenue.payouts?.length">
+              <h3>Paiements vers votre banque</h3>
+              <table class="rev-table">
+                <thead><tr><th>Date</th><th>Payout</th><th>Montant</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr v-for="p in revenue.payouts" :key="p.id">
+                    <td>{{ fmtDate(p.created) }}</td>
+                    <td class="rev-prod">{{ p.id }}</td>
+                    <td>{{ fmtMoney(p.amount) }}</td>
+                    <td><span class="rev-status" :class="p.status">{{ p.status }}</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div v-if="!revenue.sales?.length && !revenue.transfers?.length && !revenue.payouts?.length" class="rev-empty">
+              Aucune vente ou transfert pour le moment.
+            </div>
+          </template>
+        </template>
+      </div>
     </div>
   </div>
 </template>
@@ -151,6 +286,10 @@ const stripeStatus = ref('loading')
 const stripeError = ref('')
 const stripeDetails = ref<{ charges: boolean; payouts: boolean; details: boolean } | null>(null)
 const stripeLoading = ref(false)
+const activeTab = ref('account')
+const revenue = ref<any>(null)
+const revenueLoading = ref(false)
+const revenueError = ref('')
 
 const profile = reactive({
   shopName: 'Ma boutique',
@@ -268,6 +407,30 @@ async function copyDiscordId() {
   } catch { /* clipboard indisponible */ }
 }
 
+// ─── Onglet Revenus ─────────────────────────────────────────────
+async function loadRevenue() {
+  if (revenueLoading.value) return
+  revenueLoading.value = true
+  revenueError.value = ''
+  try {
+    revenue.value = await $fetch(api + '/api/seller/revenue', { credentials: 'include' })
+  } catch (e: any) {
+    revenueError.value = e?.data?.message || e?.message || 'Erreur de chargement des revenus'
+  } finally {
+    revenueLoading.value = false
+  }
+}
+
+function fmtMoney(v: number | null | undefined) {
+  return (v ?? 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+}
+
+function fmtDate(ts: number | string | null | undefined) {
+  if (!ts) return '—'
+  const d = typeof ts === 'number' ? new Date(ts) : new Date(ts)
+  return d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+}
+
 onMounted(async () => {
   // Stripe d'abord — indépendant de GSAP (si GSAP échoue, le statut part quand même)
   checkStripeConnect()
@@ -369,4 +532,55 @@ onMounted(async () => {
 
 .acard:last-child { grid-column:1/2; }
 @media(max-width:768px){ .account-grid{grid-template-columns:1fr}.acard:last-child{grid-column:auto} }
+
+/* Onglets */
+.tabs { display:flex; gap:8px; margin-top:18px; border-bottom:1px solid var(--border); padding-bottom:0; }
+.tab-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:10px 10px 0 0; border:none; background:transparent; color:var(--text-secondary); font-size:.88rem; font-weight:600; cursor:pointer; transition:all .15s; font-family:inherit; border-bottom:2px solid transparent; margin-bottom:-1px; }
+.tab-btn svg { opacity:.7; }
+.tab-btn:hover { color:var(--text); background:rgba(255,255,255,0.03); }
+.tab-btn.active { color:var(--primary); border-bottom-color:var(--primary); background:rgba(47,125,246,0.06); }
+.tab-btn.active svg { opacity:1; }
+
+/* Revenus */
+.revenue-panel { display:grid; gap:20px; }
+.rev-header { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.rev-title { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.rev-title h2 { font-size:1.15rem; font-weight:800; letter-spacing:-.02em; }
+.rev-mode-badge { font-size:.66rem; font-weight:800; letter-spacing:.08em; padding:4px 12px; border-radius:20px; background:rgba(245,158,11,.08); color:#f59e0b; border:1px solid rgba(245,158,11,.25); }
+.rev-mode-badge.test { background:rgba(110,231,183,.08); color:#6ee7b7; border-color:rgba(110,231,183,.25); }
+.rev-account-id { font-size:.72rem; color:var(--text-muted); font-family:ui-monospace,Consolas,monospace; }
+.rev-refresh { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:10px; border:1px solid var(--border); background:var(--bg-surface); color:var(--text-secondary); cursor:pointer; transition:all .15s; }
+.rev-refresh:hover { color:var(--text); border-color:var(--text-muted); transform:rotate(90deg); }
+.rev-loading { display:flex; align-items:center; gap:10px; color:var(--text-secondary); font-size:.9rem; padding:24px 0; }
+.rev-loading .spin { animation:spin 1s linear infinite; color:var(--primary); }
+.rev-error { color:var(--red); background:rgba(248,113,113,.06); border:1px solid rgba(248,113,113,.18); border-radius:10px; padding:14px 16px; font-size:.85rem; }
+.rev-unlinked { display:flex; align-items:center; gap:16px; padding:22px; border-radius:14px; background:var(--bg-card); border:1px solid var(--border); color:var(--text-secondary); flex-wrap:wrap; }
+.rev-unlinked svg { color:var(--text-muted); flex-shrink:0; }
+.rev-unlinked strong { display:block; color:var(--text); font-size:.95rem; margin-bottom:4px; }
+.rev-unlinked p { font-size:.82rem; color:var(--text-muted); line-height:1.5; }
+.rev-unlinked .btn-stripe { margin-left:auto; }
+.rev-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; }
+.rev-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:18px; display:grid; gap:4px; }
+.rev-card.accent { border-color:rgba(110,231,183,.25); background:linear-gradient(135deg, rgba(110,231,183,.06), rgba(255,255,255,0)); }
+.rev-card-lbl { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
+.rev-card-val { font-size:1.45rem; font-weight:800; color:var(--text); letter-spacing:-.02em; }
+.rev-card-val.muted { color:var(--text-secondary); }
+.rev-card-sub { font-size:.75rem; color:var(--text-muted); }
+.rev-table-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.rev-table-wrap h3 { font-size:.95rem; font-weight:700; padding:16px 20px; border-bottom:1px solid var(--border); }
+.rev-table { width:100%; border-collapse:collapse; font-size:.84rem; }
+.rev-table th { text-align:left; padding:10px 20px; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(255,255,255,0.015); }
+.rev-table td { padding:11px 20px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--text); white-space:nowrap; }
+.rev-table tr:last-child td { border-bottom:none; }
+.rev-table .rev-prod { font-weight:600; white-space:normal; min-width:160px; }
+.rev-table .rev-client { color:var(--text-secondary); }
+.rev-table .muted { color:var(--text-muted); }
+.rev-table .rev-net { color:#6ee7b7; font-weight:700; }
+.rev-status { font-size:.7rem; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:capitalize; background:rgba(255,255,255,0.04); color:var(--text-secondary); border:1px solid var(--border); }
+.rev-status.paid, .rev-status.paid_out, .rev-status.successful { color:#6ee7b7; background:rgba(110,231,183,.08); border-color:rgba(110,231,183,.22); }
+.rev-status.pending, .rev-status.in_transit { color:#f59e0b; background:rgba(245,158,11,.08); border-color:rgba(245,158,11,.22); }
+.rev-status.failed, .rev-status.canceled { color:#f87171; background:rgba(248,113,113,.08); border-color:rgba(248,113,113,.22); }
+.rev-empty { text-align:center; padding:40px 0; color:var(--text-muted); font-size:.9rem; }
+.rev-table-wrap { overflow-x:auto; }
+@media(max-width:640px){ .rev-unlinked .btn-stripe { margin-left:0; width:100%; } }
 </style>

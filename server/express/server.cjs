@@ -3785,6 +3785,128 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
   }
 });
 
+// ─── Vendeur : Revenus (compte Stripe Connect) ─────────────────
+// Équivalent vendeur de /api/admin/revenue : solde du compte Connect,
+// transferts reçus, payouts vers sa banque + stats de ventes DB.
+app.get("/api/seller/revenue", requireAuth, async (req, res) => {
+  if (req.session.user.role !== "seller" && req.session.user.role !== "admin") {
+    return res.status(403).json({ message: "Seller access required" });
+  }
+
+  try {
+    const sellerId = req.session.user.id;
+    const sellerInfo = await pool.query(
+      `SELECT stripe_account_id FROM users WHERE id = $1`,
+      [sellerId]
+    );
+    const accountId = sellerInfo.rows[0]?.stripe_account_id || null;
+
+    const out = {
+      stripeLinked: !!accountId,
+      accountId,
+      chargesEnabled: false,
+      payoutsEnabled: false,
+      platformPercent: PLATFORM_COMMISSION_PERCENT,
+      balance: { available: [], pending: [] },
+      stats: { salesTotal: 0, platformFees: 0, sellerNet: 0, ordersCount: 0 },
+      transfers: [],
+      payouts: [],
+      sales: [],
+    };
+
+    if (accountId && stripe) {
+      try {
+        const acct = await stripe.accounts.retrieve(accountId);
+        out.chargesEnabled = !!acct.charges_enabled;
+        out.payoutsEnabled = !!acct.payouts_enabled;
+
+        const balance = await stripe.balance.retrieve({}, { stripeAccount: accountId });
+        out.balance = {
+          available: (balance.available || []).map((b) => ({ currency: b.currency, amount: b.amount / 100 })),
+          pending: (balance.pending || []).map((b) => ({ currency: b.currency, amount: b.amount / 100 })),
+        };
+
+        const [transfers, payouts] = await Promise.all([
+          stripe.transfers.list({ destination: accountId, limit: 50 }),
+          stripe.payouts.list({ limit: 50 }, { stripeAccount: accountId }).catch(() => ({ data: [] })),
+        ]);
+
+        out.transfers = (transfers.data || []).map((t) => ({
+          id: t.id,
+          amount: t.amount / 100,
+          currency: t.currency,
+          status: t.status,
+          created: t.created * 1000,
+          description: t.description || null,
+        }));
+
+        out.payouts = (payouts.data || []).map((p) => ({
+          id: p.id,
+          amount: p.amount / 100,
+          currency: p.currency,
+          status: p.status,
+          created: p.created * 1000,
+        }));
+      } catch (error) {
+        console.error("Seller Stripe revenue error:", error);
+        // Le compte Stripe peut être supprimé/désactivé : on renvoie les stats DB quand même
+      }
+    }
+
+    // Stats de ventes DB (commission plateforme réelle)
+    const statsResult = await pool.query(
+      `SELECT
+        COALESCE(COUNT(DISTINCT o.id), 0) AS orders_count,
+        COALESCE(SUM(oi.price * oi.quantity), 0) AS sales_total,
+        COALESCE(SUM(ROUND((oi.price * oi.quantity * $2 / 100)::numeric, 2)), 0) AS platform_fees,
+        COALESCE(SUM(ROUND((oi.price * oi.quantity * (1 - $2::numeric / 100))::numeric, 2)), 0) AS seller_net
+      FROM order_items oi
+      JOIN orders o ON o.id = oi.order_id
+      WHERE oi.seller_id = $1 AND o.status = 'completed'`,
+      [sellerId, PLATFORM_COMMISSION_PERCENT]
+    );
+    out.stats = {
+      salesTotal: parseFloat(statsResult.rows[0].sales_total || 0),
+      platformFees: parseFloat(statsResult.rows[0].platform_fees || 0),
+      sellerNet: parseFloat(statsResult.rows[0].seller_net || 0),
+      ordersCount: parseInt(statsResult.rows[0].orders_count || 0),
+    };
+
+    // Historique des ventes
+    const salesResult = await pool.query(
+      `SELECT
+        o.created_at AS date,
+        p.title AS product_title,
+        oi.customer_email AS client,
+        oi.price AS price,
+        oi.quantity AS quantity,
+        ROUND((oi.price * oi.quantity * $2 / 100)::numeric, 2) AS platform_fee_amount,
+        ROUND((oi.price * oi.quantity * (1 - $2::numeric / 100))::numeric, 2) AS seller_net_amount
+      FROM order_items oi
+      JOIN orders o ON o.id = oi.order_id
+      JOIN products p ON p.id = oi.product_id
+      WHERE oi.seller_id = $1 AND o.status = 'completed'
+      ORDER BY o.created_at DESC
+      LIMIT 50`,
+      [sellerId, PLATFORM_COMMISSION_PERCENT]
+    );
+    out.sales = salesResult.rows.map((r) => ({
+      date: r.date,
+      productTitle: r.product_title,
+      client: r.client,
+      price: Number(r.price),
+      quantity: Number(r.quantity),
+      platformFee: Number(r.platform_fee_amount),
+      sellerNet: Number(r.seller_net_amount),
+    }));
+
+    res.json(out);
+  } catch (error) {
+    console.error("Seller revenue error:", error);
+    res.status(500).json({ message: "Unable to fetch seller revenue" });
+  }
+});
+
 // ─── Admin : Gestion des fichiers produits ─────────────────────
 
 app.get("/api/admin/products/:id/files", requireAdmin, async (req, res) => {
