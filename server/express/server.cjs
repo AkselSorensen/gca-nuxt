@@ -2467,7 +2467,16 @@ async function recordStripeFee(orderId, session) {
     const piId = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
     if (!piId) return;
     const pi = await stripe.paymentIntents.retrieve(piId, { expand: ["latest_charge.balance_transaction"] });
-    const fee = Number(pi.latest_charge?.balance_transaction?.fee || 0) / 100;
+    let fee = Number(pi.latest_charge?.balance_transaction?.fee || 0) / 100;
+    // Fallback : le balance_transaction peut ne pas être dispo au moment du
+    // webhook → récupérer la charge directement avec son balance_transaction.
+    if (!fee && pi.latest_charge) {
+      try {
+        const chargeId = typeof pi.latest_charge === "string" ? pi.latest_charge : pi.latest_charge.id;
+        const charge = await stripe.charges.retrieve(chargeId, { expand: ["balance_transaction"] });
+        fee = Number(charge.balance_transaction?.fee || 0) / 100;
+      } catch { /* non bloquant */ }
+    }
     if (fee > 0) {
       await pool.query(`UPDATE orders SET stripe_fee_amount = $1 WHERE id = $2`, [fee, orderId]);
       console.log(`[fees] order ${orderId} : frais Stripe = ${fee} €`);
@@ -3756,7 +3765,7 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
     // Stats commandes depuis la DB (commission plateforme réelle)
     const orders = await pool.query(`
       SELECT
-        o.id, o.total_amount, o.created_at,
+        o.id, o.total_amount, o.created_at, o.stripe_session_id,
         COALESCE(o.stripe_fee_amount, 0) AS stripe_fee_amount,
         COALESCE(SUM(oi.platform_fee_amount), 0) AS platform_fee,
         COALESCE(SUM(oi.seller_net_amount), 0) AS seller_net,
@@ -3768,6 +3777,31 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
       ORDER BY o.created_at DESC
       LIMIT 50
     `);
+
+    // Backfill : frais Stripe manquants (webhook créé la commande avant la
+    // disponibilité du balance_transaction → récupérés ici à la volée).
+    if (stripe) {
+      const missingFee = orders.rows.filter((r) => !Number(r.stripe_fee_amount) && r.stripe_session_id);
+      for (const o of missingFee.slice(0, 10)) {
+        try {
+          const s = await stripe.checkout.sessions.retrieve(o.stripe_session_id);
+          const piId = typeof s.payment_intent === "string" ? s.payment_intent : s.payment_intent?.id;
+          if (piId) {
+            const pi = await stripe.paymentIntents.retrieve(piId, { expand: ["latest_charge.balance_transaction"] });
+            let fee = Number(pi.latest_charge?.balance_transaction?.fee || 0) / 100;
+            if (!fee && pi.latest_charge) {
+              const cid = typeof pi.latest_charge === "string" ? pi.latest_charge : pi.latest_charge.id;
+              const ch = await stripe.charges.retrieve(cid, { expand: ["balance_transaction"] });
+              fee = Number(ch.balance_transaction?.fee || 0) / 100;
+            }
+            if (fee > 0) {
+              await pool.query(`UPDATE orders SET stripe_fee_amount = $1 WHERE id = $2`, [fee, o.id]);
+              o.stripe_fee_amount = fee;
+            }
+          }
+        } catch { /* non bloquant */ }
+      }
+    }
     out.orders = orders.rows.map((r) => ({
       id: r.id,
       total: Number(r.total_amount),

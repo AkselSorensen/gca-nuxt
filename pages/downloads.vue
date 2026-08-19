@@ -241,7 +241,8 @@ function downloadInvoice(orderItemId: number) {
     invoiceProgress.value = Math.min(100, invoiceProgress.value + 100 / 50) // 50 ticks * 100ms = 5s
     if (invoiceProgress.value >= 100) {
       clearInterval(invoiceTimer.value)
-      const url = api + '/api/invoice/' + orderItemId
+      const base = api && api.startsWith('http') ? api : window.location.origin
+      const url = base + '/api/invoice/' + orderItemId
       if (win) {
         // Navigation directe (cookies SameSite=None OK) → le PDF se télécharge
         win.location.href = url
