@@ -349,6 +349,7 @@ async function getCart(userId) {
         p.price,
         p.old_price,
         p.discount_percent,
+        p.seller_id,
         COALESCE(
           (
             SELECT json_build_object(
@@ -372,19 +373,20 @@ async function getCart(userId) {
   );
 
   const items = itemsResult.rows.map((item) => ({
-    id: item.id,
-    quantity: item.quantity,
-    product: {
-      id: item.product_id,
-      slug: item.slug,
-      title: item.title,
-      price: Number(item.price),
-      oldPrice: Number(item.old_price),
-      discountPercent: item.discount_percent,
-      preview: item.preview,
-    },
-    subtotal: Number(item.price) * item.quantity,
-  }));
+      id: item.id,
+      quantity: item.quantity,
+      product: {
+        id: item.product_id,
+        slug: item.slug,
+        title: item.title,
+        price: Number(item.price),
+        oldPrice: Number(item.old_price),
+        discountPercent: item.discount_percent,
+        preview: item.preview,
+        sellerId: item.seller_id,
+      },
+      subtotal: Number(item.price) * item.quantity,
+    }));
 
   return {
     id: cartId,
@@ -2442,6 +2444,15 @@ async function createSellerTransfers(orderId, transferGroup) {
   }
 }
 
+// Pour les destination charges (modèle "Stripe gère les tarifs"), le transfert
+// vendeur est AUTOMATIQUE côté Stripe → on saute les transferts manuels.
+async function maybeCreateSellerTransfers(orderId, session) {
+  if (String(session?.metadata?.transferMode || "") === "destination") {
+    return;
+  }
+  await createSellerTransfers(orderId, session?.id || String(session));
+}
+
 // Migration lazy des colonnes récentes (garantie même si le boot Vercel a été interrompu)
 let recentMigrationsApplied = false;
 async function ensureRecentMigrations() {
@@ -2486,6 +2497,33 @@ async function recordStripeFee(orderId, session) {
   }
 }
 
+// ─── Mode de transfert (modèle Stripe-managed) ─────────────
+// "Stripe gère les tarifs" : si le panier n'appartient qu'à UN SEUL vendeur
+// avec un compte Connect actif, on utilise une destination charge → les frais
+// Stripe sont prélevés directement sur le compte du vendeur, la plateforme ne
+// paie AUCUN frais et garde sa commission via application_fee_amount.
+// Fallback : panier multi-vendeurs → modèle actuel (transferts manuels).
+async function resolveTransferMode(items) {
+  try {
+    const sellerIds = [...new Set((items || []).map((it) => it.product?.sellerId).filter(Boolean))];
+    if (sellerIds.length === 1) {
+      const r = await pool.query(`SELECT stripe_account_id FROM users WHERE id = $1`, [sellerIds[0]]);
+      const dest = r.rows[0]?.stripe_account_id;
+      if (dest && stripe) {
+        // Valide que le compte existe ET accepte les charges sur CETTE plateforme
+        // (les comptes de l'ancienne plateforme → retrieve échoue → mode manual)
+        try {
+          const acct = await stripe.accounts.retrieve(dest);
+          if (acct.charges_enabled) return { mode: "destination", destination: dest };
+        } catch { /* compte invalide sur cette plateforme → fallback manual */ }
+      }
+    }
+  } catch (error) {
+    console.error("[transfer] resolveTransferMode error:", error.message || error);
+  }
+  return { mode: "manual", destination: null };
+}
+
 // ─── Buy Now (achat direct d'un produit) ─────────────────
 app.post("/api/checkout/buy-now", requireAuth, async (req, res) => {
   if (!stripe || !STRIPE_PUBLIC_KEY) {
@@ -2510,8 +2548,15 @@ app.post("/api/checkout/buy-now", requireAuth, async (req, res) => {
 
     const unitAmount = Math.round(Number(product.price) * 100);
 
-    // Paiement à 100% sur la plateforme ; la part vendeur (75%) sera transférée
-    // séparément après la commande via createSellerTransfers (webhook / confirm-session).
+    // Modèle "Stripe gère les tarifs" : destination charge si le vendeur a un
+    // compte Connect → les frais Stripe sont prélevés au vendeur, la plateforme
+    // ne paie rien et garde sa commission (application_fee_amount).
+    const transfer = product.seller_stripe_id
+      ? { mode: "destination", destination: product.seller_stripe_id }
+      : { mode: "manual", destination: null };
+    const platformFeeCents = Math.round(Number(product.price) * PLATFORM_COMMISSION_PERCENT);
+    const useDestination = transfer.mode === "destination" && platformFeeCents < unitAmount;
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
@@ -2528,9 +2573,13 @@ app.post("/api/checkout/buy-now", requireAuth, async (req, res) => {
           },
         },
       }],
+      payment_intent_data: useDestination ? {
+        transfer_data: { destination: transfer.destination },
+        application_fee_amount: platformFeeCents,
+      } : undefined,
       success_url: `https://gca-nuxt.vercel.app/downloads?confirmed=1&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `https://gca-nuxt.vercel.app/product/${slug}`,
-      metadata: { userId: String(req.session.user.id), productSlug: product.slug },
+      metadata: { userId: String(req.session.user.id), productSlug: product.slug, transferMode: useDestination ? "destination" : "manual" },
     });
 
     res.json({ url: session.url });
@@ -2610,12 +2659,24 @@ app.post("/api/checkout/create-session", requireAuth, async (req, res) => {
       };
     });
 
+    // Modèle "Stripe gère les tarifs" : destination charge si le panier n'a
+    // qu'UN vendeur avec compte Connect → frais Stripe prélevés au vendeur,
+    // plateforme sans frais + commission (application_fee_amount).
+    const transfer = await resolveTransferMode(cart.items);
+    const paidAmount = Math.max(0, Number(cart.total || 0) - Number(promoState?.discountAmount || 0));
+    const platformFeeCents = Math.round(paidAmount * PLATFORM_COMMISSION_PERCENT);
+    const useDestination = transfer.mode === "destination" && platformFeeCents > 0 && platformFeeCents < Math.round(paidAmount * 100);
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       customer_email: req.session.user.email,
       line_items: lineItems,
       discounts: stripeDiscounts,
+      payment_intent_data: useDestination ? {
+        transfer_data: { destination: transfer.destination },
+        application_fee_amount: platformFeeCents,
+      } : undefined,
       success_url: `https://gca-nuxt.vercel.app/downloads?confirmed=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `https://gca-nuxt.vercel.app/cart?checkout=cancel`,
       metadata: {
@@ -2625,6 +2686,7 @@ app.post("/api/checkout/create-session", requireAuth, async (req, res) => {
         promoCode: promoState?.promo?.code || "",
         subtotalAmount: String(Math.round(Number(cart.total || 0) * 100) / 100),
         discountAmount: String(promoState?.discountAmount || 0),
+        transferMode: useDestination ? "destination" : "manual",
       },
     });
 
@@ -2686,7 +2748,7 @@ app.post("/api/checkout/confirm-session", requireAuth, async (req, res) => {
       );
       await client.query("COMMIT");
       // Part vendeur → transfert Stripe Connect (75% du prix)
-      await createSellerTransfers(ord.rows[0].id, session.id);
+      await maybeCreateSellerTransfers(ord.rows[0].id, session);
       await recordStripeFee(ord.rows[0].id, session);
       return res.json({ ok: true, orderId: ord.rows[0].id });
     }
@@ -2772,7 +2834,7 @@ app.post("/api/checkout/confirm-session", requireAuth, async (req, res) => {
     await client.query("COMMIT");
 
     // Part vendeur(s) → transferts Stripe Connect (75% du prix de chaque article)
-    await createSellerTransfers(orderId, session.id);
+    await maybeCreateSellerTransfers(orderId, session);
     await recordStripeFee(orderId, session);
 
     res.status(201).json({ ok: true, orderId, alreadyConfirmed: false });
@@ -2844,7 +2906,7 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
         );
         console.log(`Webhook buy-now: order ${orderInsert.rows[0].id} created for user ${userId}`);
         // Part vendeur → transfert Stripe Connect
-        await createSellerTransfers(orderInsert.rows[0].id, session.id);
+        await maybeCreateSellerTransfers(orderInsert.rows[0].id, session);
         await recordStripeFee(orderInsert.rows[0].id, session);
         return res.json({ received: true, orderId: orderInsert.rows[0].id });
       }
@@ -2903,7 +2965,7 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
         await client.query("COMMIT");
         console.log(`Webhook: order ${orderId} created for user ${userId}`);
         // Part vendeur(s) → transferts Stripe Connect
-        await createSellerTransfers(orderId, session.id);
+        await maybeCreateSellerTransfers(orderId, session);
         await recordStripeFee(orderId, session);
       } catch (err) {
         await client.query("ROLLBACK");
@@ -2958,6 +3020,9 @@ app.post("/api/stripe/connect", requireAuth, async (req, res) => {
         email: user.email,
         business_type: "individual",
         metadata: { gsa_user_id: String(user.id) },
+        // Modèle "Stripe gère les tarifs" : les frais de paiement sont prélevés
+        // directement sur le compte du vendeur, la plateforme ne paie rien.
+        pricing_model: "stripe_managed",
       });
       accountId = account.id;
 
@@ -3738,20 +3803,41 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
         email: c.receipt_email || c.billing_details?.email || null,
         created: c.created * 1000,
         description: c.description || null,
+        // Destination charge (modèle Stripe-managed) : montant reversé au vendeur
+        // = montant − commission plateforme (application_fee)
+        transferDestination: c.transfer_data?.destination || null,
+        transferredAmount: c.transfer_data?.destination
+          ? (c.amount - Number(c.application_fee_amount || 0)) / 100
+          : null,
+        applicationFee: c.application_fee_amount ? c.application_fee_amount / 100 : null,
       }));
 
-      out.transfers = (transfers.data || []).map((t) => ({
-        id: t.id,
-        amount: t.amount / 100,
-        currency: t.currency,
-        status: t.status,
-        destination: t.destination,
-        created: t.created * 1000,
-        description: t.description || null,
-      }));
+      // Transferts vendeurs : transferts manuels + destination charges
+      const manualTransfers = (transfers.data || []).filter((t) => t.status === "paid");
+      const destCharges = (charges.data || []).filter((c) => c.transfer_data?.destination);
+      out.transfers = [
+        ...manualTransfers.map((t) => ({
+          id: t.id,
+          amount: t.amount / 100,
+          currency: t.currency,
+          status: t.status,
+          destination: t.destination,
+          created: t.created * 1000,
+          mode: "transfer",
+        })),
+        ...destCharges.map((c) => ({
+          id: c.id,
+          amount: (c.amount - Number(c.application_fee_amount || 0)) / 100,
+          currency: c.currency,
+          status: c.status,
+          destination: c.transfer_data.destination,
+          created: c.created * 1000,
+          mode: "destination",
+        })),
+      ];
 
       out.stats.chargesTotal = out.charges.reduce((s, c) => s + (c.status === "succeeded" ? c.amount : 0), 0);
-      out.stats.transfersTotal = out.transfers.reduce((s, t) => s + (t.status === "paid" ? t.amount : 0), 0);
+      out.stats.transfersTotal = out.transfers.reduce((s, t) => s + (t.status === "paid" || t.status === "succeeded" ? t.amount : 0), 0);
 
       // Frais Stripe réels : balance_transactions de type "charge"
       try {
@@ -3860,19 +3946,34 @@ app.get("/api/seller/revenue", requireAuth, async (req, res) => {
           pending: (balance.pending || []).map((b) => ({ currency: b.currency, amount: b.amount / 100 })),
         };
 
-        const [transfers, payouts] = await Promise.all([
+        const [transfers, payouts, destCharges] = await Promise.all([
           stripe.transfers.list({ destination: accountId, limit: 50 }),
           stripe.payouts.list({ limit: 50 }, { stripeAccount: accountId }).catch(() => ({ data: [] })),
+          // Destination charges (modèle Stripe-managed) : ventes payées directement
+          // sur le compte du vendeur via la plateforme
+          stripe.charges.list({ transfer_data: { destination: accountId }, limit: 50 }).catch(() => ({ data: [] })),
         ]);
 
-        out.transfers = (transfers.data || []).map((t) => ({
-          id: t.id,
-          amount: t.amount / 100,
-          currency: t.currency,
-          status: t.status,
-          created: t.created * 1000,
-          description: t.description || null,
-        }));
+        out.transfers = [
+          ...(transfers.data || []).map((t) => ({
+            id: t.id,
+            amount: t.amount / 100,
+            currency: t.currency,
+            status: t.status,
+            created: t.created * 1000,
+            description: t.description || null,
+            mode: "transfer",
+          })),
+          ...(destCharges.data || []).map((c) => ({
+            id: c.id,
+            amount: (c.amount - Number(c.application_fee_amount || 0)) / 100,
+            currency: c.currency,
+            status: c.status,
+            created: c.created * 1000,
+            description: c.receipt_email || c.billing_details?.email || null,
+            mode: "destination",
+          })),
+        ];
 
         out.payouts = (payouts.data || []).map((p) => ({
           id: p.id,
