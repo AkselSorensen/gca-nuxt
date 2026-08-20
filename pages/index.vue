@@ -85,7 +85,6 @@
     <!-- Collaborateurs -->
     <section v-if="collabItems.length" class="section collab-section"><div class="container">
       <div class="collab-header">
-        <div class="collab-tag">{{ t('home.collab_tag') }}</div>
         <h2>{{ t('home.collab_title') }}</h2>
         <p>{{ t('home.collab_desc') }}</p>
       </div>
@@ -104,6 +103,10 @@
         <button class="carousel-arrow carousel-arrow-left" @click="slideCarousel('collab',1)" aria-label="Précédent"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
         <button class="carousel-arrow carousel-arrow-right" @click="slideCarousel('collab',-1)" aria-label="Suivant"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>
+      <p class="collab-discord">
+        <a v-if="state.discordInvite" :href="state.discordInvite" target="_blank" rel="noopener">Retrouvez vos avantages clients sur le discord</a>
+        <span v-else>Retrouvez vos avantages clients sur le discord</span>
+      </p>
     </div></section>
 
   </div>
@@ -493,9 +496,11 @@ onBeforeUnmount(() => {
 .collab-section, .comm-section { padding:48px 0; }
 
 .collab-header { text-align:center; margin-bottom:36px; }
-.collab-tag { display:inline-block; padding:4px 14px; border-radius:999px; background:rgba(47,125,246,0.08); border:1px solid rgba(47,125,246,0.15); color:var(--tag-clr,var(--primary)); font-size:.68rem; font-weight:700; letter-spacing:.08em; margin-bottom:10px; text-transform:uppercase; }
 .collab-header h2 { font-size:1.6rem; font-weight:900; letter-spacing:-.03em; }
 .collab-header p { color:var(--text-secondary); font-size:.92rem; margin-top:6px; }
+.collab-discord { text-align:center; margin-top:22px; font-size:.88rem; color:var(--text-secondary); }
+.collab-discord a { color:var(--primary); font-weight:600; text-decoration:none; border-bottom:1px solid rgba(47,125,246,.35); transition:border-color .2s, color .2s; }
+.collab-discord a:hover { color:var(--accent); border-color:var(--accent); }
 
 /* ─── Carrousel ─── */
 .carousel-stage {
