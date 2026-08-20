@@ -3843,7 +3843,7 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
         out.stats.feesTotal = (bts.data || []).reduce((s, bt) => s + bt.fee / 100, 0);
       } catch { /* non bloquant */ }
 
-      out.stats.netTotal = out.stats.chargesTotal - out.stats.transfersTotal - out.stats.feesTotal;
+      out.stats.netTotal = out.stats.chargesTotal - out.stats.transfersTotal;
     }
 
     // Stats commandes depuis la DB (commission plateforme réelle)

@@ -245,15 +245,10 @@
               <strong class="rev-card-val">{{ fmtMoney(revenue.stats?.transfersTotal) }}</strong>
               <span class="rev-card-sub">75% part vendeur</span>
             </div>
-            <div class="rev-card">
-              <span class="rev-card-label">Frais Stripe</span>
-              <strong class="rev-card-val muted">{{ fmtMoney(revenue.stats?.feesTotal) }}</strong>
-              <span class="rev-card-sub">frais de traitement</span>
-            </div>
             <div class="rev-card highlight">
               <span class="rev-card-label">Net plateforme</span>
               <strong class="rev-card-val">{{ fmtMoney(revenue.stats?.netTotal) }}</strong>
-              <span class="rev-card-sub">= encaissé − vendeurs − frais</span>
+              <span class="rev-card-sub">= encaissé − reversé aux vendeurs (commission)</span>
             </div>
           </div>
 
@@ -261,7 +256,7 @@
           <h3 class="rev-section-title">Commandes (base de données)</h3>
           <div class="table-wrap">
             <table v-if="revenue.orders?.length" class="admin-table">
-              <thead><tr><th>#</th><th>Date</th><th>Total payé</th><th>Part vendeur (75%)</th><th>Commission plateforme (25%)</th><th>Frais Stripe</th></tr></thead>
+              <thead><tr><th>#</th><th>Date</th><th>Total payé</th><th>Part vendeur (75%)</th><th>Commission plateforme (25%)</th></tr></thead>
               <tbody>
                 <tr v-for="o in revenue.orders" :key="o.id">
                   <td>{{ o.id }}</td>
@@ -269,7 +264,6 @@
                   <td class="price-cell">{{ fmtMoney(o.total) }}</td>
                   <td>{{ fmtMoney(o.sellerNet) }}</td>
                   <td class="price-cell">{{ fmtMoney(o.platformFee) }}</td>
-                  <td>{{ fmtMoney(o.fee) }}</td>
                 </tr>
               </tbody>
             </table>
