@@ -3010,9 +3010,22 @@ app.post("/api/stripe/connect", requireAuth, async (req, res) => {
       if (accountId) req.session.user.stripeAccountId = accountId;
     }
 
-    // Créer un compte Connect si pas encore fait
-    if (!accountId) {
-      const account = await stripe.accounts.create({
+    // Créer un compte Connect si pas encore fait, OU remplacer un compte
+    // stocké devenu invalide (ancien compte standalone non lié à cette
+    // plateforme, clés changées, accès révoqué…) → on en crée un neuf.
+    let account = null;
+    if (accountId) {
+      try {
+        account = await stripe.accounts.retrieve(accountId);
+      } catch (e) {
+        console.error(
+          `[stripe-connect] account ${accountId} inaccessible (${e.message}) → création d'un nouveau compte`
+        );
+        account = null;
+      }
+    }
+    if (!account) {
+      account = await stripe.accounts.create({
         type: "express",
         country: "FR",
         email: user.email,
@@ -3094,7 +3107,24 @@ app.get("/api/stripe/connect/status", requireAuth, async (req, res) => {
       return res.json({ connected: false, onboardingLink: `${APP_BASE_URL}/api/stripe/connect` });
     }
 
-    const account = await stripe.accounts.retrieve(accountId);
+    let account;
+    try {
+      account = await stripe.accounts.retrieve(accountId);
+    } catch (e) {
+      // Compte stocké invalide (ancien compte standalone, accès révoqué…)
+      // → reset propre : l'utilisateur reverra le bouton "Lier le compte Stripe"
+      // et un NOUVEAU compte Connect valide sera créé au prochain clic.
+      console.error(
+        `[stripe-status] account ${accountId} inaccessible (${e.message}) → reset du lien`
+      );
+      await pool.query(`UPDATE users SET stripe_account_id = NULL WHERE id = $1`, [userId]);
+      req.session.user.stripeAccountId = null;
+      return res.json({
+        connected: false,
+        hasAccount: false,
+        onboardingLink: `${APP_BASE_URL}/api/stripe/connect`,
+      });
+    }
     let connected = account.charges_enabled; // charges_enabled suffit pour recevoir des paiements
 
     // Si le compte stocké n'est pas activé, l'utilisateur a peut-être complété
