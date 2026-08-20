@@ -216,7 +216,7 @@
                     <td class="rev-prod">{{ s.productTitle }}</td>
                     <td class="rev-client">{{ s.client || '—' }}</td>
                     <td>{{ fmtMoney(s.price * s.quantity) }}</td>
-                    <td class="muted">-{{ fmtMoney(s.platformFee) }}</td>
+                    <td class="muted">-{{ fmtMoney(s.platformFee) }}<template v-if="s.platformFeePercent"> ({{ s.platformFeePercent }}%)</template></td>
                     <td class="rev-net">+{{ fmtMoney(s.sellerNet) }}</td>
                   </tr>
                 </tbody>

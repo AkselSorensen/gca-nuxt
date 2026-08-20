@@ -1595,6 +1595,7 @@ app.get("/api/seller/dashboard", requireAuth, async (req, res) => {
   }
 
   try {
+    await ensureRecentMigrations();
     const sellerId = req.session.user.id;
 
     // 1. Seller Info (Discord, Stripe, Date d'arrivée)
@@ -1609,14 +1610,15 @@ app.get("/api/seller/dashboard", requireAuth, async (req, res) => {
       SELECT 
         COALESCE(SUM(oi.quantity), 0) as units_sold,
         COALESCE(SUM(oi.price * oi.quantity), 0) as total_revenue,
-        COALESCE(SUM(ROUND((oi.price * oi.quantity * $2 / 100)::numeric, 2)), 0) as platform_fees,
-        COALESCE(SUM(ROUND((oi.price * oi.quantity * (1 - $2::numeric / 100))::numeric, 2)), 0) as seller_net_revenue,
+        COALESCE(SUM(ROUND((oi.price * oi.quantity * u.commission_percent / 100)::numeric, 2)), 0) as platform_fees,
+        COALESCE(SUM(ROUND((oi.price * oi.quantity * (1 - u.commission_percent::numeric / 100))::numeric, 2)), 0) as seller_net_revenue,
         (SELECT COUNT(*) FROM products WHERE seller_id = $1 AND is_hidden = FALSE) as active_products
       FROM order_items oi
       JOIN orders o ON o.id = oi.order_id
+      JOIN users u ON u.id = oi.seller_id
       WHERE oi.seller_id = $1 AND o.status = 'completed'
       `,
-      [sellerId, PLATFORM_COMMISSION_PERCENT]
+      [sellerId]
     );
 
     // 2b. Note moyenne du vendeur (reviews sur ses produits)
@@ -1657,18 +1659,26 @@ app.get("/api/seller/dashboard", requireAuth, async (req, res) => {
         oi.customer_email as client,
         oi.price as price,
         oi.quantity as quantity,
-        $2::numeric as platform_fee_percent,
-        ROUND((oi.price * oi.quantity * $2 / 100)::numeric, 2) as platform_fee_amount,
-        ROUND((oi.price * oi.quantity * (1 - $2::numeric / 100))::numeric, 2) as seller_net_amount
+        u.commission_percent as platform_fee_percent,
+        ROUND((oi.price * oi.quantity * u.commission_percent / 100)::numeric, 2) as platform_fee_amount,
+        ROUND((oi.price * oi.quantity * (1 - u.commission_percent::numeric / 100))::numeric, 2) as seller_net_amount
       FROM order_items oi
       JOIN orders o ON o.id = oi.order_id
       JOIN products p ON p.id = oi.product_id
+      JOIN users u ON u.id = oi.seller_id
       WHERE oi.seller_id = $1 AND o.status = 'completed'
       ORDER BY o.created_at DESC
       LIMIT 50
       `,
+      [sellerId]
+    );
+
+    // Commission configurée pour CE vendeur (affichée dans les logs)
+    const sellerCommissionRow = await pool.query(
+      `SELECT COALESCE(commission_percent, $2) AS commission_percent FROM users WHERE id = $1`,
       [sellerId, PLATFORM_COMMISSION_PERCENT]
     );
+    const sellerCommissionPercent = Number(sellerCommissionRow.rows[0]?.commission_percent) || PLATFORM_COMMISSION_PERCENT;
 
     res.json({
       discordLinked: !!sellerInfo.rows[0].discord_id,
@@ -1681,7 +1691,7 @@ app.get("/api/seller/dashboard", requireAuth, async (req, res) => {
         totalRevenue: parseFloat(statsResult.rows[0].total_revenue || 0),
         platformFees: parseFloat(statsResult.rows[0].platform_fees || 0),
         sellerNetRevenue: parseFloat(statsResult.rows[0].seller_net_revenue || 0),
-        platformCommissionPercent: PLATFORM_COMMISSION_PERCENT,
+        platformCommissionPercent: sellerCommissionPercent,
         activeProducts: parseInt(statsResult.rows[0].active_products || 0),
         rating: parseFloat(ratingResult.rows[0].avg_rating || 0),
         reviewCount: parseInt(ratingResult.rows[0].review_count || 0),
@@ -1749,12 +1759,13 @@ app.get("/api/sellers/:slug", async (req, res) => {
       SELECT 
         COALESCE(SUM(oi.quantity), 0) as units_sold,
         COALESCE(SUM(oi.price * oi.quantity), 0) as total_revenue,
-        COALESCE(SUM(ROUND((oi.price * oi.quantity * (1 - $2::numeric / 100))::numeric, 2)), 0) as seller_net_revenue
+        COALESCE(SUM(ROUND((oi.price * oi.quantity * (1 - u.commission_percent::numeric / 100))::numeric, 2)), 0) as seller_net_revenue
       FROM order_items oi
       JOIN orders o ON o.id = oi.order_id
+      JOIN users u ON u.id = oi.seller_id
       WHERE oi.seller_id = $1 AND o.status = 'completed'
       `,
-      [seller.id, PLATFORM_COMMISSION_PERCENT]
+      [seller.id]
     );
 
     res.json({
@@ -2479,6 +2490,7 @@ async function ensureRecentMigrations() {
       ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_error TEXT;
       ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transferred_at TIMESTAMPTZ;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_fee_amount NUMERIC NOT NULL DEFAULT 0;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS commission_percent NUMERIC(5,2) NOT NULL DEFAULT 25;
     `);
     recentMigrationsApplied = true;
   } catch (e) {
@@ -2545,10 +2557,11 @@ app.post("/api/checkout/buy-now", requireAuth, async (req, res) => {
     return res.status(503).json({ message: "Stripe n'est pas configuré." });
   }
   try {
+    await ensureRecentMigrations();
     const { slug } = req.body;
     if (!slug) return res.status(400).json({ message: "Slug du produit requis" });
 
-    const prodResult = await pool.query("SELECT p.*, u.stripe_account_id AS seller_stripe_id FROM products p JOIN users u ON u.id = p.seller_id WHERE p.slug = $1", [slug]);
+    const prodResult = await pool.query("SELECT p.*, u.stripe_account_id AS seller_stripe_id, u.commission_percent AS seller_commission FROM products p JOIN users u ON u.id = p.seller_id WHERE p.slug = $1", [slug]);
     if (!prodResult.rowCount) return res.status(404).json({ message: "Produit introuvable" });
     const product = prodResult.rows[0];
 
@@ -2567,7 +2580,8 @@ app.post("/api/checkout/buy-now", requireAuth, async (req, res) => {
     // vendeur a un compte Connect ACTIF (onboarding complété → charges_enabled).
     // Sinon → mode manuel (transfert après commande).
     const transfer = await resolveTransferMode([{ product: { sellerId: product.seller_id } }]);
-    const platformFeeCents = Math.round(Number(product.price) * PLATFORM_COMMISSION_PERCENT);
+    const sellerCommission = Number(product.seller_commission) || PLATFORM_COMMISSION_PERCENT;
+    const platformFeeCents = Math.round(Number(product.price) * sellerCommission);
     const useDestination = transfer.mode === "destination" && platformFeeCents < unitAmount;
 
     const session = await stripe.checkout.sessions.create({
@@ -2610,6 +2624,7 @@ app.post("/api/checkout/create-session", requireAuth, async (req, res) => {
   }
 
   try {
+    await ensureRecentMigrations();
     await syncClientCart(req.session.user.id, req.body?.items);
     const cart = await getCart(req.session.user.id);
 
@@ -2677,7 +2692,16 @@ app.post("/api/checkout/create-session", requireAuth, async (req, res) => {
     // plateforme sans frais + commission (application_fee_amount).
     const transfer = await resolveTransferMode(cart.items);
     const paidAmount = Math.max(0, Number(cart.total || 0) - Number(promoState?.discountAmount || 0));
-    const platformFeeCents = Math.round(paidAmount * PLATFORM_COMMISSION_PERCENT);
+    // Commission propre au vendeur (panier mono-vendeur en mode destination)
+    let cartCommission = PLATFORM_COMMISSION_PERCENT;
+    try {
+      const firstSellerId = cart.items[0]?.product?.sellerId;
+      if (firstSellerId) {
+        const cr = await pool.query(`SELECT commission_percent FROM users WHERE id = $1`, [firstSellerId]);
+        if (cr.rowCount) cartCommission = Number(cr.rows[0].commission_percent) || PLATFORM_COMMISSION_PERCENT;
+      }
+    } catch { /* fallback commission globale */ }
+    const platformFeeCents = Math.round(paidAmount * cartCommission);
     const useDestination = transfer.mode === "destination" && platformFeeCents > 0 && platformFeeCents < Math.round(paidAmount * 100);
 
     const session = await stripe.checkout.sessions.create({
@@ -2727,6 +2751,7 @@ app.post("/api/checkout/confirm-session", requireAuth, async (req, res) => {
 
   const client = await pool.connect();
   try {
+    await ensureRecentMigrations();
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (String(session.metadata?.userId || "") !== String(req.session.user.id)) {
@@ -2744,11 +2769,14 @@ app.post("/api/checkout/confirm-session", requireAuth, async (req, res) => {
 
     const cartId = Number(session.metadata?.cartId || 0);
     if (!cartId && session.metadata?.productSlug) {
-      const p = await client.query("SELECT * FROM products WHERE slug = $1", [session.metadata.productSlug]);
+      const p = await client.query(
+        "SELECT p.*, u.commission_percent AS seller_commission FROM products p JOIN users u ON u.id = p.seller_id WHERE p.slug = $1",
+        [session.metadata.productSlug]
+      );
       if (!p.rowCount) { await client.query("ROLLBACK"); return res.status(404).json({ message: "Produit introuvable." }); }
       const product = p.rows[0];
       const price = Number(product.price);
-      const cp = PLATFORM_COMMISSION_PERCENT;
+      const cp = Number(product.seller_commission) || PLATFORM_COMMISSION_PERCENT;
       const fee = Math.round(price * cp) / 100;
       console.log('[confirm-session buy-now] cp=%s price=%s fee=%s sellerNet=%s', cp, price, fee, price - fee);
       const ord = await client.query(
@@ -2806,15 +2834,16 @@ app.post("/api/checkout/confirm-session", requireAuth, async (req, res) => {
           p.price,
           ci.quantity,
           $2,
-          $4,
-          ROUND((p.price * ci.quantity * $4 / 100)::numeric, 2),
-          ROUND((p.price * ci.quantity * (1 - $4::numeric / 100))::numeric, 2)
+          u.commission_percent,
+          ROUND((p.price * ci.quantity * u.commission_percent / 100)::numeric, 2),
+          ROUND((p.price * ci.quantity * (1 - u.commission_percent::numeric / 100))::numeric, 2)
         FROM cart_items ci
         JOIN products p ON p.id = ci.product_id
+        JOIN users u ON u.id = p.seller_id
         WHERE ci.cart_id = $3
         RETURNING id
       `,
-      [orderId, req.session.user.email || session.customer_email || null, cartId, PLATFORM_COMMISSION_PERCENT]
+      [orderId, req.session.user.email || session.customer_email || null, cartId]
     );
 
     if (!itemsInsert.rowCount) {
@@ -2882,6 +2911,9 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
     case "checkout.session.completed": {
       const session = event.data.object;
 
+      // Garantir les colonnes récentes avant tout INSERT/SELECT (cold start)
+      await ensureRecentMigrations();
+
       // Vérifier si la commande existe déjà
       const existing = await pool.query(`SELECT id FROM orders WHERE stripe_session_id = $1 LIMIT 1`, [session.id]);
       if (existing.rowCount) {
@@ -2899,14 +2931,17 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
 
       // Buy-now : pas de cartId, on crée la commande directement depuis le productSlug
       if (!cartId && productSlug) {
-        const productResult = await pool.query("SELECT * FROM products WHERE slug = $1", [productSlug]);
+        const productResult = await pool.query(
+          "SELECT p.*, u.commission_percent AS seller_commission FROM products p JOIN users u ON u.id = p.seller_id WHERE p.slug = $1",
+          [productSlug]
+        );
         if (!productResult.rowCount) {
           console.error("Webhook buy-now: product not found for slug", productSlug);
           return res.status(404).json({ error: "Product not found" });
         }
         const product = productResult.rows[0];
         const price = Number(product.price);
-        const cp = PLATFORM_COMMISSION_PERCENT;
+        const cp = Number(product.seller_commission) || PLATFORM_COMMISSION_PERCENT;
         const fee = Math.round(price * cp) / 100;
 
         const orderInsert = await pool.query(
@@ -2947,14 +2982,15 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
 
         const itemsInsert = await client.query(`
           INSERT INTO order_items (order_id, product_id, seller_id, price, quantity, customer_email, platform_fee_percent, platform_fee_amount, seller_net_amount)
-          SELECT $1, p.id, p.seller_id, p.price, ci.quantity, $2, $4,
-            ROUND((p.price * ci.quantity * $4 / 100)::numeric, 2),
-            ROUND((p.price * ci.quantity * (1 - $4::numeric / 100))::numeric, 2)
+          SELECT $1, p.id, p.seller_id, p.price, ci.quantity, $2, u.commission_percent,
+            ROUND((p.price * ci.quantity * u.commission_percent / 100)::numeric, 2),
+            ROUND((p.price * ci.quantity * (1 - u.commission_percent::numeric / 100))::numeric, 2)
           FROM cart_items ci
           JOIN products p ON p.id = ci.product_id
+          JOIN users u ON u.id = p.seller_id
           WHERE ci.cart_id = $3
           RETURNING id
-        `, [orderId, session.customer_details?.email || "", cartId, PLATFORM_COMMISSION_PERCENT]);
+        `, [orderId, session.customer_details?.email || "", cartId]);
 
         if (!itemsInsert.rowCount) {
           throw new Error("No items to insert for this order");
@@ -3845,6 +3881,7 @@ app.delete("/api/admin/products/:id", requireAdmin, async (req, res) => {
 // Copie lisible du dashboard Stripe : solde, paiements, transferts, commission.
 app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
   try {
+    await ensureRecentMigrations();
     const out = {
       stripeMode: "inconnu",
       accountId: null,
@@ -3922,12 +3959,14 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
         const destIds = [...new Set(out.charges.map((c) => c.transferDestination).filter(Boolean))];
         if (destIds.length) {
           const sellersMap = await pool.query(
-            `SELECT stripe_account_id, display_name FROM users WHERE stripe_account_id = ANY($1)`,
+            `SELECT stripe_account_id, display_name, commission_percent FROM users WHERE stripe_account_id = ANY($1)`,
             [destIds]
           );
           const nameByAccount = new Map(sellersMap.rows.map((r) => [r.stripe_account_id, r.display_name]));
+          const pctByAccount = new Map(sellersMap.rows.map((r) => [r.stripe_account_id, Number(r.commission_percent)]));
           out.charges.forEach((c) => {
             c.sellerName = c.transferDestination ? (nameByAccount.get(c.transferDestination) || null) : null;
+            c.sellerPercent = c.transferDestination ? (pctByAccount.get(c.transferDestination) || null) : null;
           });
         }
       } catch { /* non bloquant */ }
@@ -3951,7 +3990,7 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
         COUNT(DISTINCT oi.id) AS items,
         u.email AS buyer_email,
         u.display_name AS buyer_name,
-        COALESCE(string_agg(DISTINCT s.display_name, ', '), '') AS sellers
+        COALESCE(string_agg(DISTINCT s.display_name || ' (' || s.commission_percent::text || '%)', ', '), '') AS sellers
       FROM orders o
       LEFT JOIN order_items oi ON oi.order_id = o.id
       LEFT JOIN users u ON u.id = o.user_id
@@ -4015,6 +4054,7 @@ app.get("/api/seller/revenue", requireAuth, async (req, res) => {
   }
 
   try {
+    await ensureRecentMigrations();
     const sellerId = req.session.user.id;
     const sellerInfo = await pool.query(
       `SELECT stripe_account_id FROM users WHERE id = $1`,
@@ -4089,17 +4129,18 @@ app.get("/api/seller/revenue", requireAuth, async (req, res) => {
       }
     }
 
-    // Stats de ventes DB (commission plateforme réelle)
+    // Stats de ventes DB (commission plateforme réelle = % configuré pour ce vendeur)
     const statsResult = await pool.query(
       `SELECT
         COALESCE(COUNT(DISTINCT o.id), 0) AS orders_count,
         COALESCE(SUM(oi.price * oi.quantity), 0) AS sales_total,
-        COALESCE(SUM(ROUND((oi.price * oi.quantity * $2 / 100)::numeric, 2)), 0) AS platform_fees,
-        COALESCE(SUM(ROUND((oi.price * oi.quantity * (1 - $2::numeric / 100))::numeric, 2)), 0) AS seller_net
+        COALESCE(SUM(ROUND((oi.price * oi.quantity * u.commission_percent / 100)::numeric, 2)), 0) AS platform_fees,
+        COALESCE(SUM(ROUND((oi.price * oi.quantity * (1 - u.commission_percent::numeric / 100))::numeric, 2)), 0) AS seller_net
       FROM order_items oi
       JOIN orders o ON o.id = oi.order_id
+      JOIN users u ON u.id = oi.seller_id
       WHERE oi.seller_id = $1 AND o.status = 'completed'`,
-      [sellerId, PLATFORM_COMMISSION_PERCENT]
+      [sellerId]
     );
     out.stats = {
       salesTotal: parseFloat(statsResult.rows[0].sales_total || 0),
@@ -4116,15 +4157,17 @@ app.get("/api/seller/revenue", requireAuth, async (req, res) => {
         oi.customer_email AS client,
         oi.price AS price,
         oi.quantity AS quantity,
-        ROUND((oi.price * oi.quantity * $2 / 100)::numeric, 2) AS platform_fee_amount,
-        ROUND((oi.price * oi.quantity * (1 - $2::numeric / 100))::numeric, 2) AS seller_net_amount
+        u.commission_percent AS platform_fee_percent,
+        ROUND((oi.price * oi.quantity * u.commission_percent / 100)::numeric, 2) AS platform_fee_amount,
+        ROUND((oi.price * oi.quantity * (1 - u.commission_percent::numeric / 100))::numeric, 2) AS seller_net_amount
       FROM order_items oi
       JOIN orders o ON o.id = oi.order_id
       JOIN products p ON p.id = oi.product_id
+      JOIN users u ON u.id = oi.seller_id
       WHERE oi.seller_id = $1 AND o.status = 'completed'
       ORDER BY o.created_at DESC
       LIMIT 50`,
-      [sellerId, PLATFORM_COMMISSION_PERCENT]
+      [sellerId]
     );
     out.sales = salesResult.rows.map((r) => ({
       date: r.date,
@@ -4132,9 +4175,17 @@ app.get("/api/seller/revenue", requireAuth, async (req, res) => {
       client: r.client,
       price: Number(r.price),
       quantity: Number(r.quantity),
+      platformFeePercent: Number(r.platform_fee_percent),
       platformFee: Number(r.platform_fee_amount),
       sellerNet: Number(r.seller_net_amount),
     }));
+
+    // Commission configurée pour CE vendeur (affichée dynamiquement dans les logs)
+    const sellerCommRow = await pool.query(
+      `SELECT COALESCE(commission_percent, $2) AS commission_percent FROM users WHERE id = $1`,
+      [sellerId, PLATFORM_COMMISSION_PERCENT]
+    );
+    out.platformPercent = Number(sellerCommRow.rows[0]?.commission_percent) || PLATFORM_COMMISSION_PERCENT;
 
     res.json(out);
   } catch (error) {
@@ -4224,17 +4275,45 @@ app.get("/admin", (_req, res) => {
 // GET /api/admin/users -list all users
 app.get("/api/admin/users", requireAdmin, async (_req, res) => {
   try {
+    await ensureRecentMigrations();
     const result = await pool.query(
-      `SELECT id, email, display_name, role, avatar_url, discord_id, steam_id, created_at FROM users ORDER BY created_at DESC`
+      `SELECT id, email, display_name, role, avatar_url, discord_id, steam_id, commission_percent, created_at FROM users ORDER BY created_at DESC`
     );
     res.json(result.rows.map(r => ({
       id: r.id, email: r.email, displayName: r.display_name,
       role: r.role, avatarUrl: r.avatar_url,
-      discordId: r.discord_id, steamId: r.steam_id, createdAt: r.created_at
+      discordId: r.discord_id, steamId: r.steam_id,
+      commissionPercent: Number(r.commission_percent),
+      createdAt: r.created_at
     })));
   } catch (error) {
     console.error("Admin users error:", error);
     res.status(500).json({ message: "Unable to fetch users" });
+  }
+});
+
+// PATCH /api/admin/users/:id/commission — configurer la commission propre à un vendeur
+app.patch("/api/admin/users/:id/commission", requireAdmin, async (req, res) => {
+  try {
+    await ensureRecentMigrations();
+    const userId = Number(req.params.id);
+    const raw = Number(req.body?.commissionPercent);
+    if (!userId || !Number.isFinite(raw)) {
+      return res.status(400).json({ message: "commissionPercent invalide" });
+    }
+    const commissionPercent = Math.min(100, Math.max(0, raw));
+    const userRow = await pool.query(`SELECT role FROM users WHERE id = $1`, [userId]);
+    if (!userRow.rowCount) return res.status(404).json({ message: "Utilisateur introuvable" });
+    const role = userRow.rows[0].role;
+    if (role !== "seller" && role !== "admin") {
+      return res.status(400).json({ message: "Ce compte n'est pas un vendeur" });
+    }
+    await pool.query(`UPDATE users SET commission_percent = $1 WHERE id = $2`, [commissionPercent, userId]);
+    console.log(`[admin] commission vendeur ${userId} (${role}) → ${commissionPercent}%`);
+    res.json({ ok: true, id: userId, commissionPercent });
+  } catch (error) {
+    console.error("Admin commission error:", error);
+    res.status(500).json({ message: "Unable to update commission" });
   }
 });
 

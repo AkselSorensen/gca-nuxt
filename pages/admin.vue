@@ -48,13 +48,25 @@
         <div class="tab-header"><h2>Utilisateurs</h2></div>
         <div class="table-wrap">
           <table v-if="users.length" class="admin-table">
-            <thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Date</th></tr></thead>
+            <thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Commission</th><th>Date</th></tr></thead>
             <tbody>
               <tr v-for="u in users" :key="u.id">
                 <td>{{ u.id }}</td>
-                <td><strong>{{ u.username }}</strong></td>
+                <td><strong>{{ u.displayName || u.username }}</strong></td>
                 <td>{{ u.email }}</td>
                 <td><span class="role-badge" :class="u.role">{{ u.role }}</span></td>
+                <td>
+                  <template v-if="u.role === 'seller' || u.role === 'admin'">
+                    <div class="comm-edit">
+                      <input type="number" min="0" max="100" step="0.5" v-model.number="u.commissionPercent" @keyup.enter="saveCommission(u)" />
+                      <span class="comm-pct">%</span>
+                      <button class="btn-action" title="Enregistrer la commission" @click="saveCommission(u)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                      </button>
+                    </div>
+                  </template>
+                  <span v-else class="muted">—</span>
+                </td>
                 <td>{{ u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—' }}</td>
               </tr>
             </tbody>
@@ -256,7 +268,7 @@
           <h3 class="rev-section-title">Commandes (base de données)</h3>
           <div class="table-wrap">
             <table v-if="revenue.orders?.length" class="admin-table">
-              <thead><tr><th>#</th><th>Date</th><th>Client</th><th>Vendeur(s)</th><th>Total payé</th><th>Part vendeur (75%)</th><th>Commission plateforme (25%)</th></tr></thead>
+              <thead><tr><th>#</th><th>Date</th><th>Client</th><th>Vendeur(s)</th><th>Total payé</th><th>Part vendeur</th><th>Commission plateforme</th></tr></thead>
               <tbody>
                 <tr v-for="o in revenue.orders" :key="o.id">
                   <td>{{ o.id }}</td>
@@ -289,7 +301,7 @@
                   <td>{{ new Date(c.created).toLocaleDateString('fr-FR') }} {{ new Date(c.created).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
                   <td>{{ c.email || '—' }}</td>
                   <td>
-                    <span v-if="c.sellerName" class="seller-cell">{{ c.sellerName }}</span>
+                    <span v-if="c.sellerName" class="seller-cell">{{ c.sellerName }}<template v-if="c.sellerPercent"> ({{ c.sellerPercent }}%)</template></span>
                     <span v-else-if="c.transferDestination" class="mono muted">{{ c.transferDestination }}</span>
                     <span v-else class="muted">—</span>
                   </td>
@@ -761,6 +773,21 @@ async function loadUsers() {
   } catch { users.value = [] }
 }
 
+// Commission propre au vendeur (0-100 %)
+async function saveCommission(u: any) {
+  try {
+    const res = await $fetch(api + `/api/admin/users/${u.id}/commission`, {
+      method: 'PATCH',
+      credentials: 'include',
+      body: { commissionPercent: u.commissionPercent },
+    })
+    u.commissionPercent = res.commissionPercent
+    toastRef.value?.show('success', `Commission de ${u.displayName || u.username} → ${res.commissionPercent}%`)
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur lors de la mise à jour de la commission')
+  }
+}
+
 // ─── Seller Requests ────────────────────────────────────
 async function loadSellerRequests() {
   try {
@@ -1119,6 +1146,10 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .buyer-email { font-size:.75rem; color:var(--text-muted); }
 .seller-cell { font-weight:600; }
 .muted { color:var(--text-muted); }
+.comm-edit { display:inline-flex; align-items:center; gap:6px; }
+.comm-edit input { width:64px; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:var(--bg-surface); color:var(--text); font-size:.85rem; font-family:inherit; outline:none; }
+.comm-edit input:focus { border-color:var(--primary); }
+.comm-pct { font-size:.8rem; color:var(--text-muted); }
 .admin-table tr { transition:background .15s; }
 .admin-table tr:hover td { background:rgba(255,255,255,0.02); }
 .thumb { width:46px;height:46px;border-radius:8px;object-fit:cover;background:var(--bg-surface); }
