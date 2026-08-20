@@ -2548,12 +2548,10 @@ app.post("/api/checkout/buy-now", requireAuth, async (req, res) => {
 
     const unitAmount = Math.round(Number(product.price) * 100);
 
-    // Modèle "Stripe gère les tarifs" : destination charge si le vendeur a un
-    // compte Connect → les frais Stripe sont prélevés au vendeur, la plateforme
-    // ne paie rien et garde sa commission (application_fee_amount).
-    const transfer = product.seller_stripe_id
-      ? { mode: "destination", destination: product.seller_stripe_id }
-      : { mode: "manual", destination: null };
+    // Modèle "Stripe gère les tarifs" : destination charge UNIQUEMENT si le
+    // vendeur a un compte Connect ACTIF (onboarding complété → charges_enabled).
+    // Sinon → mode manuel (transfert après commande).
+    const transfer = await resolveTransferMode([{ product: { sellerId: product.seller_id } }]);
     const platformFeeCents = Math.round(Number(product.price) * PLATFORM_COMMISSION_PERCENT);
     const useDestination = transfer.mode === "destination" && platformFeeCents < unitAmount;
 
