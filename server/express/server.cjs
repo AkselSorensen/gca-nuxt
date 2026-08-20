@@ -1619,6 +1619,19 @@ app.get("/api/seller/dashboard", requireAuth, async (req, res) => {
       [sellerId, PLATFORM_COMMISSION_PERCENT]
     );
 
+    // 2b. Note moyenne du vendeur (reviews sur ses produits)
+    const ratingResult = await pool.query(
+      `
+      SELECT
+        COALESCE(AVG(r.rating), 0)::numeric(3,2) as avg_rating,
+        COUNT(r.id)::int as review_count
+      FROM reviews r
+      JOIN products p ON p.id = r.product_id
+      WHERE p.seller_id = $1
+      `,
+      [sellerId]
+    );
+
     // 3. Units per article
     const unitsPerArticleResult = await pool.query(
       `
@@ -1670,6 +1683,8 @@ app.get("/api/seller/dashboard", requireAuth, async (req, res) => {
         sellerNetRevenue: parseFloat(statsResult.rows[0].seller_net_revenue || 0),
         platformCommissionPercent: PLATFORM_COMMISSION_PERCENT,
         activeProducts: parseInt(statsResult.rows[0].active_products || 0),
+        rating: parseFloat(ratingResult.rows[0].avg_rating || 0),
+        reviewCount: parseInt(ratingResult.rows[0].review_count || 0),
         unitsPerArticle: unitsPerArticleResult.rows
       },
       sales: salesResult.rows

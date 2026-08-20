@@ -131,7 +131,7 @@
           <div class="acard-body stats-grid">
             <div class="stat-item"><span class="stat-val">{{ stats.products }}</span><span class="stat-lbl">Produits</span></div>
             <div class="stat-item"><span class="stat-val">{{ stats.sales }}</span><span class="stat-lbl">Ventes</span></div>
-            <div class="stat-item"><span class="stat-val">{{ stats.revenue }}€</span><span class="stat-lbl">Revenus</span></div>
+            <div class="stat-item"><span class="stat-val">{{ fmtMoney(stats.revenue) }}</span><span class="stat-lbl">Revenus</span></div>
             <div class="stat-item"><span class="stat-val">{{ stats.rating }}</span><span class="stat-lbl">Note</span></div>
           </div>
         </div>
@@ -418,6 +418,19 @@ async function copyDiscordId() {
 }
 
 // ─── Onglet Revenus ─────────────────────────────────────────────
+async function loadSellerStats() {
+  try {
+    const res = await $fetch(api + '/api/seller/dashboard', { credentials: 'include' })
+    stats.products = res.stats?.activeProducts ?? 0
+    stats.sales = res.stats?.unitsSold ?? 0
+    stats.revenue = res.stats?.totalRevenue ?? 0
+    const rc = res.stats?.reviewCount ?? 0
+    stats.rating = rc > 0
+      ? Number(res.stats?.rating ?? 0).toFixed(1).replace('.', ',')
+      : '—'
+  } catch { /* stats non bloquantes */ }
+}
+
 async function loadRevenue() {
   if (revenueLoading.value) return
   revenueLoading.value = true
@@ -444,6 +457,8 @@ function fmtDate(ts: number | string | null | undefined) {
 onMounted(async () => {
   // Stripe d'abord — indépendant de GSAP (si GSAP échoue, le statut part quand même)
   checkStripeConnect()
+  loadSellerStats()
+  loadRevenue()
 
   try {
     const { load, pageEntrance } = await import('~/composables/useAnimation')
