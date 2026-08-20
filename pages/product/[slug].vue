@@ -216,8 +216,7 @@ async function buyNow() {
 }
 function addToCart() {
   try {
-    // localStorage corrompu (JSON invalide) → on repart d'un panier vide
-    // plutôt que d'échouer silencieusement.
+    // localStorage corrompu (JSON invalide) ou saturé → on repart d'un panier vide
     let saved: any[] = []
     try {
       saved = JSON.parse(localStorage.getItem('gsa-cart') || '[]') || []
@@ -225,10 +224,28 @@ function addToCart() {
     if (!Array.isArray(saved)) saved = []
     const exists = saved.find((p: any) => p.slug === product.value?.slug)
     if (!exists && product.value) {
-      saved.push({ slug: product.value.slug, title: product.value.title, price: product.value.price, oldPrice: product.value.oldPrice, discountPercent: product.value.discountPercent, thumbnail: product.value.thumbnail || product.value.media?.[0]?.thumbnail || product.value.media?.[0]?.url, sellerName: product.value.sellerName, media: product.value.media })
-      localStorage.setItem('gsa-cart', JSON.stringify(saved))
-      window.dispatchEvent(new Event('cart-updated'))
-      toastRef.value?.show('success', t('product.added_cart'))
+      // Panier LÉGER : ne PAS stocker les images base64 (elles saturent le quota
+      // localStorage → tout le panier devient inutilisable). L'image est rechargée
+      // depuis l'API au moment d'afficher le panier.
+      saved.push({
+        slug: product.value.slug,
+        title: product.value.title,
+        price: product.value.price,
+        oldPrice: product.value.oldPrice,
+        discountPercent: product.value.discountPercent,
+        sellerName: product.value.sellerName,
+      })
+      try {
+        localStorage.setItem('gsa-cart', JSON.stringify(saved))
+        window.dispatchEvent(new Event('cart-updated'))
+        toastRef.value?.show('success', t('product.added_cart'))
+      } catch {
+        // Quota toujours dépassé (ancien panier énorme) → on vide et on réessaie
+        localStorage.removeItem('gsa-cart')
+        localStorage.setItem('gsa-cart', JSON.stringify([saved[saved.length - 1]]))
+        window.dispatchEvent(new Event('cart-updated'))
+        toastRef.value?.show('success', t('product.added_cart'))
+      }
     } else {
       toastRef.value?.show('info', t('product.already_cart'))
     }

@@ -155,10 +155,35 @@ function addToCart(slug: string, title: string, price: number, img?: string) {
 }
 
 onMounted(async () => {
+  // Nettoyage du panier : les anciens paniers stockaient les images base64
+  // (media/thumbnail) → quota localStorage saturé → panier inutilisable.
+  // On retire les images lourdes et on re-sauvegarde.
   try {
-    const saved = localStorage.getItem('gsa-cart')
-    if (saved) items.value = JSON.parse(saved)
-  } catch {}
+    const raw = localStorage.getItem('gsa-cart')
+    if (raw) {
+      let parsed: any[] = []
+      try { parsed = JSON.parse(raw) || [] } catch { parsed = [] }
+      if (Array.isArray(parsed) && parsed.length) {
+        const lightened = parsed.map((it: any) => ({
+          slug: it.slug, title: it.title, price: it.price,
+          oldPrice: it.oldPrice, discountPercent: it.discountPercent,
+          sellerName: it.sellerName,
+        }))
+        localStorage.setItem('gsa-cart', JSON.stringify(lightened))
+        items.value = lightened
+      } else {
+        items.value = parsed
+      }
+    }
+  } catch {
+    // Panier illisible/saturé → repartir propre
+    try { localStorage.removeItem('gsa-cart') } catch {}
+    items.value = []
+  }
+
+  // Recharge les images des produits depuis l'API (le panier ne stocke plus d'images)
+  loadPreviews()
+
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
   if (gsap) pageEntrance(gsap, pageRef.value)
@@ -173,6 +198,25 @@ onMounted(async () => {
     await confirmCheckout(sid)
   }
 })
+
+// Récupère la vignette de chaque article via l'API (non bloquant)
+async function loadPreviews() {
+  const withoutImg = items.value.filter((it: any) => !it.thumbnail && it.slug)
+  for (const it of withoutImg) {
+    try {
+      const res: any = await $fetch(api + '/api/products/' + it.slug)
+      const p = res?.product || res
+      const thumb = p?.preview?.url || p?.thumbnail || p?.media?.[0]?.thumbnail || p?.media?.[0]?.url || ''
+      if (thumb) {
+        it.thumbnail = thumb
+        // Ne re-stocker que les URLs http (léger) — JAMAIS les base64 (quota)
+        if (thumb.startsWith('http')) {
+          try { localStorage.setItem('gsa-cart', JSON.stringify(items.value)) } catch {}
+        }
+      }
+    } catch { /* image indisponible → placeholder */ }
+  }
+}
 
 async function confirmCheckout(sid: string) {
   // Stripe peut mettre ~1-2s à marquer la session "paid" après le redirect :
@@ -196,8 +240,10 @@ async function confirmCheckout(sid: string) {
 }
 
 watch(items, (val) => {
-  localStorage.setItem('gsa-cart', JSON.stringify(val))
-  window.dispatchEvent(new Event('cart-updated'))
+  try {
+    localStorage.setItem('gsa-cart', JSON.stringify(val))
+    window.dispatchEvent(new Event('cart-updated'))
+  } catch { /* quota dépassé → le panier reste en mémoire (non persisté) */ }
 }, { deep: true })
 </script>
 
