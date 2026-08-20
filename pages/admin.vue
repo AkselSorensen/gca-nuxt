@@ -45,12 +45,23 @@
 
       <!-- ==================== UTILISATEURS ==================== -->
       <div v-if="activeTab === 'users'" class="tab-content">
-        <div class="tab-header"><h2>Utilisateurs</h2></div>
+        <div class="tab-header">
+          <h2>Utilisateurs</h2>
+          <div class="tab-actions">
+            <input v-model="userSearch" type="text" class="user-search" placeholder="Rechercher (nom, email)…" />
+            <select v-model="userRoleFilter" class="rev-filter">
+              <option value="all">Tous les rôles</option>
+              <option value="seller">Vendeurs</option>
+              <option value="customer">Clients</option>
+              <option value="admin">Admins</option>
+            </select>
+          </div>
+        </div>
         <div class="table-wrap">
-          <table v-if="users.length" class="admin-table">
+          <table v-if="filteredUsers.length" class="admin-table">
             <thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Commission</th><th>Date</th></tr></thead>
             <tbody>
-              <tr v-for="u in users" :key="u.id">
+              <tr v-for="u in filteredUsers" :key="u.id">
                 <td>{{ u.id }}</td>
                 <td><strong>{{ u.displayName || u.username }}</strong></td>
                 <td>{{ u.email }}</td>
@@ -71,7 +82,7 @@
               </tr>
             </tbody>
           </table>
-          <div v-else class="empty-tab">Aucun utilisateur.</div>
+          <div v-else class="empty-tab">{{ users.length ? 'Aucun utilisateur ne correspond au filtre.' : 'Aucun utilisateur.' }}</div>
         </div>
       </div>
 
@@ -772,6 +783,18 @@ async function deleteProduct(id: number) {
 
 // ─── Users ─────────────────────────────────────────────
 const users = ref<any[]>([])
+const userRoleFilter = ref('all')
+const userSearch = ref('')
+const filteredUsers = computed(() => {
+  const q = userSearch.value.trim().toLowerCase()
+  return users.value.filter((u: any) => {
+    if (userRoleFilter.value !== 'all' && u.role !== userRoleFilter.value) return false
+    if (!q) return true
+    const name = String(u.displayName || u.username || '').toLowerCase()
+    const email = String(u.email || '').toLowerCase()
+    return name.includes(q) || email.includes(q)
+  })
+})
 async function loadUsers() {
   try {
     const res = await $fetch(api + '/api/admin/users', { credentials: 'include' })
@@ -1240,6 +1263,8 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .rev-mode-badge.live { background:rgba(110,231,183,.1);border:1px solid rgba(110,231,183,.25);color:#6ee7b7; }
 .rev-filter { padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.82rem;font-weight:600;font-family:inherit;outline:none;cursor:pointer; }
 .rev-filter:focus { border-color:var(--primary); }
+.user-search { padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.82rem;font-family:inherit;outline:none;width:200px; }
+.user-search:focus { border-color:var(--primary); }
 .rev-account { display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;border-radius:10px;background:var(--bg-surface);border:1px solid var(--border);font-size:.8rem; }
 .rev-account-id { font-family:ui-monospace,Consolas,monospace;color:var(--text-secondary); }
 .rev-account-email { color:var(--text-muted); }
