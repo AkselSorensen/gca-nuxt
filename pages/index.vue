@@ -256,10 +256,17 @@ function step(key: string) {
   state.animId = requestAnimationFrame(() => step(key))
 }
 
-function pauseCarousel(key: string) { carousels[key].paused = true }
+function pauseCarousel(key: string) {
+  const state = carousels[key]
+  state.paused = true
+  // Annule la boucle en cours : sans ça, chaque interaction relançait step()
+  // SANS tuer la boucle précédente → boucles parallèles → vitesse ×2, ×3…
+  cancelAnimationFrame(state.animId)
+}
+
 function resumeCarousel(key: string) {
   const state = carousels[key]
-  if (!state.track) return
+  if (!state.track || !state.paused) return // ne relance que si réellement arrêté
   state.paused = false
   requestAnimationFrame(() => step(key))
 }
@@ -277,6 +284,7 @@ function dragStart(e: MouseEvent | TouchEvent, key: string) {
   const state = carousels[key]
   state.dragging = true
   state.paused = true
+  cancelAnimationFrame(state.animId)
   const evt = 'touches' in e ? e.touches[0] : e
   state.dragStartX = evt.clientX
   state.dragStartPos = state.x
@@ -292,6 +300,10 @@ function dragMove(e: MouseEvent | TouchEvent, key: string) {
 function dragEnd(key: string) {
   const state = carousels[key]
   state.dragging = false
+  // dragEnd est lié à @mouseup ET @mouseleave → appelé 2× de suite.
+  // Le 1er relance la boucle ; le 2e ne doit RIEN faire (elle tourne déjà),
+  // sinon boucles parallèles → vitesse qui augmente après chaque interaction.
+  if (!state.paused) return
   state.paused = false
   requestAnimationFrame(() => step(key))
 }
