@@ -3917,6 +3917,21 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
       out.stats.chargesTotal = out.charges.reduce((s, c) => s + (c.status === "succeeded" ? c.amount : 0), 0);
       out.stats.transfersTotal = out.transfers.reduce((s, t) => s + (t.status === "paid" || t.status === "succeeded" ? t.amount : 0), 0);
 
+      // Vendeur affilié de chaque charge : destination (compte Connect) → nom du vendeur en DB
+      try {
+        const destIds = [...new Set(out.charges.map((c) => c.transferDestination).filter(Boolean))];
+        if (destIds.length) {
+          const sellersMap = await pool.query(
+            `SELECT stripe_account_id, display_name FROM users WHERE stripe_account_id = ANY($1)`,
+            [destIds]
+          );
+          const nameByAccount = new Map(sellersMap.rows.map((r) => [r.stripe_account_id, r.display_name]));
+          out.charges.forEach((c) => {
+            c.sellerName = c.transferDestination ? (nameByAccount.get(c.transferDestination) || null) : null;
+          });
+        }
+      } catch { /* non bloquant */ }
+
       // Frais Stripe réels : balance_transactions de type "charge"
       try {
         const bts = await stripe.balanceTransactions.list({ limit: 100, type: "charge" });
@@ -3933,11 +3948,16 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
         COALESCE(o.stripe_fee_amount, 0) AS stripe_fee_amount,
         COALESCE(SUM(oi.platform_fee_amount), 0) AS platform_fee,
         COALESCE(SUM(oi.seller_net_amount), 0) AS seller_net,
-        COUNT(DISTINCT oi.id) AS items
+        COUNT(DISTINCT oi.id) AS items,
+        u.email AS buyer_email,
+        u.display_name AS buyer_name,
+        COALESCE(string_agg(DISTINCT s.display_name, ', '), '') AS sellers
       FROM orders o
       LEFT JOIN order_items oi ON oi.order_id = o.id
+      LEFT JOIN users u ON u.id = o.user_id
+      LEFT JOIN users s ON s.id = oi.seller_id
       WHERE o.status = 'completed'
-      GROUP BY o.id
+      GROUP BY o.id, u.email, u.display_name
       ORDER BY o.created_at DESC
       LIMIT 50
     `);
@@ -3973,6 +3993,9 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
       platformFee: Number(r.platform_fee),
       sellerNet: Number(r.seller_net),
       items: Number(r.items),
+      buyerEmail: r.buyer_email,
+      buyerName: r.buyer_name,
+      sellers: r.sellers,
       createdAt: r.created_at,
     }));
 

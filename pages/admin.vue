@@ -256,11 +256,19 @@
           <h3 class="rev-section-title">Commandes (base de données)</h3>
           <div class="table-wrap">
             <table v-if="revenue.orders?.length" class="admin-table">
-              <thead><tr><th>#</th><th>Date</th><th>Total payé</th><th>Part vendeur (75%)</th><th>Commission plateforme (25%)</th></tr></thead>
+              <thead><tr><th>#</th><th>Date</th><th>Client</th><th>Vendeur(s)</th><th>Total payé</th><th>Part vendeur (75%)</th><th>Commission plateforme (25%)</th></tr></thead>
               <tbody>
                 <tr v-for="o in revenue.orders" :key="o.id">
                   <td>{{ o.id }}</td>
                   <td>{{ new Date(o.createdAt).toLocaleDateString('fr-FR') }} {{ new Date(o.createdAt).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
+                  <td>
+                    <div v-if="o.buyerName || o.buyerEmail" class="buyer-cell">
+                      <span v-if="o.buyerName" class="buyer-name">{{ o.buyerName }}</span>
+                      <span v-if="o.buyerEmail" class="buyer-email">{{ o.buyerEmail }}</span>
+                    </div>
+                    <span v-else class="muted">—</span>
+                  </td>
+                  <td><span v-if="o.sellers" class="seller-cell">{{ o.sellers }}</span><span v-else class="muted">—</span></td>
                   <td class="price-cell">{{ fmtMoney(o.total) }}</td>
                   <td>{{ fmtMoney(o.sellerNet) }}</td>
                   <td class="price-cell">{{ fmtMoney(o.platformFee) }}</td>
@@ -274,12 +282,17 @@
           <h3 class="rev-section-title">Paiements Stripe (charges)</h3>
           <div class="table-wrap">
             <table v-if="revenue.charges?.length" class="admin-table">
-              <thead><tr><th>ID</th><th>Date</th><th>Client</th><th>Montant</th><th>Statut</th></tr></thead>
+              <thead><tr><th>ID</th><th>Date</th><th>Client</th><th>Vendeur</th><th>Montant</th><th>Statut</th></tr></thead>
               <tbody>
                 <tr v-for="c in revenue.charges" :key="c.id">
                   <td class="mono">{{ c.id }}</td>
                   <td>{{ new Date(c.created).toLocaleDateString('fr-FR') }} {{ new Date(c.created).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
                   <td>{{ c.email || '—' }}</td>
+                  <td>
+                    <span v-if="c.sellerName" class="seller-cell">{{ c.sellerName }}</span>
+                    <span v-else-if="c.transferDestination" class="mono muted">{{ c.transferDestination }}</span>
+                    <span v-else class="muted">—</span>
+                  </td>
                   <td class="price-cell">{{ fmtMoney(c.amount) }} {{ c.currency?.toUpperCase() }}</td>
                   <td><span class="rev-status" :class="c.status">{{ c.status }}</span></td>
                 </tr>
@@ -1101,6 +1114,11 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .admin-table { width:100%;border-collapse:collapse;font-size:.85rem; }
 .admin-table th { text-align:left;padding:12px 14px;font-weight:700;color:var(--text-muted);text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;border-bottom:1px solid var(--border); }
 .admin-table td { padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.03); }
+.buyer-cell { display:grid; gap:2px; }
+.buyer-name { font-weight:700; }
+.buyer-email { font-size:.75rem; color:var(--text-muted); }
+.seller-cell { font-weight:600; }
+.muted { color:var(--text-muted); }
 .admin-table tr { transition:background .15s; }
 .admin-table tr:hover td { background:rgba(255,255,255,0.02); }
 .thumb { width:46px;height:46px;border-radius:8px;object-fit:cover;background:var(--bg-surface); }
