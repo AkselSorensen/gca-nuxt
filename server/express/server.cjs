@@ -3959,14 +3959,16 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
         const destIds = [...new Set(out.charges.map((c) => c.transferDestination).filter(Boolean))];
         if (destIds.length) {
           const sellersMap = await pool.query(
-            `SELECT stripe_account_id, display_name, commission_percent FROM users WHERE stripe_account_id = ANY($1)`,
+            `SELECT id, stripe_account_id, display_name, commission_percent FROM users WHERE stripe_account_id = ANY($1)`,
             [destIds]
           );
           const nameByAccount = new Map(sellersMap.rows.map((r) => [r.stripe_account_id, r.display_name]));
           const pctByAccount = new Map(sellersMap.rows.map((r) => [r.stripe_account_id, Number(r.commission_percent)]));
+          const idByAccount = new Map(sellersMap.rows.map((r) => [r.stripe_account_id, r.id]));
           out.charges.forEach((c) => {
             c.sellerName = c.transferDestination ? (nameByAccount.get(c.transferDestination) || null) : null;
             c.sellerPercent = c.transferDestination ? (pctByAccount.get(c.transferDestination) || null) : null;
+            c.sellerUserId = c.transferDestination ? (idByAccount.get(c.transferDestination) || null) : null;
           });
         }
       } catch { /* non bloquant */ }
@@ -3990,7 +3992,8 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
         COUNT(DISTINCT oi.id) AS items,
         u.email AS buyer_email,
         u.display_name AS buyer_name,
-        COALESCE(string_agg(DISTINCT s.display_name || ' (' || s.commission_percent::text || '%)', ', '), '') AS sellers
+        COALESCE(string_agg(DISTINCT s.display_name || ' (' || s.commission_percent::text || '%)', ', '), '') AS sellers,
+        COALESCE(array_agg(DISTINCT s.id) FILTER (WHERE s.id IS NOT NULL), '{}') AS seller_ids
       FROM orders o
       LEFT JOIN order_items oi ON oi.order_id = o.id
       LEFT JOIN users u ON u.id = o.user_id
@@ -4035,8 +4038,21 @@ app.get("/api/admin/revenue", requireAdmin, async (_req, res) => {
       buyerEmail: r.buyer_email,
       buyerName: r.buyer_name,
       sellers: r.sellers,
+      sellerIds: Array.isArray(r.seller_ids) ? r.seller_ids.map(Number) : [],
       createdAt: r.created_at,
     }));
+
+    // Liste des vendeurs pour le filtre admin (dropdown)
+    try {
+      const sellersListRes = await pool.query(
+        `SELECT id, display_name, commission_percent FROM users WHERE role IN ('seller','admin') ORDER BY display_name`
+      );
+      out.sellersList = sellersListRes.rows.map((r) => ({
+        id: r.id,
+        name: r.display_name,
+        commissionPercent: Number(r.commission_percent),
+      }));
+    } catch { out.sellersList = []; }
 
     res.json(out);
   } catch (error) {

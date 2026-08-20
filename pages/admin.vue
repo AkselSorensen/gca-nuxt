@@ -220,6 +220,12 @@
             <span v-if="revenue" class="rev-mode-badge" :class="revenue.stripeMode === 'LIVE' ? 'live' : 'test'">
               {{ revenue.stripeMode === 'LIVE' ? '● LIVE' : '● TEST' }}
             </span>
+            <select v-if="revenue?.sellersList?.length" v-model="sellerFilter" class="rev-filter">
+              <option value="all">Tous les vendeurs</option>
+              <option v-for="s in revenue.sellersList" :key="s.id" :value="s.id">
+                {{ s.name }} ({{ s.commissionPercent }}%)
+              </option>
+            </select>
             <button class="admin-btn-icon" @click="loadRevenue" title="Rafraîchir">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             </button>
@@ -267,10 +273,10 @@
           <!-- Commandes DB -->
           <h3 class="rev-section-title">Commandes (base de données)</h3>
           <div class="table-wrap">
-            <table v-if="revenue.orders?.length" class="admin-table">
+            <table v-if="filteredOrders.length" class="admin-table">
               <thead><tr><th>#</th><th>Date</th><th>Client</th><th>Vendeur(s)</th><th>Total payé</th><th>Part vendeur</th><th>Commission plateforme</th></tr></thead>
               <tbody>
-                <tr v-for="o in revenue.orders" :key="o.id">
+                <tr v-for="o in filteredOrders" :key="o.id">
                   <td>{{ o.id }}</td>
                   <td>{{ new Date(o.createdAt).toLocaleDateString('fr-FR') }} {{ new Date(o.createdAt).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
                   <td>
@@ -287,16 +293,16 @@
                 </tr>
               </tbody>
             </table>
-            <div v-else class="empty-tab">Aucune commande enregistrée.</div>
+            <div v-else class="empty-tab">{{ sellerFilter === 'all' ? 'Aucune commande enregistrée.' : 'Aucune commande pour ce vendeur.' }}</div>
           </div>
 
           <!-- Paiements Stripe -->
           <h3 class="rev-section-title">Paiements Stripe (charges)</h3>
           <div class="table-wrap">
-            <table v-if="revenue.charges?.length" class="admin-table">
+            <table v-if="filteredCharges.length" class="admin-table">
               <thead><tr><th>ID</th><th>Date</th><th>Client</th><th>Vendeur</th><th>Montant</th><th>Statut</th></tr></thead>
               <tbody>
-                <tr v-for="c in revenue.charges" :key="c.id">
+                <tr v-for="c in filteredCharges" :key="c.id">
                   <td class="mono">{{ c.id }}</td>
                   <td>{{ new Date(c.created).toLocaleDateString('fr-FR') }} {{ new Date(c.created).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
                   <td>{{ c.email || '—' }}</td>
@@ -310,7 +316,7 @@
                 </tr>
               </tbody>
             </table>
-            <div v-else class="empty-tab">Aucun paiement Stripe trouvé (mode test : utilise la carte 4000 0000 0000 0077).</div>
+            <div v-else class="empty-tab">{{ sellerFilter === 'all' ? 'Aucun paiement Stripe trouvé (mode test : utilise la carte 4000 0000 0000 0077).' : 'Aucun paiement pour ce vendeur.' }}</div>
           </div>
 
           <!-- Transferts vendeurs -->
@@ -826,6 +832,18 @@ async function rejectSeller(id: number) {
 // ─── Revenue (dashboard Stripe) ──────────────────────────
 const revenue = ref<any>(null)
 const revenueLoading = ref(false)
+// Filtre vendeur : 'all' ou id du vendeur (dropdown)
+const sellerFilter = ref<number | 'all'>('all')
+const filteredOrders = computed(() => {
+  const orders = revenue.value?.orders || []
+  if (sellerFilter.value === 'all') return orders
+  return orders.filter((o: any) => (o.sellerIds || []).includes(sellerFilter.value))
+})
+const filteredCharges = computed(() => {
+  const charges = revenue.value?.charges || []
+  if (sellerFilter.value === 'all') return charges
+  return charges.filter((c: any) => c.sellerUserId === sellerFilter.value)
+})
 
 async function loadRevenue() {
   revenueLoading.value = true
@@ -1220,6 +1238,8 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .rev-mode-badge { display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:800;letter-spacing:.06em; }
 .rev-mode-badge.test { background:rgba(245,179,66,.1);border:1px solid rgba(245,179,66,.25);color:#f5b342; }
 .rev-mode-badge.live { background:rgba(110,231,183,.1);border:1px solid rgba(110,231,183,.25);color:#6ee7b7; }
+.rev-filter { padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.82rem;font-weight:600;font-family:inherit;outline:none;cursor:pointer; }
+.rev-filter:focus { border-color:var(--primary); }
 .rev-account { display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;border-radius:10px;background:var(--bg-surface);border:1px solid var(--border);font-size:.8rem; }
 .rev-account-id { font-family:ui-monospace,Consolas,monospace;color:var(--text-secondary); }
 .rev-account-email { color:var(--text-muted); }
