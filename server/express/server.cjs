@@ -3025,6 +3025,25 @@ app.post("/api/stripe/connect", requireAuth, async (req, res) => {
       }
     }
     if (!account) {
+      // Avant de créer un compte neuf : chercher un compte Connect DÉJÀ créé
+      // pour cet utilisateur (metadata gsa_user_id ou email) — ex. onboarding
+      // complété mais lien DB perdu (reset d'un ancien compte invalide).
+      try {
+        const listRes = await stripe.accounts.list({ limit: 100 });
+        const existing = listRes.data.find(
+          (a) =>
+            (a.metadata && a.metadata.gsa_user_id === String(user.id)) ||
+            (a.email && a.email.toLowerCase() === (user.email || "").toLowerCase())
+        );
+        if (existing) {
+          console.log(`[stripe-connect] réutilisation du compte existant ${existing.id} (charges=${existing.charges_enabled})`);
+          account = existing;
+        }
+      } catch (e) {
+        console.error("[stripe-connect] recherche compte existant échouée:", e.message);
+      }
+    }
+    if (!account) {
       account = await stripe.accounts.create({
         type: "express",
         country: "FR",
@@ -3039,10 +3058,21 @@ app.post("/api/stripe/connect", requireAuth, async (req, res) => {
 
       await pool.query(`UPDATE users SET stripe_account_id = $1 WHERE id = $2`, [accountId, user.id]);
       req.session.user.stripeAccountId = accountId;
+    } else if (accountId !== account.id) {
+      // Compte existant retrouvé (lien DB perdu) → re-associer
+      accountId = account.id;
+      await pool.query(`UPDATE users SET stripe_account_id = $1 WHERE id = $2`, [accountId, user.id]);
+      req.session.user.stripeAccountId = accountId;
     }
 
     // Créer un lien d'onboarding — le return_url porte l'ID du compte pour
     // l'associer à l'utilisateur au retour SANS dépendre de l'email.
+    // Si le compte est DÉJÀ activé (onboarding complet), pas besoin de lien :
+    // on renvoie connected:true et le front affichera "Stripe connecté".
+    if (account.charges_enabled) {
+      return res.json({ url: null, accountId, connected: true });
+    }
+
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `https://gca-nuxt.vercel.app/seller/account?refresh=true&account=${accountId}`,
@@ -3050,7 +3080,7 @@ app.post("/api/stripe/connect", requireAuth, async (req, res) => {
       type: "account_onboarding",
     });
 
-    res.json({ url: accountLink.url, accountId });
+    res.json({ url: accountLink.url, accountId, connected: false });
   } catch (error) {
     console.error("Stripe Connect error:", error);
         res.status(500).json({ message: "Stripe Connect: " + (error?.message || error) });
@@ -4685,12 +4715,22 @@ app.patch("/api/admin/page-content/:page", requireAdmin, async (req, res) => {
 
 function maybeListen() {
   // app.listen UNIQUEMENT en mode standalone (node server/express/server.cjs).
-  // Quand le module est importé par Nitro (bundle ESM, `require` absent), Nitro
-  // écoute déjà sur PORT → un second listen = EADDRINUSE → crash du process.
-  if (typeof require !== "undefined" && require.main === module) {
-    app.listen(port, () => {
-      console.log(`Server running on http://localhost:${port}`);
-    });
+  // Quand le module est importé par Nitro (bundle ESM), Nitro écoute déjà sur
+  // PORT → un second listen = EADDRINUSE → crash du process.
+  // ATTENTION : NE JAMAIS référencer `require` ici (même via typeof) — Rollup
+  // remplace `typeof require` par `typeof commonjsRequire` (toujours défini)
+  // mais laisse `require.main` intact → ReferenceError dans le bundle ESM →
+  // UnhandledRejection → process.exit(128) → requêtes prod perdues.
+  try {
+    // En standalone CJS : process.mainModule === module.
+    // Dans le bundle Nitro (ESM) : process.mainModule est undefined.
+    if (process.mainModule && process.mainModule === module) {
+      app.listen(port, () => {
+        console.log(`Server running on http://localhost:${port}`);
+      });
+    }
+  } catch (e) {
+    console.error("[maybeListen] skipped:", e.message);
   }
 }
 

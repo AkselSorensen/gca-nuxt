@@ -347,8 +347,18 @@ async function connectStripe() {
   stripeError.value = ''
   try {
     const res = await $fetch(api + '/api/stripe/connect', { method: 'POST', credentials: 'include' })
-    if (res.url) window.location.href = res.url
-    else stripeError.value = 'Réponse inattendue du serveur'
+    if (res.connected) {
+      // Compte déjà activé (onboarding complet) → pas de redirection nécessaire
+      stripeHasAccount.value = true
+      stripeLinked.value = true
+      stripeStatus.value = 'linked'
+      stripeMsg.value = t('seller.stripe_ok')
+      checkStripeConnect()
+    } else if (res.url) {
+      window.location.href = res.url
+    } else {
+      stripeError.value = 'Réponse inattendue du serveur'
+    }
   } catch (e: any) {
     stripeError.value = e?.data?.message || e?.message || 'Erreur de connexion Stripe'
   } finally {
