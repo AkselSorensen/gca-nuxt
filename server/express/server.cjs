@@ -3020,9 +3020,9 @@ app.post("/api/stripe/connect", requireAuth, async (req, res) => {
         email: user.email,
         business_type: "individual",
         metadata: { gsa_user_id: String(user.id) },
-        // Modèle "Stripe gère les tarifs" : les frais de paiement sont prélevés
-        // directement sur le compte du vendeur, la plateforme ne paie rien.
-        pricing_model: "stripe_managed",
+        // Les comptes Express récents utilisent le modèle "Stripe gère les tarifs"
+        // (stripe_managed) par défaut : les frais de paiement sont prélevés sur
+        // le compte du vendeur, la plateforme ne paie rien.
       });
       accountId = account.id;
 
