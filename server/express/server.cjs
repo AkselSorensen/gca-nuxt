@@ -3491,14 +3491,14 @@ app.get("/api/invoice/:orderItemId", requireAuth, async (req, res) => {
       rowY += rowHeight + 8;
     });
 
-    // Totaux (labels alignés à droite jusqu'à x=440, montants jusqu'à x=48+W → marge anti-chevauchement)
+    // Totaux — lignes HT / TVA / TTC (labels alignés à droite jusqu'à x=440, montants jusqu'à x=48+W → marge anti-chevauchement)
     if (rowY > usableBottom - 130) {
       doc.addPage();
       rowY = 48;
     }
     rowY += 6;
     doc.fontSize(9);
-    doc.fillColor(muted).text("Sous-total", 0, rowY, { align: "right", width: 440 });
+    doc.fillColor(muted).text("Sous-total (HT)", 0, rowY, { align: "right", width: 440 });
     doc.fillColor(dark).text(formatEuro(subtotal), 0, rowY, { align: "right", width: W });
     rowY += 15;
 
@@ -3516,12 +3516,12 @@ app.get("/api/invoice/:orderItemId", requireAuth, async (req, res) => {
       doc.fillColor(dark).text(formatEuro(totalNet), 0, rowY, { align: "right", width: W });
       rowY += 15;
     }
-    // Frais de traitement Stripe (montant réel depuis balance_transaction)
+    // Frais de traitement Stripe (montant réel depuis balance_transaction) — inclus dans le TTC
     const stripeFee = Number(order.stripe_fee_amount || 0);
     if (stripeFee > 0) {
       const feeRate = total > 0 ? formatPercent((stripeFee / total) * 100) : "";
       doc.fillColor(muted).text(`Frais de traitement Stripe (${feeRate})`, 0, rowY, { align: "right", width: 440 });
-      doc.fillColor(dark).text(`-${formatEuro(stripeFee)}`, 0, rowY, { align: "right", width: W });
+      doc.fillColor(dark).text(formatEuro(stripeFee), 0, rowY, { align: "right", width: W });
       rowY += 15;
     }
     if (discount > 0) {
@@ -3529,15 +3529,20 @@ app.get("/api/invoice/:orderItemId", requireAuth, async (req, res) => {
       doc.fillColor("#dc2626").text(`-${formatEuro(discount)}`, 0, rowY, { align: "right", width: W });
       rowY += 15;
     }
+    // TVA non applicable — ligne TOUJOURS affichée (même si le montant est sous le seuil)
+    doc.fillColor(muted).text("TVA non applicable, art. 293 B du CGI", 0, rowY, { align: "right", width: 440 });
+    doc.fillColor(dark).text(formatEuro(0), 0, rowY, { align: "right", width: W });
+    rowY += 15;
+    // Total TTC = HT + frais de traitement Stripe − remise
+    const totalTTC = subtotal + stripeFee - discount;
     doc.rect(48, rowY - 4, W, 24).fill(dark);
     doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(10.5).text("TOTAL TTC", 0, rowY + 4, { align: "right", width: W - 70 });
-    doc.text(formatEuro(total), 0, rowY + 4, { align: "right", width: W });
+    doc.text(formatEuro(totalTTC), 0, rowY + 4, { align: "right", width: W });
 
     // Mentions
     doc.fillColor(muted).font("Helvetica").fontSize(7.5);
     doc.text("Paiement sécurisé via Stripe.", 48, rowY + 40);
-    doc.text("TVA non applicable, art. 293 B du CGI.", 48, rowY + 52);
-    doc.text(`Commande n° ${order.order_id} · Transaction Stripe ${String(order.stripe_session_id || "").slice(0, 18)}`, 48, rowY + 64);
+    doc.text(`Commande n° ${order.order_id} · Transaction Stripe ${String(order.stripe_session_id || "").slice(0, 18)}`, 48, rowY + 52);
 
     // Footer (dans la zone sûre pour éviter les pages fantômes)
     const footerY = usableBottom - 4;
