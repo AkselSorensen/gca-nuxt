@@ -557,22 +557,29 @@ async function maintenanceMiddleware(req, res, next) {
 app.use(maintenanceMiddleware);
 
 async function initializeDatabase() {
-  // Migrations récentes isolées : s'exécutent même si le gros bloc historique ci-dessous échoue
-  await pool.query(`
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_id TEXT;
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_status TEXT NOT NULL DEFAULT 'pending';
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_error TEXT;
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transferred_at TIMESTAMPTZ;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_fee_amount NUMERIC NOT NULL DEFAULT 0;
-  `);
+  // Migrations récentes isolées : sur une base NEUVE (ex. Supabase fraîchement
+  // créée), les tables order_items/orders n'existent pas encore → ces ALTER
+  // échoueraient et BLOQUERAIENT le gros bloc CREATE TABLE ci-dessous.
+  // Le gros bloc recrée ces mêmes colonnes (IF NOT EXISTS) → try/catch suffit.
+  try {
+    await pool.query(`
+      ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_id TEXT;
+      ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_status TEXT NOT NULL DEFAULT 'pending';
+      ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_error TEXT;
+      ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transferred_at TIMESTAMPTZ;
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_fee_amount NUMERIC NOT NULL DEFAULT 0;
+    `);
 
-  // Réparation des seller_net_amount (division entière historique)
-  await pool.query(`
-    UPDATE order_items
-    SET seller_net_amount = ROUND((price * quantity * (1 - platform_fee_percent::numeric / 100))::numeric, 2)
-    WHERE seller_net_amount = price * quantity
-      AND platform_fee_percent > 0;
-  `);
+    // Réparation des seller_net_amount (division entière historique)
+    await pool.query(`
+      UPDATE order_items
+      SET seller_net_amount = ROUND((price * quantity * (1 - platform_fee_percent::numeric / 100))::numeric, 2)
+      WHERE seller_net_amount = price * quantity
+        AND platform_fee_percent > 0;
+    `);
+  } catch (e) {
+    console.warn("[init] migrations récentes ignorées (base neuve ?):", e.message || e);
+  }
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -666,19 +673,6 @@ async function initializeDatabase() {
     ALTER TABLE users ADD COLUMN IF NOT EXISTS seller_description TEXT NOT NULL DEFAULT '';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS shop_name TEXT NOT NULL DEFAULT '';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS discord_tag TEXT NOT NULL DEFAULT '';
-
-    -- Suivi des transfers Stripe Connect vers les vendeurs (pattern separate charges and transfers)
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_id TEXT;
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_status TEXT NOT NULL DEFAULT 'pending';
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_error TEXT;
-    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transferred_at TIMESTAMPTZ;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_fee_amount NUMERIC NOT NULL DEFAULT 0;
-
-    -- Réparation : la division entière SQL (1 - pct / 100 = 1) avait stocké seller_net_amount = prix plein
-    UPDATE order_items
-    SET seller_net_amount = ROUND((price * quantity * (1 - platform_fee_percent::numeric / 100))::numeric, 2)
-    WHERE seller_net_amount = price * quantity
-      AND platform_fee_percent > 0;
 
     CREATE UNIQUE INDEX IF NOT EXISTS users_discord_id_unique_idx ON users(discord_id) WHERE discord_id IS NOT NULL;
     CREATE UNIQUE INDEX IF NOT EXISTS users_steam_id_unique_idx ON users(steam_id) WHERE steam_id IS NOT NULL;
@@ -836,6 +830,20 @@ async function initializeDatabase() {
         WHEN seller_net_amount = 0 THEN ROUND((price * quantity * (1 - COALESCE(NULLIF(platform_fee_percent, 0), 15)::numeric / 100))::numeric, 2)
         ELSE seller_net_amount
       END;
+
+    -- Suivi des transfers Stripe Connect vers les vendeurs (pattern separate charges and transfers)
+    -- (placé APRÈS la création de orders/order_items pour les bases neuves)
+    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_id TEXT;
+    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_status TEXT NOT NULL DEFAULT 'pending';
+    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_error TEXT;
+    ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transferred_at TIMESTAMPTZ;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_fee_amount NUMERIC NOT NULL DEFAULT 0;
+
+    -- Réparation : la division entière SQL (1 - pct / 100 = 1) avait stocké seller_net_amount = prix plein
+    UPDATE order_items
+    SET seller_net_amount = ROUND((price * quantity * (1 - platform_fee_percent::numeric / 100))::numeric, 2)
+    WHERE seller_net_amount = price * quantity
+      AND platform_fee_percent > 0;
   `);
 
   // Table pour les fichiers produits (liés au R2)
