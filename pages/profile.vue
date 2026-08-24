@@ -14,6 +14,21 @@
             <h2>Informations personnelles</h2>
           </div>
           <div class="pcard-body">
+            <div class="avatar-preview">
+              <img v-if="form.avatarUrl" :src="form.avatarUrl" alt="Avatar" class="avatar-img" @error="avatarError = true" />
+              <div v-else class="avatar-placeholder">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div class="avatar-meta">
+                <strong>{{ form.displayName || '—' }}</strong>
+                <span>{{ form.email || '' }}</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Avatar (URL)</label>
+              <input v-model="form.avatarUrl" type="text" placeholder="https://..." @input="avatarError = false" />
+              <small v-if="avatarError" class="avatar-err">Image introuvable — vérifie l'URL.</small>
+            </div>
             <div class="field">
               <label>Nom d'affichage</label>
               <input v-model="form.displayName" type="text" />
@@ -21,10 +36,6 @@
             <div class="field">
               <label>Email</label>
               <input v-model="form.email" type="email" />
-            </div>
-            <div class="field">
-              <label>Avatar (URL)</label>
-              <input v-model="form.avatarUrl" type="text" placeholder="https://..." />
             </div>
             <button class="btn-save" :disabled="saving" @click="saveProfile">
               {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
@@ -182,6 +193,7 @@ const { user, checkAuth } = useAuth()
 const saving = ref(false)
 const profileMsg = ref('')
 const profileError = ref(false)
+const avatarError = ref(false)
 const copied = ref(false)
 const sellerSending = ref(false)
 const sellerMsg = ref('')
@@ -322,6 +334,13 @@ async function copyId(id: string) {
 .pcard-header h2 { margin: 0; font-size: 1rem; font-weight: 700; }
 .pcard-body { padding: 20px; display: grid; gap: 14px; }
 .field { display: grid; gap: 6px; }
+.avatar-preview { display: flex; align-items: center; gap: 16px; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-surface); }
+.avatar-img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(47,125,246,0.25); flex-shrink: 0; }
+.avatar-placeholder { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: rgba(47,125,246,0.08); color: var(--text-muted); flex-shrink: 0; }
+.avatar-meta { display: grid; gap: 3px; min-width: 0; }
+.avatar-meta strong { font-size: 1rem; }
+.avatar-meta span { font-size: .8rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; }
+.avatar-err { color: var(--red); font-size: .75rem; }
 .field label { font-size: .78rem; font-weight: 600; color: var(--text-secondary); }
 .field input, .field textarea {
   padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
