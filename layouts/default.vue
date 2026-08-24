@@ -3,8 +3,26 @@
     <AppHeader />
     <main id="main-content"><slot /></main>
     <AppFooter />
+    <AppLoader :visible="showLoader" />
   </div>
 </template>
+
+<script setup lang="ts">
+// Loader stylé entre les pages : apparaît si la navigation dépasse ~250ms
+const { isLoading } = useLoadingIndicator()
+const showLoader = ref(false)
+let timer: ReturnType<typeof setTimeout> | null = null
+
+watch(isLoading, (value) => {
+  if (timer) clearTimeout(timer)
+  if (value) {
+    timer = setTimeout(() => { showLoader.value = true }, 250)
+  } else {
+    showLoader.value = false
+  }
+})
+</script>
+
 <style scoped>
 .site-shell {
   display:flex; flex-direction:column; min-height:100vh;
