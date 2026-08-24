@@ -38,6 +38,10 @@
         </div>
       </div>
     </div>
+    <div class="hero-scroll">
+      <span>Scroll</span>
+      <svg class="hero-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
   </section>
 </template>
 
@@ -53,8 +57,19 @@ defineProps({ totalProducts: Number, totalSales: Number, avgRating: String, tota
   min-height: 100svh;
   display: flex;
   align-items: center;
-  padding: 100px 0 80px;
+  padding: 100px 0 32px;
   overflow: hidden;
+}
+.hero-scroll {
+  position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  color: var(--text-muted); font-size: 0.68rem; text-transform: uppercase;
+  letter-spacing: 0.18em; font-weight: 600; pointer-events: none; z-index: 2;
+}
+.hero-arrow { animation: hero-bounce 1.8s ease-in-out infinite; }
+@keyframes hero-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50% { transform: translateY(7px); opacity: 1; }
 }
 .hero-video {
   position: absolute;

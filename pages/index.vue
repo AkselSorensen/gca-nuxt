@@ -372,11 +372,11 @@ onBeforeUnmount(() => {
 })
 </script>
 <style scoped>
-.section { padding: 40px 0; }
-.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
-.section-header h2 { font-size:1.3rem; font-weight:800; letter-spacing:-.02em; }
-.section-link { font-size:.88rem; color:var(--primary); font-weight:600; transition:opacity .2s; }
-.section-link:hover { opacity:.8; }
+.section { padding: 28px 0; }
+.section-header { display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; margin-bottom:18px; }
+.section-header h2 { margin:0; font-size:1.3rem; font-weight:800; letter-spacing:-0.02em; }
+.section-link { color:var(--primary); font-size:.82rem; font-weight:600; text-decoration:none; opacity:.85; }
+.section-link:hover { opacity:1; }
 
 /* Categories strip */
 .categories-strip {
