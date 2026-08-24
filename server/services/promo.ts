@@ -1,4 +1,5 @@
 // Service : codes promo (réplique du monolithe Express)
+import { randomBytes } from 'node:crypto'
 import { query } from './db'
 
 export function normalizePromoCode(code: string): string {
@@ -7,6 +8,11 @@ export function normalizePromoCode(code: string): string {
     .toUpperCase()
     .replace(/[^A-Z0-9_-]/g, '')
     .slice(0, 40)
+}
+
+export function generatePromoCode(prefix = 'AMB') {
+  const safePrefix = normalizePromoCode(prefix).slice(0, 12) || 'AMB'
+  return `${safePrefix}-${randomBytes(3).toString('hex').toUpperCase()}`
 }
 
 export function calculatePromoDiscount(cartTotal: number, promo: any): number {
