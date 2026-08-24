@@ -49,6 +49,15 @@ export function buildWhereClause(query: Record<string, any> = {}) {
   }
 }
 
+// Convertit une URL media : data:base64 → /api/media/:id (léger), sinon inchangé.
+// Évite d'embarquer des Mo de base64 dans les réponses liste/recherche.
+export function mediaUrl(url: any, mediaId: any): string | null {
+  if (!url) return null
+  const s = String(url)
+  if (s.startsWith('data:')) return `/api/media/${mediaId}`
+  return s
+}
+
 export function mapProduct(row: any) {
   return {
     id: row.id,
@@ -75,7 +84,13 @@ export function mapProduct(row: any) {
     tags: row.tags || [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    media: row.media || [],
+    media: (row.media || []).map((m: any) => ({
+      id: m.id,
+      type: m.type,
+      sortOrder: m.sortOrder,
+      thumbnail: mediaUrl(m.thumbnail, m.id),
+      url: mediaUrl(m.url, m.id),
+    })),
   }
 }
 

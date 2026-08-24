@@ -38,7 +38,14 @@ export default defineEventHandler(async (event) => {
                 LIMIT 1
               ),
               ''
-            ) AS thumbnail
+            ) AS thumbnail,
+            (
+              SELECT pm.id
+              FROM product_media pm
+              WHERE pm.product_id = p.id
+              ORDER BY pm.sort_order ASC, pm.id ASC
+              LIMIT 1
+            ) AS thumbnail_id
           FROM products p
           WHERE (p.is_trending = TRUE OR EXISTS (SELECT 1 FROM unnest(p.tags) AS t WHERE LOWER(t) = 'tendance'))
           ORDER BY p.popularity_score DESC, p.views DESC
@@ -70,7 +77,14 @@ export default defineEventHandler(async (event) => {
                 LIMIT 1
               ),
               ''
-            ) AS thumbnail
+            ) AS thumbnail,
+            (
+              SELECT pm.id
+              FROM product_media pm
+              WHERE pm.product_id = p.id
+              ORDER BY pm.sort_order ASC, pm.id ASC
+              LIMIT 1
+            ) AS thumbnail_id
           FROM products p
           WHERE p.discount_percent > 0
           ORDER BY p.discount_percent DESC, p.views DESC
@@ -102,6 +116,13 @@ export default defineEventHandler(async (event) => {
                     LIMIT 1
                   ),
                   ''
+                ),
+                'thumbnailId', (
+                  SELECT pm.id
+                  FROM product_media pm
+                  WHERE pm.product_id = p.id
+                  ORDER BY pm.sort_order ASC, pm.id ASC
+                  LIMIT 1
                 )
               )
               ORDER BY p.popularity_score DESC, p.created_at DESC
@@ -132,17 +153,28 @@ export default defineEventHandler(async (event) => {
       query(`SELECT slug, display_name AS username FROM users WHERE role IN ('seller', 'admin') ORDER BY display_name ASC`),
     ])
 
+    // Remplace les thumbnails base64 par des URLs /api/media/:id (léger + cache)
+    const thumb = (p: any) => {
+      if (p && p.thumbnail && String(p.thumbnail).startsWith('data:') && p.thumbnail_id) {
+        return { ...p, thumbnail: `/api/media/${p.thumbnail_id}` }
+      }
+      if (p && p.thumbnailId && p.thumbnail && String(p.thumbnail).startsWith('data:')) {
+        return { ...p, thumbnail: `/api/media/${p.thumbnailId}` }
+      }
+      return p
+    }
+
     return {
       locale,
       user: sessionUser || null,
       categories: categories.rows,
-      trending: trending.rows,
-      discounts: discounts.rows,
+      trending: trending.rows.map(thumb),
+      discounts: discounts.rows.map(thumb),
       ...(stats.rows[0] || {}),
       featuredByCategory: featured.rows.map((row: any) => ({
         categorySlug: row.category_slug,
         categoryName: row.category_name,
-        products: row.products || [],
+        products: (row.products || []).map(thumb),
       })),
       landingConfig: landingConfig.rows,
       collaborators: ['Tresingo', 'Atelier Nova', 'Hexa Studio', 'Forge 27', 'Northline'],

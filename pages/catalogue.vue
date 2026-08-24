@@ -159,13 +159,13 @@ const { t } = useLang()
 const api = config.public.apiOrigin
 
 const { data: prodData } = await useFetch(api + '/api/products?limit=100')
-const { data: bootData } = await useFetch(api + '/api/bootstrap')
+const { data: catData } = await useFetch(api + '/api/categories')
 const pageRef = ref<HTMLElement | null>(null)
 const searchRef = ref<HTMLInputElement | null>(null)
 const sidebarOpen = ref(false)
 
 const products = computed(() => prodData.value?.items || prodData.value?.products || [])
-const categories = computed(() => bootData.value?.categories || [])
+const categories = computed(() => catData.value || [])
 const loading = computed(() => !prodData.value)
 
 const sortOptions = [

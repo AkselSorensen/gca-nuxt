@@ -53,7 +53,17 @@ export default defineEventHandler(async (event) => {
         ORDER BY p.created_at DESC, p.id DESC
       `
     )
-    return result.rows
+    return result.rows.map((r: any) => ({
+      ...r,
+      thumbnail: r.thumbnail && String(r.thumbnail).startsWith('data:')
+        ? (r.media?.[0]?.id ? `/api/media/${r.media[0].id}` : r.thumbnail)
+        : r.thumbnail,
+      media: (r.media || []).map((m: any) => ({
+        ...m,
+        url: m.url && String(m.url).startsWith('data:') ? `/api/media/${m.id}` : m.url,
+        thumbnail: m.thumbnail && String(m.thumbnail).startsWith('data:') ? `/api/media/${m.id}` : m.thumbnail,
+      })),
+    }))
   } catch (error: any) {
     if (error?.statusCode) throw error
     console.error('Admin products error:', error)

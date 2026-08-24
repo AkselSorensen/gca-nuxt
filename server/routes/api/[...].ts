@@ -1,7 +1,16 @@
-// Monte l'application Express complète (ancien backend gsa_tresingo) dans Nitro.
-// Toutes les routes /api/* et /auth/* non gérées par les pages Nuxt passent ici.
-import { fromNodeMiddleware } from 'h3'
-// @ts-ignore — module CommonJS exporté par server/express/server.cjs
-import expressApp from '../../express/server.cjs'
+// Monte l'application Express (ancien backend gsa_tresingo) dans Nitro en
+// CHARGEMENT PAUTIF : le monolithe (stripe, pdfkit, aws-sdk, initializeDatabase)
+// n'est importé que lorsqu'une route /api/* non gérée par les modules Nitro
+// est réellement appelée → cold start ~x3 plus rapide.
+import { defineEventHandler, fromNodeMiddleware } from 'h3'
 
-export default fromNodeMiddleware(expressApp)
+let expressHandler: ReturnType<typeof fromNodeMiddleware> | null = null
+
+export default defineEventHandler(async (event) => {
+  if (!expressHandler) {
+    // @ts-ignore — module CommonJS exporté par server/express/server.cjs
+    const mod = await import('../../express/server.cjs')
+    expressHandler = fromNodeMiddleware(mod.default || mod)
+  }
+  return expressHandler(event)
+})

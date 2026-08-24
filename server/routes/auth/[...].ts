@@ -1,6 +1,14 @@
-// Monte l'application Express complète pour les routes /auth/* (Discord, Steam).
-import { fromNodeMiddleware } from 'h3'
-// @ts-ignore — module CommonJS exporté par server/express/server.cjs
-import expressApp from '../../express/server.cjs'
+// Monte l'application Express pour les routes /auth/* (Discord, Steam legacy)
+// en chargement pautif (voir server/routes/api/[...].ts).
+import { defineEventHandler, fromNodeMiddleware } from 'h3'
 
-export default fromNodeMiddleware(expressApp)
+let expressHandler: ReturnType<typeof fromNodeMiddleware> | null = null
+
+export default defineEventHandler(async (event) => {
+  if (!expressHandler) {
+    // @ts-ignore — module CommonJS exporté par server/express/server.cjs
+    const mod = await import('../../express/server.cjs')
+    expressHandler = fromNodeMiddleware(mod.default || mod)
+  }
+  return expressHandler(event)
+})
