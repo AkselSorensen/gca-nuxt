@@ -1,9 +1,10 @@
 // Middleware : session & gardes d'authentification pour les routes Nitro.
 // Compatible avec les sessions express-session (connect-pg-simple, table
 // `user_sessions`, cookie `connect.sid`) créées par le monolithe Express.
-import { getCookie, createError } from 'h3'
+import { createError } from 'h3'
 import type { H3Event } from 'h3'
 import { pool } from '../services/db'
+import { getSessionId } from '../services/session'
 
 export interface SessionUser {
   id: number
@@ -16,7 +17,7 @@ export interface SessionUser {
 
 export async function getSessionUser(event: H3Event): Promise<SessionUser | null> {
   try {
-    const sid = getCookie(event, 'connect.sid')
+    const sid = getSessionId(event)
     if (!sid) return null
     const r = await pool.query('SELECT sess FROM user_sessions WHERE sid = $1', [sid])
     if (!r.rowCount) return null

@@ -1,5 +1,10 @@
 // Service : connexion PostgreSQL partagée (Supabase).
 // Les modules migrés hors du monolithe Express utilisent ce pool.
+// dotenv : le monolithe Express charge .env lui-même ; on fait pareil ici
+// pour que le build standalone (node .output/server/index.mjs) ait DATABASE_URL.
+// NB: `import 'dotenv/config'` est tree-shaké par Rollup — appel explicite requis.
+import dotenv from 'dotenv'
+dotenv.config()
 import pg from 'pg'
 
 const { Pool } = pg
