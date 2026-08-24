@@ -78,6 +78,30 @@
           </div>
         </div>
 
+        <!-- Stripe Connect (vendeurs) -->
+        <div v-if="isSeller" class="pcard anim-card stripe-card">
+          <div class="pcard-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <h2>Paiements Stripe</h2>
+          </div>
+          <div class="pcard-body">
+            <div v-if="stripeStatus === 'linked'" class="seller-approved">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <div>
+                <strong>Compte Stripe connecté</strong>
+                <span>Vos revenus sont transférés sur ce compte.</span>
+              </div>
+            </div>
+            <template v-else>
+              <p class="seller-hint">Pour recevoir vos revenus, associez votre compte Stripe. Vous serez redirigé vers Stripe pour finaliser l'onboarding.</p>
+              <button class="btn-save" :disabled="stripeLoading" @click="connectStripe">
+                {{ stripeLoading ? 'Redirection...' : 'Lier mon compte Stripe' }}
+              </button>
+              <span v-if="stripeMsg" class="msg" :class="{ err: stripeError }">{{ stripeMsg }}</span>
+            </template>
+          </div>
+        </div>
+
         <!-- Statut vendeur -->
         <div class="pcard anim-card seller-card">
           <div class="pcard-header">
@@ -166,6 +190,12 @@ const sellerError = ref(false)
 const form = reactive({ displayName: '', email: '', avatarUrl: '' })
 const sellerForm = reactive({ shopName: '', bio: '', discordTag: '' })
 
+const isSeller = computed(() => user.value?.role === 'seller' || user.value?.role === 'admin')
+const stripeStatus = ref('loading')
+const stripeMsg = ref('')
+const stripeError = ref(false)
+const stripeLoading = ref(false)
+
 onMounted(async () => {
   await checkAuth()
   if (user.value) {
@@ -176,10 +206,53 @@ onMounted(async () => {
     sellerForm.bio = user.value.sellerDescription || ''
     sellerForm.discordTag = user.value.discordTag || ''
   }
+  if (isSeller.value) checkStripeConnect()
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
   if (gsap) pageEntrance(gsap, pageRef.value)
 })
+
+async function checkStripeConnect() {
+  stripeStatus.value = 'loading'
+  stripeMsg.value = ''
+  try {
+    const res = await $fetch(api + '/api/stripe/connect/status', { credentials: 'include' })
+    if (res.connected) {
+      stripeStatus.value = 'linked'
+      stripeMsg.value = 'Compte Stripe connecté ✓'
+    } else {
+      stripeStatus.value = 'unlinked'
+      stripeMsg.value = ''
+    }
+  } catch (e: any) {
+    stripeStatus.value = 'unlinked'
+    stripeMsg.value = 'Erreur: ' + (e?.data?.message || e?.message || 'vérification impossible')
+    stripeError.value = true
+  }
+}
+
+async function connectStripe() {
+  stripeLoading.value = true
+  stripeError.value = false
+  stripeMsg.value = ''
+  try {
+    const res = await $fetch(api + '/api/stripe/connect', { method: 'POST', credentials: 'include' })
+    if (res.connected) {
+      stripeStatus.value = 'linked'
+      stripeMsg.value = 'Compte Stripe connecté ✓'
+    } else if (res.url) {
+      window.location.href = res.url
+    } else {
+      stripeMsg.value = 'Réponse inattendue du serveur'
+      stripeError.value = true
+    }
+  } catch (e: any) {
+    stripeError.value = true
+    stripeMsg.value = e?.data?.message || e?.message || 'Erreur de connexion Stripe'
+  } finally {
+    stripeLoading.value = false
+  }
+}
 
 async function saveProfile() {
   saving.value = true
