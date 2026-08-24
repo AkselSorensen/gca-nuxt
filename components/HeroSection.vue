@@ -61,7 +61,7 @@ defineProps({ totalProducts: Number, totalSales: Number, avgRating: String, tota
   overflow: hidden;
 }
 .hero-scroll {
-  position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 76px; left: 50%; transform: translateX(-50%);
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   color: var(--text-muted); font-size: 0.68rem; text-transform: uppercase;
   letter-spacing: 0.18em; font-weight: 600; pointer-events: none; z-index: 2;
