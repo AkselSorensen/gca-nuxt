@@ -43,31 +43,86 @@ def extract_md(path: str) -> str:
                 text = ''.join(s.get('text', '') for s in spans).strip()
                 if not text:
                     continue
-                # Taille max + gras de la ligne
                 sizes = [s.get('size', 0) for s in spans]
                 bold_flags = [bool(s.get('flags', 0) & 16) for s in spans]
                 max_size = max(sizes)
                 is_bold = all(bold_flags) and len(bold_flags) > 0
-                body_size = max(sizes)  # approx
-                # Détection heading : plus gros que le corps OU gras + court
+                # Détection heading : taille >= 13.5 OU (gras + motif titre)
                 if max_size >= 13.5:
                     level = '#' if max_size >= 16 else '##'
                     lines.append(f'{level} {text}')
-                elif is_bold and len(text) < 90 and re.match(r'^(Article|Section|\d+\.|Préambule|[IVX]+)', text):
+                elif is_bold and re.match(r'^(Article|Section|Préambule|Annexe|[IVX]+(\.|\b)|[A-Z][A-ZÀ-Ü\s]{3,})', text) and len(text) < 90:
+                    lines.append(f'### {text}')
+                elif re.match(r'^\d+(\.\d+)?\.\s+[A-ZÀ-Ü]', text) and len(text) < 100:
+                    # Titres numérotés (TOC + sections) : 1., 3.1, 10. ...
                     lines.append(f'### {text}')
                 else:
                     lines.append(text)
     doc.close()
-    # Assemble les paragraphes (une ligne = paragraphe dans ces PDFs)
+    # Assemble : regroupe les lignes consécutives en paragraphes (une ligne de
+    # PDF justifié = une ligne d'écran, pas un paragraphe !)
     md: list[str] = []
+    para: list[str] = []
     for ln in lines:
+        stripped = ln.lstrip()
         if ln.startswith('#'):
-            md.append('\n' + ln + '\n')
-        elif re.match(r'^[-•◦]', ln):
-            md.append('- ' + ln.lstrip('-•◦ ').strip())
-        else:
+            if para:
+                md.append(' '.join(para))
+                para = []
             md.append(ln)
-    return '\n'.join(md)
+        elif re.match(r'^[-•◦]', stripped):
+            if para:
+                md.append(' '.join(para))
+                para = []
+            md.append('- ' + stripped.lstrip('-•◦ ').strip())
+        else:
+            para.append(ln)
+    if para:
+        md.append(' '.join(para))
+    # Supprime le doublon titre (ligne = titre juste après le # titre)
+    out: list[str] = []
+    title = None
+    for ln in md:
+        if ln.startswith('# '):
+            title = ln[2:].strip()
+            out.append(ln)
+            continue
+        if title and ln.strip() == title:
+            title = None
+            continue
+        title = None
+        out.append(ln)
+
+    # Supprime la table des matières : les titres numérotés consécutifs SANS
+    # contenu entre eux (ex. page TOC des Mentions Légales) ne sont pas des sections.
+    cleaned: list[str] = []
+    for i, ln in enumerate(out):
+        nxt = ''
+        for j in range(i + 1, len(out)):
+            if out[j].strip():
+                nxt = out[j]
+                break
+        is_num_heading = ln.startswith('### ') and bool(re.match(r'^### \d+(\.\d+)?\.\s+', ln))
+        nxt_is_heading = nxt.startswith('#')
+        if is_num_heading and nxt_is_heading:
+            continue  # entrée de TOC (pas de contenu après)
+        cleaned.append(ln)
+    # Fusion des fragments de titres + suppression des doublons de titres
+    final: list[str] = []
+    for ln in cleaned:
+        if ln.startswith('#') and final and final[-1].startswith('#'):
+            prev = final[-1]
+            frag = ln.lstrip('#').strip()
+            prev_text = prev.lstrip('#').strip()
+            if re.match(r'^[a-zà-ÿ]', frag) or frag.lower() == prev_text.lower():
+                # fragment de continuation OU même titre dupliqué (h1 + h3)
+                if frag.lower() == prev_text.lower():
+                    final[-1] = prev  # garde le premier niveau
+                else:
+                    final[-1] = prev + ' ' + frag
+                continue
+        final.append(ln)
+    return '\n\n'.join(final)
 
 
 def main() -> None:

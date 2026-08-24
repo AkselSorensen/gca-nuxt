@@ -34,24 +34,30 @@ onMounted(async () => {
 const blocks = computed(() => {
   const out: any[] = []
   let list: string[] | null = null
+  const flushPara = () => {
+    // l'extraction produit des paragraphes déjà regroupés : une ligne vide = séparateur
+    if (pendingPara.length) {
+      out.push({ type: 'p', text: pendingPara.join(' ') })
+      pendingPara = []
+    }
+  }
+  let pendingPara: string[] = []
   for (const raw of props.content.split('\n')) {
     const line = raw.trim()
-    if (!line) {
-      if (list) { out.push({ type: 'ul', items: list }); list = null }
-      continue
-    }
-    if (line.startsWith('### ')) { if (list) { out.push({ type: 'ul', items: list }); list = null } out.push({ type: 'h3', text: line.slice(4) }); continue }
-    if (line.startsWith('## ')) { if (list) { out.push({ type: 'ul', items: list }); list = null } out.push({ type: 'h2', text: line.slice(3) }); continue }
-    if (line.startsWith('# ')) { if (list) { out.push({ type: 'ul', items: list }); list = null } out.push({ type: 'h1', text: line.slice(2) }); continue }
+    if (!line) { flushPara(); continue }
+    if (line.startsWith('### ')) { flushPara(); if (list) { out.push({ type: 'ul', items: list }); list = null } out.push({ type: 'h3', text: line.slice(4) }); continue }
+    if (line.startsWith('## ')) { flushPara(); if (list) { out.push({ type: 'ul', items: list }); list = null } out.push({ type: 'h2', text: line.slice(3) }); continue }
+    if (line.startsWith('# ')) { flushPara(); if (list) { out.push({ type: 'ul', items: list }); list = null } out.push({ type: 'h1', text: line.slice(2) }); continue }
     if (line.startsWith('- ') || line.startsWith('•') || line.startsWith('◦')) {
+      flushPara()
       const item = line.replace(/^[-•◦]\s*/, '')
       if (!list) list = []
       list.push(item)
       continue
     }
-    if (list) { out.push({ type: 'ul', items: list }); list = null }
-    out.push({ type: 'p', text: line })
+    pendingPara.push(line)
   }
+  flushPara()
   if (list) out.push({ type: 'ul', items: list })
   return out
 })
