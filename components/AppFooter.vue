@@ -22,7 +22,7 @@ const { t } = useLang()
 </script>
 
 <style scoped>
-.site-footer { border-top: 1px solid var(--border); padding: 48px 0 24px; margin-top: 48px; }
+.site-footer { border-top: 1px solid var(--border); padding: 48px 0 24px; margin-top: auto; }
 .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; }
 .footer-brand .logo-icon { width: 40px; height: 40px; display: grid; place-items: center; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 12px; color: #fff; font-weight: 900; font-size: 1.2rem; margin-bottom: 12px; }
 .footer-logo { display:inline-block; }
