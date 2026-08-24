@@ -214,6 +214,11 @@ function clearFilters() {
   filters.minRating = 0
 }
 
+// Un produit est "tendance" si le flag booléen est actif OU s'il porte le tag "Tendance"
+function isTaggedTendance(p: any): boolean {
+  return (p.tags || []).some((t: string) => String(t).toLowerCase() === 'tendance')
+}
+
 const filteredProducts = computed(() => {
   let result = [...products.value]
 
@@ -230,7 +235,7 @@ const filteredProducts = computed(() => {
   if (filters.priceMax) result = result.filter((p: any) => Number(p.price) <= filters.priceMax!)
   if (filters.onSale) result = result.filter((p: any) => p.discountPercent > 0)
   if (filters.verified) result = result.filter((p: any) => p.verifiedSeller)
-  if (filters.trending) result = result.filter((p: any) => p.isTrending || p.popularityScore > 80)
+  if (filters.trending) result = result.filter((p: any) => p.isTrending || isTaggedTendance(p) || p.popularityScore > 80)
   if (filters.minRating > 0) result = result.filter((p: any) => Number(p.rating || 0) >= filters.minRating)
 
   // discount first (filter + sort by %)
@@ -240,7 +245,7 @@ const filteredProducts = computed(() => {
   }
   // trending: filter + sort by popularity
   if (filters.sort === 'trending') {
-    result = result.filter((p: any) => p.isTrending || p.popularityScore > 80)
+    result = result.filter((p: any) => p.isTrending || isTaggedTendance(p) || p.popularityScore > 80)
     result.sort((a: any, b: any) => (b.popularityScore || b.sales || 0) - (a.popularityScore || a.sales || 0))
   }
   switch (filters.sort) {

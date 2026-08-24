@@ -223,6 +223,37 @@
         </div>
       </div>
 
+      <!-- ==================== TAGS ==================== -->
+      <div v-if="activeTab === 'tags'" class="tab-content">
+        <div class="tab-header">
+          <h2>Tags</h2>
+          <div class="tab-actions">
+            <input v-model="newTagName" placeholder="Nouveau tag…" class="tag-add-input" @keyup.enter="addTag" />
+            <button class="btn-primary" @click="addTag">+ Ajouter</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table v-if="tagList.length" class="admin-table">
+            <thead><tr><th>Nom</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr v-for="tg in tagList" :key="tg.id">
+                <td>
+                  <template v-if="editingTagId === tg.id">
+                    <input v-model="editTagName" class="tag-add-input" style="max-width:220px" @keyup.enter="saveTagRename(tg)" @keyup.esc="editingTagId = null" />
+                  </template>
+                  <template v-else><span class="tag-badge">#{{ tg.name }}</span></template>
+                </td>
+                <td class="actions">
+                  <button class="btn-action" title="Renommer" @click="startTagRename(tg)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                  <button class="btn-action danger" title="Supprimer" @click="deleteTag(tg)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else class="empty-tab">Aucun tag. Créez votre premier tag.</div>
+        </div>
+      </div>
+
       <!-- ==================== REVENUS ==================== -->
       <div v-if="activeTab === 'revenue'" class="tab-content">
         <div class="tab-header">
@@ -508,6 +539,7 @@ const tabs = [
   { id:'pages', label:'Pages', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
   { id:'ambassadors', label:'Ambassadeurs', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' },
   { id:'sellers', label:'Vendeurs', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
+  { id:'tags', label:'Tags', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>' },
   { id:'revenue', label:'Revenus', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
 ]
 
@@ -520,11 +552,55 @@ const ambForm = reactive({
   code: '', name: '', contact: '', discountType: 'percent', discountValue: 0, maxUses: 0, points: 1, reward: ''
 })
 
+// ─── Tags ─────────────────────────────────────────────
+const tagList = ref<any[]>([])
+const newTagName = ref('')
+const editingTagId = ref<number | null>(null)
+const editTagName = ref('')
+
 async function loadTags() {
   try {
     const r = await $fetch(api + '/api/admin/tags', { credentials: 'include' })
-    allTags.value = r.tags || []
-  } catch { allTags.value = [] }
+    tagList.value = r.tags || []
+    // Le dropdown produit attend des strings
+    allTags.value = tagList.value.map((t: any) => t.name)
+  } catch { allTags.value = []; tagList.value = [] }
+}
+async function addTag() {
+  const name = newTagName.value.trim()
+  if (!name) return
+  try {
+    await $fetch(api + '/api/admin/tags', { credentials: 'include', method: 'POST', body: { name } })
+    newTagName.value = ''
+    toastRef.value?.show('success', 'Tag créé')
+    await loadTags()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur')
+  }
+}
+function startTagRename(tg: any) { editingTagId.value = tg.id; editTagName.value = tg.name }
+async function saveTagRename(tg: any) {
+  const name = editTagName.value.trim()
+  if (!name || name === tg.name) { editingTagId.value = null; return }
+  try {
+    await $fetch(api + '/api/admin/tags/' + tg.id, { credentials: 'include', method: 'PATCH', body: { name } })
+    editingTagId.value = null
+    toastRef.value?.show('success', 'Tag renommé')
+    await loadTags()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur')
+  }
+}
+async function deleteTag(tg: any) {
+  const ok = await confirmRef.value?.ask({ title: 'Supprimer le tag', message: `Le tag "#${tg.name}" sera retiré de tous les produits.`, confirmText: 'Supprimer', danger: true })
+  if (!ok) return
+  try {
+    await $fetch(api + '/api/admin/tags/' + tg.id, { credentials: 'include', method: 'DELETE' })
+    toastRef.value?.show('success', 'Tag supprimé')
+    await loadTags()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur')
+  }
 }
 async function loadAmbCodes() {
   ambLoading.value = true
@@ -1256,6 +1332,9 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .tag-pills { display:flex;flex-wrap:wrap;gap:4px;margin-top:6px; }
 .tag-pill { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:4px;background:rgba(47,125,246,0.12);font-size:.75rem;font-weight:600; }
 .tag-pill button { display:grid;place-items:center;width:14px;height:14px;border:none;background:none;color:var(--text-muted);cursor:pointer;padding:0;border-radius:3px; }
+.tag-add-input { padding:9px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.8rem;outline:none;font-family:inherit; }
+.tag-add-input:focus { border-color:var(--primary); }
+.tag-badge { display:inline-block;padding:4px 12px;border-radius:6px;background:rgba(47,125,246,0.1);border:1px solid rgba(47,125,246,0.2);color:var(--primary);font-size:.8rem;font-weight:600; }
 
 /* ─── Revenus ─── */
 .rev-mode-badge { display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:800;letter-spacing:.06em; }

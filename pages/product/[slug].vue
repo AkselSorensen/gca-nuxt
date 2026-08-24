@@ -347,7 +347,7 @@ onMounted(async () => {
 
 .tab-content { min-height:200px; }
 .tab-panel { max-width:800px; }
-.desc-text { line-height:1.8;font-size:.92rem;color:var(--text-secondary); }
+.desc-text { line-height:1.8;font-size:.92rem;color:var(--text-secondary);white-space:pre-line; }
 .desc-text h1,.desc-text h2,.desc-text h3 { color:var(--text);margin:20px 0 10px; }
 .desc-text p { margin-bottom:12px; }
 .desc-text ul { padding-left:20px; }
