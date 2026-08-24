@@ -420,6 +420,16 @@
               <div class="field half"><label>Vendeur</label><select v-model="productForm.sellerSlug"><option value="" disabled>Sélectionner</option><option v-for="s in sellers" :key="s.slug" :value="s.slug">{{ s.username }}</option></select></div>
             </div>
             <div class="form-row">
+              <div class="field"><label>Plateforme</label>
+                <select v-if="!platformCustom" v-model="productForm.platform">
+                  <option v-if="productForm.platform && !platformPresets.includes(productForm.platform)" :value="productForm.platform">{{ productForm.platform }}</option>
+                  <option v-for="pf in platformPresets" :key="pf" :value="pf">{{ pf }}</option>
+                  <option value="__custom">Autre…</option>
+                </select>
+                <input v-else v-model="productForm.platform" type="text" placeholder="Nom de la plateforme" @blur="platformCustom = false" />
+              </div>
+            </div>
+            <div class="form-row">
               <div class="field"><label>Prix (€)</label><input v-model="productForm.price" type="number" step="0.01" min="0" placeholder="0.00" /></div>
               <div class="field"><label>Remise (%)</label><input v-model="productForm.discountPercent" type="number" min="0" max="100" placeholder="0" /></div>
             </div>
@@ -647,10 +657,15 @@ const sellers = ref<{slug:string;username:string}[]>([])
 
 const productForm = reactive({
   title:'', shortDescription:'', description:'', installation:'',
-  categorySlug:'', sellerSlug:'', price:0, discountPercent:0,
+  categorySlug:'', sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod",
   tags:'', thumbnail:'', isHidden:false
 })
 const editingId = ref<number | null>(null)
+const platformPresets = ["Garry's Mod", 'Unreal Engine', 'FiveM', 'Nanos']
+const platformCustom = ref(false)
+watch(() => productForm.platform, (v) => {
+  if (v === '__custom') { platformCustom.value = true; productForm.platform = '' }
+})
 const productMedia = ref<any[]>([])
 
 const toastRef = ref<InstanceType<typeof ToastNotif> | null>(null)
@@ -670,7 +685,7 @@ async function animateProdIn() {
 function openProductForm() {
   editingId.value = null
   productMedia.value = []
-  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', sellerSlug:'', price:0, discountPercent:0, tags:'', thumbnail:'', isHidden:false })
+  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
   showProductForm.value = true
@@ -688,6 +703,7 @@ function editProduct(p: any) {
     sellerSlug: p.seller_slug || '',
     price: Number(p.old_price || p.price || 0),
     discountPercent: Number(p.discount_percent || 0),
+    platform: p.platform || "Garry's Mod",
     tags: (p.tags || []).join(', '),
     thumbnail: '',
     isHidden: Boolean(p.is_hidden)

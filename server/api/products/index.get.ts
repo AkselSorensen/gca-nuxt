@@ -34,6 +34,7 @@ export default defineEventHandler(async (event) => {
           p.installation,
           p.price,
           p.old_price,
+          p.platform,
           p.discount_percent,
           p.rating,
           p.review_count,

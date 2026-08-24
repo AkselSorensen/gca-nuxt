@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const {
     title, price, discountPercent, isFeatured, isTrending, isNew,
     shortDescription, description, installation, categorySlug, sellerSlug, tags, isHidden,
-    thumbnail,
+    thumbnail, platform,
   } = await readBody(event)
 
   try {
@@ -66,6 +66,7 @@ export default defineEventHandler(async (event) => {
       }
     }
     if (tags !== undefined) { updates.push(`tags = $${idx++}`); values.push(Array.isArray(tags) ? tags : []) }
+    if (platform !== undefined && platform !== null) { updates.push(`platform = $${idx++}`); values.push(String(platform).trim()) }
     if (isFeatured !== undefined) { updates.push(`is_featured = $${idx++}`); values.push(Boolean(isFeatured)) }
     if (isTrending !== undefined) { updates.push(`is_trending = $${idx++}`); values.push(Boolean(isTrending)) }
     if (isNew !== undefined) { updates.push(`is_new = $${idx++}`); values.push(Boolean(isNew)) }

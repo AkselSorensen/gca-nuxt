@@ -616,6 +616,7 @@ async function initializeDatabase() {
       installation TEXT NOT NULL,
       price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
       old_price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+      platform TEXT NOT NULL DEFAULT 'Garry''s Mod',
       discount_percent INTEGER NOT NULL DEFAULT 0,
       rating NUMERIC(3, 2) NOT NULL DEFAULT 5,
       review_count INTEGER NOT NULL DEFAULT 0,
