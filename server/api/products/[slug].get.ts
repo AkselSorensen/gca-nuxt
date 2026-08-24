@@ -1,10 +1,12 @@
 // GET /api/products/:slug — détail + owned (réplique du monolithe Express)
-import { defineEventHandler, getRouterParam, createError } from 'h3'
+// Cache PRIVÉ 30s (jamais de cache CDN partagé : le flag owned est par utilisateur)
+import { defineEventHandler, getRouterParam, createError, setResponseHeader } from 'h3'
 import { query } from '../../services/db'
 import { getProductBySlug } from '../../services/products'
 import { getSessionUser } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
+  setResponseHeader(event, 'Cache-Control', 'private, max-age=30')
   try {
     const slug = getRouterParam(event, 'slug') || ''
     const sessionUser = await getSessionUser(event)

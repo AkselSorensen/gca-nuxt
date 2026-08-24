@@ -1,11 +1,14 @@
 // GET /api/bootstrap — données de la home (réplique du monolithe Express)
-import { defineEventHandler, createError } from 'h3'
+// Cache navigateur 60s + CDN 5min : données publiques (le champ `user` n'est
+// pas utilisé par la home — le header lit /api/me côté client).
+import { defineEventHandler, createError, setResponseHeader } from 'h3'
 import { query } from '../services/db'
 import { getSessionUser, getSessionLocale } from '../utils/auth'
 
 const DISCORD_INVITE = 'https://discord.gg/KDsEzGRnKs'
 
 export default defineEventHandler(async (event) => {
+  setResponseHeader(event, 'Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=300')
   try {
     const [sessionUser, locale] = await Promise.all([getSessionUser(event), getSessionLocale(event)])
 
@@ -166,7 +169,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       locale,
-      user: sessionUser || null,
+      user: null, // jamais d'utilisateur dans le cache CDN — le header lit /api/me
       categories: categories.rows,
       trending: trending.rows.map(thumb),
       discounts: discounts.rows.map(thumb),
