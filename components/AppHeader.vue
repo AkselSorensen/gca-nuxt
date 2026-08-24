@@ -22,7 +22,8 @@
         <template v-else>
           <div class="user-dropdown" @click="dropdownOpen = !dropdownOpen">
             <div class="user-menu">
-              <div class="user-avatar">{{ user.displayName?.[0] || user.username?.[0] || user.email?.[0] || '?' }}</div>
+              <div v-if="user.avatarUrl" class="user-avatar"><img :src="user.avatarUrl" alt="" class="user-avatar-img" /></div>
+              <div v-else class="user-avatar">{{ user.displayName?.[0] || user.username?.[0] || user.email?.[0] || '?' }}</div>
               <span class="user-name">{{ user.displayName || user.username || user.email?.split('@')[0] }}</span>
               <svg class="chevron" :class="{ open: dropdownOpen }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
@@ -125,7 +126,8 @@ onUnmounted(() => {
 .btn-logout:hover { background:rgba(248,113,113,0.12); }
 
 .user-menu { display:flex;align-items:center;gap:8px;padding:4px 12px;border-radius:8px;background:var(--bg-surface);border:1px solid var(--border); }
-.user-avatar { width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-size:.72rem;font-weight:800;text-transform:uppercase; }
+.user-avatar { width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-size:.72rem;font-weight:800;text-transform:uppercase;overflow:hidden; }
+.user-avatar-img { width:100%;height:100%;border-radius:50%;object-fit:cover; }
 .user-name { font-size:.82rem;font-weight:600;color:var(--text); }
 .chevron { color:var(--text-muted);transition:transform .2s; }
 .chevron.open { transform:rotate(180deg); }
