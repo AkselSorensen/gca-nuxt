@@ -16,6 +16,19 @@ export function initGsap() {
   return { load }
 }
 
+// Export top-level `load` — les pages font
+// `const { load, pageEntrance } = await import('~/composables/useAnimation')`
+export async function load() {
+  if (typeof window === 'undefined') return
+  const mod = await import('gsap')
+  const gsap = mod.default
+  const st = await import('gsap/ScrollTrigger')
+  const ScrollTrigger = st.default
+  gsap.registerPlugin(ScrollTrigger)
+  gsap.defaults({ ease: 'power3.out', duration: 0.6 })
+  return { gsap, ScrollTrigger }
+}
+
 export function pageEntrance(gsap: any, container: HTMLElement) {
   if (!gsap || !container) return
 
