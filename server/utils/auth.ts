@@ -38,3 +38,15 @@ export async function requireAdmin(event: H3Event): Promise<SessionUser> {
   if (user.role !== 'admin') throw createError({ statusCode: 403, statusMessage: 'Accès refusé', message: 'Accès administrateur requis' })
   return user
 }
+
+// Locale stockée dans la session (req.session.locale côté Express)
+export async function getSessionLocale(event: H3Event): Promise<string> {
+  try {
+    const sid = getSessionId(event)
+    if (!sid) return 'fr'
+    const r = await pool.query('SELECT sess FROM user_sessions WHERE sid = $1', [sid])
+    return r.rows[0]?.sess?.locale || 'fr'
+  } catch {
+    return 'fr'
+  }
+}
