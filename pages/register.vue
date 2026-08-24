@@ -16,7 +16,27 @@
         </div>
       </div>
 
-      <form @submit.prevent="handleRegister" class="auth-form">
+      <div v-if="showVerify" class="verify-panel anim-scale">
+        <div class="verify-icon">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </div>
+        <h2>Vérifiez votre email</h2>
+        <p class="verify-sub">Un code de validation a été envoyé à <strong>{{ registeredEmail }}</strong>.</p>
+        <div v-if="devCode" class="verify-devcode">
+          <span>Mode démo (email non configuré) — votre code :</span>
+          <strong>{{ devCode }}</strong>
+        </div>
+        <div class="field anim-up">
+          <label>Code de validation</label>
+          <input v-model="verifyCode" type="text" inputmode="numeric" placeholder="000000" maxlength="6" class="verify-input" @keyup.enter="verifyEmail" />
+        </div>
+        <p v-if="verifyError" class="auth-error anim-fade">{{ verifyError }}</p>
+        <button class="btn-submit" :disabled="verifying" @click="verifyEmail">
+          {{ verifying ? 'Vérification...' : 'Valider mon email' }}
+        </button>
+      </div>
+
+      <form v-else @submit.prevent="handleRegister" class="auth-form">
         <div class="field anim-up"><label>Pseudo</label><input v-model="username" type="text" placeholder="Votre pseudo" required /></div>
         <div class="field anim-up"><label>Email</label><input v-model="email" type="email" placeholder="vous@exemple.com" required /></div>
         <div class="field anim-up"><label>Mot de passe</label><input v-model="password" type="password" placeholder="••••••••" required minlength="6" /></div>
@@ -54,30 +74,64 @@
       <div v-if="showTerms" class="modal-overlay" @click.self="showTerms = false">
         <div class="modal-card anim-scale" @click.stop>
           <div class="modal-header">
-            <h2>Conditions vendeur</h2>
+            <h2>{{ accountType === 'seller' ? 'Contrat vendeur' : 'Conditions générales' }}</h2>
             <button class="modal-close" @click="showTerms = false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
           <div ref="termsScrollRef" class="terms-scroll" @scroll="onTermsScroll">
-            <div class="terms-content">
-              <h3>1. Conditions générales de vente</h3>
-              <p>En créant un compte vendeur sur GSA, vous acceptez les présentes conditions. Vous vous engagez à fournir des créations originales et de qualité, respectueuses des droits d'auteur.</p>
-              <h3>2. Commission</h3>
-              <p>GSA prélève une commission de <strong>25%</strong> sur chaque vente réalisée via la plateforme (20% pour les partenaires). Cette commission couvre les frais de transaction, d'hébergement et de mise en avant.</p>
-              <h3>3. Paiements</h3>
-              <p>Les paiements sont traités via Stripe. Vous devez liér votre compte Stripe pour recevoir vos fonds. Les virements sont effectués sous 48h ouvrées après validation de la commande.</p>
-              <h3>4. Contenu interdit</h3>
-              <p>Il est strictement interdit de :</p>
-              <ul><li>Vendre du contenu volé ou repris sans autorisation</li><li>Utiliser des assets protégés par des droits d'auteur tiers</li><li>Publier du contenu inapproprié ou malveillant</li><li>Créer de faux avis ou manipuler les notes</li></ul>
-              <h3>5. Qualité et support</h3>
-              <p>Chaque produit doit être accompagné d'une description précise, d'images réelles et d'une documentation fonctionnelle. Vous vous engagez à fournir un support raisonnable aux acheteurs.</p>
-              <h3>6. Résiliation</h3>
-              <p>GSA se réserve le droit de suspendre ou supprimer tout compte vendeur en cas de non-respect des conditions. En cas de litige, une procédure de médiation sera engagée avant toute sanction.</p>
-              <h3>7. Protection des données</h3>
-              <p>Vos données personnelles sont traitées conformément au RGPD. Consultez notre politique de confidentialité pour plus d'informations.</p>
-              <p style="margin-top:20px;padding:16px;background:rgba(47,125,246,0.06);border-radius:8px;border:1px solid rgba(47,125,246,0.15);text-align:center;">
-                Scrollez jusqu'en bas pour accepter les conditions.
-              </p>
+            <div v-if="accountType === 'seller'" class="terms-content">
+              <h3>Préambule</h3>
+              <p>Le présent contrat régit les relations entre <strong>GSA Store</strong>, plateforme de vente de créations numériques pour Garry's Mod (ci-après « la Plateforme »), et tout créateur inscrit en qualité de vendeur (ci-après « le Vendeur »). En créant un compte vendeur, le Vendeur accepte sans réserve l'intégralité des présentes conditions. La Plateforme met en relation les Vendeurs et les acheteurs et perçoit une commission sur chaque vente réalisée.</p>
+
+              <h3>Article 1 — Objet du contrat et engagement du Vendeur</h3>
+              <p>Le présent contrat a pour objet de définir les conditions de mise en vente des créations du Vendeur sur la Plateforme. Le Vendeur s'engage à :</p>
+              <ul>
+                <li>Garantir que chaque création est originale, ou réalisée avec l'autorisation expresse des ayants droit ;</li>
+                <li>Fournir des descriptions précises, des images réelles et une documentation fonctionnelle pour chaque produit ;</li>
+                <li>Maintenir ses créations à jour et assurer un support raisonnable aux acheteurs ;</li>
+                <li>Ne pas publier de contenu contraire aux lois, aux droits des tiers ou aux bonnes mœurs.</li>
+              </ul>
+
+              <h3>Article 2 — Commission et paiements</h3>
+              <p>La Plateforme prélève une commission de <strong>25%</strong> sur le prix de chaque vente (20% pour les vendeurs partenaires). Les paiements sont traités exclusivement via Stripe. Le Vendeur doit disposer d'un compte Stripe Connect actif pour recevoir ses fonds. Le montant net, après déduction de la commission, est transféré sur le compte du Vendeur dans les délais prévus par Stripe (généralement sous 2 à 7 jours ouvrés). Les frais de traitement Stripe (1,5% + 0,25 € par transaction) restent à la charge de la Plateforme.</p>
+
+              <h3>Article 3 — Propriété intellectuelle et licence de vente</h3>
+              <p>Le Vendeur conserve l'intégralité des droits de propriété intellectuelle sur ses créations. Il concède à la Plateforme une licence non exclusive lui permettant de représenter, stocker et distribuer les créations dans le cadre strict de la vente. L'acheteur acquiert une licence d'utilisation personnelle, non transférable et non exclusive. Toute revente ou redistribution du contenu téléchargé est strictement interdite. Le Vendeur s'interdit de vendre sur la Plateforme du contenu dont il ne détient pas les droits.</p>
+
+              <h3>Article 4 — Résiliation, suspension et litiges</h3>
+              <p>La Plateforme se réserve le droit de suspendre ou supprimer tout compte vendeur en cas de manquement aux présentes conditions, après mise en demeure restée sans effet ou en cas de manquement grave. En cas de litige, les parties s'engagent à rechercher une solution amiable avant toute action contentieuse. Le droit applicable est le droit français, et les tribunaux compétents sont ceux du ressort du siège de la Plateforme. Les présentes conditions prévalent sur tout document antérieur.</p>
             </div>
+
+            <div v-else class="terms-content">
+              <h3>1. Conditions générales de vente (CGV)</h3>
+              <p>Les présentes CGV régissent les achats effectués sur la Plateforme GSA Store. Toute commande implique l'acceptation des présentes conditions. Les prix sont affichés en euros, TTC. La Plateforme se réserve le droit de modifier ses prix à tout moment, les produits étant facturés sur la base du tarif en vigueur au moment de la commande.</p>
+
+              <h3>2. Conditions générales d'utilisation (CGU)</h3>
+              <p>En utilisant la Plateforme, vous vous engagez à :</p>
+              <ul>
+                <li>Fournir des informations exactes lors de la création de votre compte ;</li>
+                <li>Ne pas porter atteinte aux droits des créateurs (pas de redistribution, copie ou revente des créations téléchargées) ;</li>
+                <li>Ne pas publier de contenu illégal, frauduleux ou malveillant ;</li>
+                <li>Ne pas contourner les systèmes de paiement ou de protection de la Plateforme.</li>
+              </ul>
+
+              <h3>3. Paiement et livraison</h3>
+              <p>Les paiements sont sécurisés et traités via Stripe. Après validation du paiement, l'accès au téléchargement de la création est immédiat dans votre espace « Mes téléchargements ». En cas de paiement effectué mais non confirmé, une vérification automatique est effectuée et le produit est débloqué dès confirmation.</p>
+
+              <h3>4. Droit de rétractation et remboursements</h3>
+              <p>Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation ne s'applique pas aux contenus numériques fournis immédiatement et téléchargés. Toutefois, en cas de produit non conforme ou non fonctionnel, le remboursement peut être accordé sous 14 jours après étude de la demande. Contactez le support via le vendeur ou la Plateforme.</p>
+
+              <h3>5. Propriété intellectuelle</h3>
+              <p>Les créations restent la propriété de leurs auteurs. L'achat confère une licence d'utilisation personnelle, non transférable et non exclusive. Toute redistribution, revente ou copie du contenu téléchargé est interdite.</p>
+
+              <h3>6. Protection des données</h3>
+              <p>Vos données personnelles sont traitées conformément au RGPD. Elles sont utilisées pour la gestion de votre compte, des commandes et de la relation client, et ne sont jamais revendues à des tiers.</p>
+
+              <h3>7. Responsabilité et litiges</h3>
+              <p>La Plateforme agit comme intermédiaire technique entre vendeurs et acheteurs. En cas de litige, une solution amiable sera recherchée en priorité. Le droit applicable est le droit français.</p>
+            </div>
+            <p style="margin-top:20px;padding:16px;background:rgba(47,125,246,0.06);border-radius:8px;border:1px solid rgba(47,125,246,0.15);text-align:center;">
+              Scrollez jusqu'en bas pour accepter les conditions.
+            </p>
           </div>
           <div class="modal-footer">
             <label class="terms-check" :class="{ disabled: !termsScrolled }">
@@ -104,6 +158,15 @@ const username = ref(''); const email = ref(''); const password = ref('')
 const shopName = ref(''); const discord = ref(''); const sellerDescription = ref('')
 const discordLinked = ref('')
 const error = ref(''); const success = ref(false); const submitting = ref(false)
+const showVerify = ref(false)
+const registeredEmail = ref('')
+const devCode = ref('')
+const verifyCode = ref('')
+const verifyError = ref('')
+const verifying = ref(false)
+const pendingSellerAfterVerify = ref(false)
+const config = useRuntimeConfig()
+const api = config.public.apiOrigin
 const showTerms = ref(false)
 const termsAccepted = ref(false)
 const termsScrolled = ref(false)
@@ -123,7 +186,7 @@ function confirmTerms() {
 }
 
 async function handleRegister() {
-  if (accountType.value === 'seller' && !termsAccepted.value) {
+  if (!termsAccepted.value) {
     showTerms.value = true
     return
   }
@@ -138,6 +201,14 @@ async function handleRegister() {
     }
     const res = await register(body)
     success.value = true
+    pendingSellerAfterVerify.value = !!res?.sellerPending
+    if (res?.needsVerification) {
+      // Étape de validation email
+      showVerify.value = true
+      registeredEmail.value = email.value.trim()
+      devCode.value = res.devCode || ''
+      return
+    }
     if (res?.sellerPending) {
       setTimeout(() => navigateTo('/seller/pending'), 1500)
     } else {
@@ -146,6 +217,26 @@ async function handleRegister() {
   } catch (e: any) {
     error.value = e.data?.message || e.message || "Erreur"
   } finally { submitting.value = false }
+}
+
+async function verifyEmail() {
+  if (!verifyCode.value.trim()) { verifyError.value = 'Entrez le code reçu.'; return }
+  verifying.value = true
+  verifyError.value = ''
+  try {
+    await $fetch(api + '/api/auth/verify-email', {
+      method: 'POST',
+      credentials: 'include',
+      body: { email: registeredEmail.value, code: verifyCode.value.trim() },
+    })
+    if (pendingSellerAfterVerify.value) {
+      navigateTo('/seller/pending')
+    } else {
+      navigateTo('/')
+    }
+  } catch (e: any) {
+    verifyError.value = e.data?.message || e.message || 'Code invalide'
+  } finally { verifying.value = false }
 }
 
 function socialLogin(p: string) { window.location.href = '/auth/' + p }
@@ -199,6 +290,13 @@ onMounted(async () => {
 .btn-discord-link:hover { background:rgba(88,101,242,0.1);border-color:rgba(88,101,242,0.3); }
 .auth-error { color:var(--red);font-size:.85rem;padding:10px;border-radius:6px;background:rgba(248,113,113,0.1); }
 .auth-success { color:var(--green);font-size:.85rem;padding:10px;border-radius:6px;background:rgba(110,231,183,0.1);text-align:center; }
+.verify-panel { display:grid; gap:14px; text-align:center; padding:8px 0; }
+.verify-icon { width:72px;height:72px;border-radius:50%;background:rgba(47,125,246,0.08);display:grid;place-items:center;margin:0 auto; }
+.verify-panel h2 { font-size:1.2rem;font-weight:800;margin:0; }
+.verify-sub { color:var(--text-secondary);font-size:.88rem;margin:0;line-height:1.6; }
+.verify-devcode { padding:10px;border-radius:8px;background:rgba(245,179,66,0.08);border:1px dashed rgba(245,179,66,0.3);font-size:.8rem;color:var(--text-secondary);display:grid;gap:4px; }
+.verify-devcode strong { font-size:1.4rem;letter-spacing:6px;color:#f5b342; }
+.verify-input { text-align:center;font-size:1.2rem;letter-spacing:8px; }
 .btn-submit { padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:.9rem;font-weight:600;transition:all .2s;cursor:pointer;font-family:inherit; }
 .btn-submit:hover:not(:disabled) { opacity:.9;transform:translateY(-1px); }
 .btn-submit:disabled { opacity:.5;cursor:not-allowed; }

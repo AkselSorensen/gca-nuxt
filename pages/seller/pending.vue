@@ -33,7 +33,7 @@ onMounted(async () => {
 <style scoped>
 .pending-page { display: grid; place-items: center; min-height: 70vh; padding: 40px 20px; }
 .pending-card {
-  width: 100%; max-width: 480px; text-align: center;
+  width: 100%; max-width: 480px; margin: 0 auto; text-align: center;
   padding: 48px 36px; border-radius: 16px;
   border: 1px solid var(--border); background: var(--bg-card);
   display: grid; gap: 16px; place-items: center;
