@@ -1,4 +1,5 @@
 // GET /auth/discord/callback — retour OAuth Discord (réplique du monolithe)
+// + vérification d'appartenance au serveur Discord GSA (auth obligatoire)
 import { defineEventHandler, getQuery, sendRedirect } from 'h3'
 import { query } from '../../../services/db'
 import { hashPassword, slugify, sanitizeUser } from '../../../services/users'
@@ -9,6 +10,8 @@ const BASE_URL = process.env.APP_BASE_URL || 'https://gca-nuxt.vercel.app'
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET
 const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI
+// Serveur 🛒 GSA Store — vérification d'appartenance
+const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID || '1364909003800580096'
 
 export default defineEventHandler(async (event) => {
   const { code } = getQuery(event)
@@ -35,6 +38,7 @@ export default defineEventHandler(async (event) => {
 
     const tokenData = await tokenResponse.json()
 
+    // 1) Profil Discord
     const userResponse = await fetch('https://discord.com/api/users/@me', {
       headers: {
         Authorization: `Bearer ${tokenData.access_token}`,
@@ -52,7 +56,41 @@ export default defineEventHandler(async (event) => {
       ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
       : null
 
-    // Si déjà connecté → mode liaison
+    // 2) Vérification : le compte Discord doit être membre du serveur GSA
+    let isMember = false
+    try {
+      const guildsResponse = await fetch('https://discord.com/api/users/@me/guilds', {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      })
+      if (guildsResponse.ok) {
+        const guilds = await guildsResponse.json()
+        isMember = Array.isArray(guilds) && guilds.some((g: any) => String(g.id) === DISCORD_GUILD_ID)
+      }
+    } catch { /* la vérification échoue → considéré non membre */ }
+
+    if (!isMember) {
+      const state = String(getQuery(event).state || '')
+      let returnUrl = ''
+      try {
+        const decoded = JSON.parse(Buffer.from(state, 'base64').toString('utf8'))
+        returnUrl = decoded?.r || ''
+      } catch { /* ignore */ }
+      const sep = returnUrl ? '&return_url=' + encodeURIComponent(returnUrl) : ''
+      return sendRedirect(event, `${BASE_URL}/login?discord=required${sep}`)
+    }
+
+    // 3) Décodage du state : return_url + type de compte + données vendeur
+    let returnUrl = ''
+    let accountType = 'buyer'
+    let sellerData: { shopName?: string; bio?: string; discordTag?: string } = {}
+    try {
+      const decoded = JSON.parse(Buffer.from(String(getQuery(event).state || ''), 'base64').toString('utf8'))
+      returnUrl = decoded?.r || ''
+      accountType = decoded?.t || 'buyer'
+      sellerData = decoded?.s || {}
+    } catch { /* state invalide → défauts */ }
+
+    // 4) Si déjà connecté → mode liaison
     const sessionUser = await getSessionUser(event)
     if (sessionUser?.id) {
       await query(
@@ -61,19 +99,14 @@ export default defineEventHandler(async (event) => {
       )
       const updated = await query('SELECT * FROM users WHERE id = $1', [sessionUser.id])
       await updateSessionUser(event, sanitizeUser(updated.rows[0]))
-      let redirectAfterLink = `${BASE_URL}/seller/account`
-      try {
-        const s = String(getQuery(event).state || '')
-        if (s) {
-          const decoded = Buffer.from(s, 'base64').toString('utf8')
-          if (decoded.startsWith('http') || decoded.startsWith('/')) redirectAfterLink = decoded
-        }
-      } catch { /* ignore */ }
+      let redirectAfterLink = `${BASE_URL}/profile`
+      if (returnUrl && (returnUrl.startsWith('http') || returnUrl.startsWith('/'))) redirectAfterLink = returnUrl
       const sep = redirectAfterLink.includes('?') ? '&' : '?'
       redirectAfterLink += `${sep}discord_id=${discordUser.id}&discord_username=${discordUser.username}`
       return sendRedirect(event, redirectAfterLink)
     }
 
+    // 5) Connexion ou création de compte (client ou vendeur)
     const existing = await query('SELECT * FROM users WHERE discord_id = $1 OR email = $2 LIMIT 1', [
       String(discordUser.id),
       email,
@@ -89,16 +122,38 @@ export default defineEventHandler(async (event) => {
       const updated = await query('SELECT * FROM users WHERE id = $1', [userRow.id])
       userRow = updated.rows[0]
     } else {
-      const inserted = await query(
-        `INSERT INTO users (email, password_hash, display_name, slug, role, avatar_url, discord_id, preferred_language)
-         VALUES ($1, $2, $3, $4, 'customer', $5, $6, 'fr')
-         RETURNING *`,
-        [email, hashPassword(`discord-${discordUser.id}`), displayName, `${slugify(displayName)}-${discordUser.id}`, avatarUrl, String(discordUser.id)]
-      )
-      userRow = inserted.rows[0]
+      const isSeller = accountType === 'seller'
+      const slug = `${slugify(displayName)}-${discordUser.id}`
+      if (isSeller) {
+        const inserted = await query(
+          `INSERT INTO users (email, password_hash, display_name, slug, role, avatar_url, discord_id, preferred_language,
+                              seller_status, shop_name, seller_description, discord_tag)
+           VALUES ($1, $2, $3, $4, 'customer', $5, $6, 'fr', 'pending', $7, $8, $9)
+           RETURNING *`,
+          [email, hashPassword(`discord-${discordUser.id}`), displayName, slug, avatarUrl, String(discordUser.id),
+           sellerData.shopName || displayName, sellerData.bio || '', sellerData.discordTag || '']
+        )
+        userRow = inserted.rows[0]
+      } else {
+        const inserted = await query(
+          `INSERT INTO users (email, password_hash, display_name, slug, role, avatar_url, discord_id, preferred_language)
+           VALUES ($1, $2, $3, $4, 'customer', $5, $6, 'fr')
+           RETURNING *`,
+          [email, hashPassword(`discord-${discordUser.id}`), displayName, slug, avatarUrl, String(discordUser.id)]
+        )
+        userRow = inserted.rows[0]
+      }
     }
 
     await createSession(event, sanitizeUser(userRow))
+
+    // Redirection selon le type de compte
+    if (userRow.seller_status === 'pending') {
+      return sendRedirect(event, `${BASE_URL}/seller/pending`)
+    }
+    if (returnUrl && (returnUrl.startsWith('http') || returnUrl.startsWith('/'))) {
+      return sendRedirect(event, returnUrl)
+    }
     return sendRedirect(event, `${BASE_URL}/`)
   } catch (error) {
     console.error('Discord auth error:', error)

@@ -2,6 +2,7 @@
 definePageMeta({ layout: 'auth' })
 const { login, user } = useAuth()
 const { t } = useLang()
+const route = useRoute()
 const tab = ref('user')
 const email = ref('')
 const password = ref('')
@@ -9,41 +10,35 @@ const error = ref('')
 const submitting = ref(false)
 const pageRef = ref<HTMLElement | null>(null)
 
+// ?discord=required → l'utilisateur n'est pas membre du serveur Discord
+const discordRequired = computed(() => route.query.discord === 'required')
+
+function discordLogin() {
+  const isSeller = tab.value === 'seller'
+  const params = new URLSearchParams({
+    return_url: route.path,
+    account_type: isSeller ? 'seller' : 'buyer',
+  })
+  window.location.href = '/auth/discord?' + params.toString()
+}
+
 async function handleLogin() {
   error.value = ''; submitting.value = true
   try {
     const res = await login(email.value, password.value)
     const role = res?.user?.role || user?.value?.role
     const slug = res?.user?.slug || user?.value?.slug
-
-    // Vérifier que le rôle correspond à l'onglet sélectionné
     if (tab.value === 'admin' && role !== 'admin') {
       error.value = 'Ces identifiants ne sont pas ceux d\'un administrateur.'
       submitting.value = false
       return
     }
-    if (tab.value === 'seller' && role === 'admin') {
-      error.value = t('login.admin_error')
-      submitting.value = false
-      return
-    }
-    if (tab.value === 'user' && role === 'admin') {
-      error.value = t('login.admin_error')
-      submitting.value = false
-      return
-    }
-
     if (role === 'admin') navigateTo('/admin')
     else if (role === 'seller' && slug) navigateTo('/seller/' + slug)
-    else if (tab.value === 'seller' && slug) navigateTo('/seller/' + slug)
     else navigateTo('/')
   } catch (e: any) {
     error.value = e.data?.message || e.message || 'Erreur de connexion'
   } finally { submitting.value = false }
-}
-
-function socialLogin(provider: string) {
-  window.location.href = '/auth/' + provider + '?return_url=' + encodeURIComponent(window.location.pathname)
 }
 
 onMounted(async () => {
@@ -66,37 +61,35 @@ onMounted(async () => {
         <button class="tab-btn" :class="{ active: tab === 'admin' }" @click="tab = 'admin'">Administrateur</button>
       </div>
 
-      <!-- User Login -->
-      <form v-if="tab === 'user'" @submit.prevent="handleLogin" class="auth-form">
-        <div class="social-btns anim-up">
-          <button type="button" class="btn-social btn-steam" @click="socialLogin('steam')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 12-5.373 12-12 0-6.625-5.373-12-12-12zm-1.508 16.542l-3.259-1.296c.135.537.246 1.141.246 1.734 0 .078-.004.156-.012.23-.278.774-.873 1.401-1.643 1.743-.648.288-1.363.343-2.031.219 1.05 1.227 2.606 2.025 4.353 2.025 1.947 0 3.66-.975 4.676-2.447l-2.33-.208zm-4.837-3.168a2.199 2.199 0 0 0 2.199 2.199 2.199 2.199 0 0 0 2.199-2.199 2.199 2.199 0 0 0-2.199-2.199 2.199 2.199 0 0 0-2.199 2.199zm10.839-5.535c0-1.716-1.393-3.109-3.109-3.109s-3.109 1.393-3.109 3.109 1.393 3.109 3.109 3.109 3.109-1.393 3.109-3.109z"/></svg> Steam
-          </button>
-          <button type="button" class="btn-social btn-discord" @click="socialLogin('discord')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/></svg> Discord
-          </button>
+      <!-- Panneau : pas membre du serveur Discord -->
+      <div v-if="discordRequired && tab !== 'admin'" class="join-panel anim-scale">
+        <div class="join-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="#5865f2"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
         </div>
-        <div class="divider anim-fade"><span>ou par email</span></div>
-        <div class="field anim-up"><label>Email</label><input v-model="email" type="email" placeholder="vous@exemple.com" required /></div>
-        <div class="field anim-up"><label>Mot de passe</label><input v-model="password" type="password" placeholder="••••••••" required /></div>
-        <p v-if="error" class="auth-error anim-fade">{{ error }}</p>
-        <button type="submit" class="btn-submit anim-up" :disabled="submitting">{{ submitting ? 'Connexion…' : t('login.submit') }}</button>
+        <h2>Rejoignez le serveur Discord GSA</h2>
+        <p>Pour vous connecter ou vous inscrire, vous devez être membre du serveur Discord officiel GSA.</p>
+        <a href="https://discord.gg/KDsEzGRnKs" target="_blank" rel="noopener" class="btn-join">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+          Rejoindre le serveur Discord
+        </a>
+        <button class="btn-retry" @click="discordLogin">Je suis membre, me connecter</button>
+      </div>
+
+      <!-- Connexion Discord -->
+      <div v-else-if="tab !== 'admin'" class="auth-form">
+        <div class="discord-hero anim-up">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="#5865f2"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+          <span>{{ tab === 'seller' ? 'Connexion vendeur via Discord' : 'Connexion via Discord' }}</span>
+        </div>
+        <button class="btn-discord-main" @click="discordLogin">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.061 0a.0739.0739 0 0 1 .0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 0 1-.0066.1276 12.2986 12.2986 0 0 1-1.873.8914.0766.0766 0 0 0-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 0 0 .0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 0 0 .0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 0 0-.0312-.0286z"/></svg>
+          {{ submitting ? 'Redirection…' : (tab === 'seller' ? 'Se connecter en tant que vendeur avec Discord' : 'Se connecter avec Discord') }}
+        </button>
+        <p class="discord-note anim-fade">Vous devez être membre du serveur Discord GSA pour accéder à la plateforme.</p>
         <p class="auth-footer anim-fade">Pas encore de compte ? <NuxtLink to="/register">S'inscrire</NuxtLink></p>
-      </form>
+      </div>
 
-      <!-- Seller Login -->
-      <form v-if="tab === 'seller'" @submit.prevent="handleLogin" class="auth-form">
-        <div class="seller-notice">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-          <span>{{ t('login.seller_sub') }}</span>
-        </div>
-        <div class="field anim-up"><label>Email</label><input v-model="email" type="email" placeholder="vendeur@gsa.fr" required /></div>
-        <div class="field anim-up"><label>Mot de passe</label><input v-model="password" type="password" placeholder="••••••••" required /></div>
-        <p v-if="error" class="auth-error anim-fade">{{ error }}</p>
-        <button type="submit" class="btn-submit btn-seller anim-up" :disabled="submitting">{{ submitting ? 'Connexion…' : 'Accéder à mon espace' }}</button>
-        <p class="auth-footer anim-fade">Pas encore de compte vendeur ? <NuxtLink to="/register">S'inscrire</NuxtLink></p>
-      </form>
-
+      <!-- Admin Login -->
       <form v-if="tab === 'admin'" @submit.prevent="handleLogin" class="auth-form">
         <div class="admin-notice anim-left">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -124,16 +117,24 @@ onMounted(async () => {
 .tab-btn { flex:1;padding:9px 12px;border-radius:8px;border:none;background:transparent;color:var(--text-muted);font-size:.83rem;font-weight:600;cursor:pointer;transition:all .2s; }
 .tab-btn.active { background:var(--bg-surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.2); }
 
-/* Social */
-.social-btns { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px; }
-.btn-social { display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:9px;border:1px solid var(--border);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;color:var(--text);background:transparent;font-family:inherit; }
-.btn-social:hover { border-color:var(--border-hover);background:rgba(255,255,255,0.03); }
-.btn-steam svg { color:#1b2838; } .btn-steam:hover { border-color:rgba(27,40,56,0.3); } .btn-discord svg { color:#5865f2; } .btn-discord:hover { border-color:rgba(88,101,242,0.3); }
-
-.divider { display:flex;align-items:center;gap:12px;margin:12px 0;color:var(--text-muted);font-size:.78rem; }
-.divider::before,.divider::after { content:'';flex:1;height:1px;background:var(--border); }
-
+/* Discord */
 .auth-form { display:grid;gap:16px; }
+.discord-hero { display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border-radius:10px;background:rgba(88,101,242,0.06);border:1px solid rgba(88,101,242,0.15);font-weight:700;font-size:.92rem; }
+.btn-discord-main { display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border-radius:10px;border:none;background:linear-gradient(135deg,#5865f2,#4752c4);color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;transition:filter .2s,transform .2s;font-family:inherit;box-shadow:0 8px 24px rgba(88,101,242,0.25); }
+.btn-discord-main:hover:not(:disabled) { filter:brightness(1.1); transform:translateY(-1px); }
+.btn-discord-main:disabled { opacity:.6; cursor:not-allowed; }
+.discord-note { margin:0; text-align:center; color:var(--text-muted); font-size:.78rem; }
+
+/* Join panel */
+.join-panel { display:grid; gap:14px; text-align:center; padding:10px 0; }
+.join-icon { width:64px; height:64px; margin:0 auto; border-radius:50%; background:rgba(88,101,242,0.1); border:1px solid rgba(88,101,242,0.2); display:grid; place-items:center; }
+.join-panel h2 { margin:0; font-size:1.15rem; font-weight:800; }
+.join-panel p { margin:0; color:var(--text-secondary); font-size:.88rem; line-height:1.6; }
+.btn-join { display:flex; align-items:center; justify-content:center; gap:10px; padding:14px; border-radius:10px; background:linear-gradient(135deg,#5865f2,#4752c4); color:#fff; font-weight:700; font-size:.92rem; text-decoration:none; transition:filter .2s,transform .2s; box-shadow:0 8px 24px rgba(88,101,242,0.25); }
+.btn-join:hover { filter:brightness(1.1); transform:translateY(-1px); }
+.btn-retry { padding:12px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:.85rem; cursor:pointer; transition:all .2s; font-family:inherit; }
+.btn-retry:hover { background:rgba(255,255,255,0.04); }
+
 .field { display:grid;gap:5px; }
 .field label { font-size:.8rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em; }
 .field input { padding:11px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.9rem;outline:none;transition:border-color .2s; }
@@ -143,15 +144,8 @@ onMounted(async () => {
 .btn-submit:hover:not(:disabled) { opacity:.9;transform:translateY(-1px); }
 .btn-submit:disabled { opacity:.5;cursor:not-allowed; }
 .btn-admin { background:linear-gradient(135deg,#dc2626,#7c3aed); }
-.btn-seller { background:linear-gradient(135deg,#6ee7b7,#2f7df6); }
-
-.seller-notice { display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:8px;background:rgba(110,231,183,0.06);border:1px solid rgba(110,231,183,0.12);color:var(--text-secondary);font-size:.82rem;line-height:1.4; }
-.seller-notice svg { flex-shrink:0;color:var(--green); }
-
 .auth-footer { text-align:center;font-size:.85rem;color:var(--text-secondary);margin-top:4px; }
 .auth-footer a { color:var(--primary);font-weight:600; }
-
-/* Admin notice */
 .admin-notice { display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:8px;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.12);color:var(--text-secondary);font-size:.82rem;line-height:1.4; }
 .admin-notice svg { flex-shrink:0;color:#dc2626; }
 </style>
