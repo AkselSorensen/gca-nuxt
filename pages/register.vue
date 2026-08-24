@@ -198,7 +198,7 @@ onMounted(async () => {
 .btn-discord-link { display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid rgba(88,101,242,0.2);background:rgba(88,101,242,0.04);color:#5865f2;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;width:100%; }
 .btn-discord-link:hover { background:rgba(88,101,242,0.1);border-color:rgba(88,101,242,0.3); }
 .auth-error { color:var(--red);font-size:.85rem;padding:10px;border-radius:6px;background:rgba(248,113,113,0.1); }
-.auth-success { color:var(--green);font-size:.85rem;padding:10px;border-radius:6px;background:rgba(110,231,183,0.1); }
+.auth-success { color:var(--green);font-size:.85rem;padding:10px;border-radius:6px;background:rgba(110,231,183,0.1);text-align:center; }
 .btn-submit { padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:.9rem;font-weight:600;transition:all .2s;cursor:pointer;font-family:inherit; }
 .btn-submit:hover:not(:disabled) { opacity:.9;transform:translateY(-1px); }
 .btn-submit:disabled { opacity:.5;cursor:not-allowed; }

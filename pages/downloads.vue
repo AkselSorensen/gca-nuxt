@@ -57,10 +57,6 @@
               <span class="meta-price">{{ Number(item.price).toFixed(2) }}€</span>
             </div>
             <div v-if="item.files?.length" class="purchase-files">
-              <button class="btn-dl-main" @click="download(item.order_item_id)" :disabled="downloading === item.order_item_id">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                {{ downloading === item.order_item_id ? t('downloads.downloading') : t('downloads.download') }}
-              </button>
               <div v-for="f in item.files" :key="f.id" class="file-row">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 <span class="file-name">{{ f.filename }}</span>
@@ -70,17 +66,16 @@
             <div v-else class="no-files">
               <span>{{ t('downloads.no_file') }}</span>
             </div>
-            <div class="invoice-row">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              <div class="invoice-info">
-                <span class="invoice-label">{{ t('downloads.invoice') }}</span>
-                <span class="invoice-sub">{{ t('downloads.invoice_sub') }}</span>
-              </div>
-              <button class="btn-invoice" @click="downloadInvoice(item.order_item_id)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                {{ t('downloads.invoice_pdf') }}
-              </button>
-            </div>
+          </div>
+          <div class="purchase-actions">
+            <button v-if="item.files?.length" class="btn-dl-main" @click="download(item.order_item_id)" :disabled="downloading === item.order_item_id">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              {{ downloading === item.order_item_id ? t('downloads.downloading') : t('downloads.download') }}
+            </button>
+            <button class="btn-invoice" @click="downloadInvoice(item.order_item_id)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              {{ t('downloads.invoice_pdf') }}
+            </button>
           </div>
         </article>
       </div>
@@ -403,6 +398,9 @@ if (process.client) {
 .purchase-thumb:hover img { transform: scale(1.06); }
 
 .purchase-info { flex: 1; min-width: 0; display: grid; gap: 8px; }
+.purchase-actions { display: flex; flex-direction: column; gap: 10px; justify-content: center; flex-shrink: 0; }
+.purchase-actions .btn-dl-main, .purchase-actions .btn-invoice { width: 100%; }
+@media (max-width: 640px) { .purchase-actions { flex-direction: row; justify-content: stretch; } .purchase-actions .btn-dl-main, .purchase-actions .btn-invoice { flex: 1; } }
 .purchase-title-link { text-decoration: none; color: inherit; width: fit-content; }
 .purchase-title-link h3 { margin: 0; font-size: 1rem; font-weight: 700; transition: color .15s; }
 .purchase-title-link:hover h3 { color: var(--primary); }

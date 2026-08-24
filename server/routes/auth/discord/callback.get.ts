@@ -16,7 +16,6 @@ export default defineEventHandler(async (event) => {
   if (!code) {
     return sendRedirect(event, `${BASE_URL}/login?error=missing_code`)
   }
-
   try {
     const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
       method: 'POST',
@@ -62,7 +61,7 @@ export default defineEventHandler(async (event) => {
       )
       const updated = await query('SELECT * FROM users WHERE id = $1', [sessionUser.id])
       await updateSessionUser(event, sanitizeUser(updated.rows[0]))
-      let redirectAfterLink = `${BASE_URL}/profile`
+      let redirectAfterLink = `${BASE_URL}/seller/account`
       try {
         const s = String(getQuery(event).state || '')
         if (s) {

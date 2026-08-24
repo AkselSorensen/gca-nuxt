@@ -29,6 +29,10 @@ export function sanitizeUser(row: any) {
     discordId: row.discord_id || null,
     steamId: row.steam_id || null,
     stripeAccountId: row.stripe_account_id || null,
+    sellerStatus: row.seller_status || null,
+    shopName: row.shop_name || '',
+    sellerDescription: row.seller_description || '',
+    discordTag: row.discord_tag || '',
     createdAt: row.created_at,
   }
 }

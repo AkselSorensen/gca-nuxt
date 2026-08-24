@@ -1418,7 +1418,7 @@ app.get("/api/bootstrap", async (req, res) => {
               ''
             ) AS thumbnail
           FROM products p
-          WHERE (p.is_trending = TRUE OR 'Tendance' = ANY(p.tags))
+          WHERE (p.is_trending = TRUE OR EXISTS (SELECT 1 FROM unnest(p.tags) AS t WHERE LOWER(t) = 'tendance'))
           ORDER BY p.popularity_score DESC, p.views DESC
           LIMIT 8
         `

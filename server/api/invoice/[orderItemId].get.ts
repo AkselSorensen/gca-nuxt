@@ -51,12 +51,14 @@ function generatePdf(order: any): Promise<Buffer> {
     // Header sombre avec logo sur carte blanche
     doc.rect(0, 0, doc.page.width, 84).fill(dark)
     const logoBuffer = Buffer.from(String(logoB64).split(',')[1] || '', 'base64')
-    doc.roundedRect(48, 16, 84, 52, 10).fill('#ffffff')
+    doc.roundedRect(48, 14, 96, 56, 12).fill('#ffffff')
     if (logoBuffer.length > 0) {
-      doc.image(logoBuffer, 48 + 6, 16 + 6, { fit: [72, 40] })
+      doc.image(logoBuffer, 48 + 12, 14 + 8, { fit: [72, 40] })
     }
     doc.font('Helvetica').fontSize(9).fillColor('#8892a8')
-      .text("GSA Tresingo · Marketplace Garry's Mod", 146, 56)
+      .text('GSA Store', 158, 30)
+    doc.font('Helvetica').fontSize(7.5).fillColor('#8892a8')
+      .text("Marketplace Garry's Mod", 158, 44)
     doc.fillColor(primary).font('Helvetica-Bold').fontSize(20).text('FACTURE', 0, 26, { align: 'right', width: W })
 
     doc.fillColor(muted).font('Helvetica').fontSize(8.5)
@@ -101,14 +103,14 @@ function generatePdf(order: any): Promise<Buffer> {
       rowY += rowHeight + 8
     })
 
-    // Totaux
-    if (rowY > usableBottom - 130) {
+    // Totaux — section HT → TVA → TTC (labels alignés à droite jusqu'à x=440, montants jusqu'à x=48+W)
+    if (rowY > usableBottom - 170) {
       doc.addPage()
       rowY = 48
     }
     rowY += 6
     doc.fontSize(9)
-    doc.fillColor(muted).text('Sous-total (HT)', 0, rowY, { align: 'right', width: 440 })
+    doc.fillColor(muted).text('PRIX HT', 0, rowY, { align: 'right', width: 440 })
     doc.fillColor(dark).text(formatEuro(subtotal), 0, rowY, { align: 'right', width: W })
     rowY += 15
 
@@ -125,10 +127,12 @@ function generatePdf(order: any): Promise<Buffer> {
       doc.fillColor(dark).text(formatEuro(totalNet), 0, rowY, { align: 'right', width: W })
       rowY += 15
     }
-    const stripeFee = Number(order.stripe_fee_amount || 0)
+    // Frais de traitement Stripe — formule fixe 1,5 % + 0,25 €
+    const stripeFee = Number(order.stripe_fee_amount || 0) > 0
+      ? Number(order.stripe_fee_amount)
+      : Math.round((subtotal * 0.015 + 0.25) * 100) / 100
     if (stripeFee > 0) {
-      const feeRate = total > 0 ? formatPercent((stripeFee / total) * 100) : ''
-      doc.fillColor(muted).text(`Frais de traitement Stripe (${feeRate})`, 0, rowY, { align: 'right', width: 440 })
+      doc.fillColor(muted).text('Frais de traitement Stripe (1,5 % + 0,25 €)', 0, rowY, { align: 'right', width: 440 })
       doc.fillColor(dark).text(formatEuro(stripeFee), 0, rowY, { align: 'right', width: W })
       rowY += 15
     }
@@ -137,6 +141,7 @@ function generatePdf(order: any): Promise<Buffer> {
       doc.fillColor('#dc2626').text(`-${formatEuro(discount)}`, 0, rowY, { align: 'right', width: W })
       rowY += 15
     }
+    // TVA — ligne dans la section des totaux (avant le total TTC)
     doc.fillColor(muted).text('TVA non applicable, art. 293 B du CGI', 0, rowY, { align: 'right', width: 440 })
     doc.fillColor(dark).text(formatEuro(0), 0, rowY, { align: 'right', width: W })
     rowY += 15
@@ -152,7 +157,7 @@ function generatePdf(order: any): Promise<Buffer> {
 
     const footerY = usableBottom - 4
     doc.moveTo(48, footerY - 8).lineTo(48 + W, footerY - 8).strokeColor(light).lineWidth(0.5).stroke()
-    doc.fillColor(muted).fontSize(7.5).text('GSA Tresingo · GSA, un standard à venir.', 48, footerY)
+    doc.fillColor(muted).fontSize(7.5).text('GSA Store · un standard à venir.', 48, footerY)
     doc.text(`Facture générée le ${formatInvoiceDate(new Date())}`, 0, footerY, { align: 'right', width: W })
 
     doc.end()
