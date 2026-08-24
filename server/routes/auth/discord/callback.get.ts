@@ -65,8 +65,11 @@ export default defineEventHandler(async (event) => {
       if (guildsResponse.ok) {
         const guilds = await guildsResponse.json()
         isMember = Array.isArray(guilds) && guilds.some((g: any) => String(g.id) === DISCORD_GUILD_ID)
+        console.log('[discord-callback] guilds:', guilds.length, '| membre de GSA Store:', isMember)
+      } else {
+        console.error('[discord-callback] guilds API status:', guildsResponse.status)
       }
-    } catch { /* la vérification échoue → considéré non membre */ }
+    } catch (e) { console.error('[discord-callback] guilds fetch error:', e) }
 
     if (!isMember) {
       const state = String(getQuery(event).state || '')
@@ -146,15 +149,21 @@ export default defineEventHandler(async (event) => {
     }
 
     await createSession(event, sanitizeUser(userRow))
+    console.log('[discord-callback] session créée pour user', userRow.id, '| seller_status:', userRow.seller_status || 'none')
 
-    // Redirection selon le type de compte
+    // Redirection intelligente : ne jamais renvoyer vers /login ou /register
+    // (l'utilisateur est connecté — le renvoyer sur la page de login fait croire
+    // que la connexion a échoué)
+    const safeReturn = (u: string) => {
+      const path = (u || '').split('?')[0]
+      return u && (u.startsWith('http') || u.startsWith('/')) && path !== '/login' && path !== '/register' ? u : ''
+    }
     if (userRow.seller_status === 'pending') {
       return sendRedirect(event, `${BASE_URL}/seller/pending`)
     }
-    if (returnUrl && (returnUrl.startsWith('http') || returnUrl.startsWith('/'))) {
-      return sendRedirect(event, returnUrl)
-    }
-    return sendRedirect(event, `${BASE_URL}/`)
+    const target = safeReturn(returnUrl) || (userRow.role === 'seller' ? '/seller/account' : `${BASE_URL}/`)
+    console.log('[discord-callback] redirect →', target)
+    return sendRedirect(event, target)
   } catch (error) {
     console.error('Discord auth error:', error)
     return sendRedirect(event, `${BASE_URL}/login?error=discord_auth_failed`)
