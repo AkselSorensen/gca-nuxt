@@ -135,6 +135,7 @@
   </div>
   <div v-else class="loading-page"><div class="loader"></div></div>
   <ToastNotif ref="toastRef" />
+  <WithdrawalConsent :open="showWithdrawal" @confirm="onWithdrawalConfirm" @cancel="onWithdrawalCancel" />
 </template>
 
 <script setup lang="ts">
@@ -200,10 +201,24 @@ const tabs = [
 
 const buying = ref(false)
 const buyError = ref('')
+// Popup de renonciation à la rétractation
+const showWithdrawal = ref(false)
+const withdrawalAck = ref(false)
+function onWithdrawalConfirm() {
+  withdrawalAck.value = true
+  showWithdrawal.value = false
+  buyNow()
+}
+function onWithdrawalCancel() { showWithdrawal.value = false }
 const toastRef = ref<InstanceType<typeof ToastNotif> | null>(null)
 
 async function buyNow() {
   if (buying.value) return
+  // Popup de renonciation au droit de rétractation (contenu numérique)
+  if (!withdrawalAck.value) {
+    showWithdrawal.value = true
+    return
+  }
   const { user } = useAuth()
   if (!user.value?.id) return navigateTo('/login?redirect=' + encodeURIComponent(route.fullPath))
   buying.value = true; buyError.value = ''

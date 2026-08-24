@@ -98,6 +98,8 @@
       </div>
     </Transition>
   </Teleport>
+
+  <WithdrawalConsent :open="showWithdrawal" @confirm="onWithdrawalConfirm" @cancel="onWithdrawalCancel" />
 </template>
 
 <script setup lang="ts">
@@ -128,6 +130,16 @@ function confirmRemove() {
   confirmRemoveIndex.value = null
 }
 
+// Popup de renonciation à la rétractation (contenu numérique)
+const showWithdrawal = ref(false)
+const withdrawalAck = ref(false)
+function onWithdrawalConfirm() {
+  withdrawalAck.value = true
+  showWithdrawal.value = false
+  checkout()
+}
+function onWithdrawalCancel() { showWithdrawal.value = false }
+
 async function applyPromo() {
   const code = promoCode.value.trim()
   if (!code) { promoStatus.value = 'error'; promoMsg.value = t('cart.promo_empty', 'Entrez un code promo'); return }
@@ -152,6 +164,11 @@ async function applyPromo() {
 
 async function checkout() {
   if (checkingOut.value || !items.value.length) return
+  // Popup de renonciation au droit de rétractation (contenu numérique)
+  if (!withdrawalAck.value) {
+    showWithdrawal.value = true
+    return
+  }
   const { user, checkAuth } = useAuth()
   await checkAuth()
   if (!user.value?.id) return navigateTo('/login?redirect=' + encodeURIComponent(useRoute().fullPath))
