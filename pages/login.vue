@@ -43,7 +43,7 @@ async function handleLogin() {
 }
 
 function socialLogin(provider: string) {
-  window.location.href = '/auth/' + provider
+  window.location.href = '/auth/' + provider + '?return_url=' + encodeURIComponent(window.location.pathname)
 }
 
 onMounted(async () => {

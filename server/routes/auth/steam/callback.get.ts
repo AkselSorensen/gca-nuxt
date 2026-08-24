@@ -44,7 +44,17 @@ export default defineEventHandler(async (event) => {
       )
       const updated = await query('SELECT * FROM users WHERE id = $1', [sessionUser.id])
       await updateSessionUser(event, sanitizeUser(updated.rows[0]))
-      return sendRedirect(event, `${BASE_URL}/seller/account?steam_id=${steamId}`)
+      // Retour à la page d'origine si fournie (return_url), sinon espace vendeur
+      let redirectAfterLink = `${BASE_URL}/seller/account`
+      try {
+        const s = String(getQuery(event).return_url || '')
+        if (s) {
+          const decoded = decodeURIComponent(s)
+          if (decoded.startsWith('http') || decoded.startsWith('/')) redirectAfterLink = decoded
+        }
+      } catch { /* ignore */ }
+      const sep = redirectAfterLink.includes('?') ? '&' : '?'
+      return sendRedirect(event, `${redirectAfterLink}${sep}steam_id=${steamId}`)
     }
 
     const existing = await query('SELECT * FROM users WHERE steam_id = $1 OR email = $2 LIMIT 1', [steamId, email])

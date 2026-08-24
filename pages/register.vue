@@ -239,7 +239,7 @@ async function verifyEmail() {
   } finally { verifying.value = false }
 }
 
-function socialLogin(p: string) { window.location.href = '/auth/' + p }
+function socialLogin(p: string) { window.location.href = '/auth/' + p + '?return_url=' + encodeURIComponent(window.location.pathname) }
 function linkDiscord() {
   window.location.href = '/auth/discord?return_url=' + encodeURIComponent(window.location.origin + '/register')
 }
