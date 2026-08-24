@@ -38,6 +38,13 @@
           </div>
 
           <div class="filter-group">
+            <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Plateforme</h4>
+            <label v-for="pf in platformOptions" :key="pf" class="toggle-row" :class="{ active: filters.platforms.includes(pf) }">
+              <input type="checkbox" :checked="filters.platforms.includes(pf)" @change="togglePlatform(pf)" /><span class="check-box"></span> {{ pf }}
+            </label>
+          </div>
+
+          <div class="filter-group">
             <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg> Prix max.</h4>
             <div class="price-slider-wrap">
               <input type="range" min="0" max="1000" step="5" v-model.number="filters.priceMax" class="single-range" />
@@ -51,7 +58,6 @@
           <div class="filter-group">
             <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg> Options</h4>
             <label class="toggle-row"><input type="checkbox" v-model="filters.onSale" /><span class="check-box"></span> {{ t('cat.on_sale') }}</label>
-            <label class="toggle-row"><input type="checkbox" v-model="filters.verified" /><span class="check-box"></span> Vendeurs vérifiés</label>
             <label class="toggle-row"><input type="checkbox" v-model="filters.trending" /><span class="check-box"></span> {{ t('cat.trending_only') }}</label>
           </div>
 
@@ -124,6 +130,12 @@
               </label>
             </div>
             <div class="filter-group">
+              <h4 class="filter-title">Plateforme</h4>
+              <label v-for="pf in platformOptions" :key="pf" class="toggle-row" :class="{ active: filters.platforms.includes(pf) }">
+                <input type="checkbox" :checked="filters.platforms.includes(pf)" @change="togglePlatform(pf)" /><span class="check-box"></span> {{ pf }}
+              </label>
+            </div>
+            <div class="filter-group">
               <h4 class="filter-title">Prix max.</h4>
               <div class="price-slider-wrap">
                 <input type="range" min="0" max="1000" step="5" v-model.number="filters.priceMax" class="single-range" />
@@ -133,7 +145,6 @@
             <div class="filter-group">
               <h4 class="filter-title">Options</h4>
               <label class="toggle-row"><input type="checkbox" v-model="filters.onSale" /><span class="check-box"></span> En soldes</label>
-              <label class="toggle-row"><input type="checkbox" v-model="filters.verified" /><span class="check-box"></span> Vendeurs vérifiés</label>
               <label class="toggle-row"><input type="checkbox" v-model="filters.trending" /><span class="check-box"></span> Tendance</label>
             </div>
             <div class="filter-group">
@@ -183,15 +194,21 @@ const ratingOptions = [0, 3, 4, 5]
 const filters = reactive({
   search: '', category: '', sort: 'popular',
   priceMax: 1000 as number | null,
-  onSale: false, verified: false, trending: false, minRating: 0
+  onSale: false, platforms: [] as string[], trending: false, minRating: 0
 })
+const platformOptions = ["Garry's Mod", 'Unreal Engine']
+function togglePlatform(pf: string) {
+  const i = filters.platforms.indexOf(pf)
+  if (i >= 0) filters.platforms.splice(i, 1)
+  else filters.platforms.push(pf)
+}
 
 const activeFilterCount = computed(() => {
   let n = 0
   if (filters.category) n++
   if (filters.priceMax) n++
   if (filters.onSale) n++
-  if (filters.verified) n++
+  if (filters.platforms.length) n++
   if (filters.trending) n++
   if (filters.minRating) n++
   return n
@@ -209,7 +226,7 @@ function clearFilters() {
   filters.sort = 'popular'
   filters.priceMax = 1000
   filters.onSale = false
-  filters.verified = false
+  filters.platforms = []
   filters.trending = false
   filters.minRating = 0
 }
@@ -234,7 +251,7 @@ const filteredProducts = computed(() => {
     result = result.filter((p: any) => (p.categorySlug || p.category || '') === filters.category)
   if (filters.priceMax) result = result.filter((p: any) => Number(p.price) <= filters.priceMax!)
   if (filters.onSale) result = result.filter((p: any) => p.discountPercent > 0)
-  if (filters.verified) result = result.filter((p: any) => p.verifiedSeller)
+  if (filters.platforms.length) result = result.filter((p: any) => filters.platforms.includes(p.platform || "Garry's Mod"))
   if (filters.trending) result = result.filter((p: any) => p.isTrending || isTaggedTendance(p) || p.popularityScore > 80)
   if (filters.minRating > 0) result = result.filter((p: any) => Number(p.rating || 0) >= filters.minRating)
 
