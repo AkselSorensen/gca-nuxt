@@ -306,7 +306,7 @@ async function submitSellerRequest() {
 }
 
 function linkDiscord() {
-  window.location.href = '/auth/discord?return_url=' + encodeURIComponent('/profile')
+  window.location.href = '/auth/discord?return_url=' + encodeURIComponent('https://discord.gg/KDsEzGRnKs')
 }
 function linkSteam() {
   window.location.href = '/auth/steam?return_url=' + encodeURIComponent('/profile')

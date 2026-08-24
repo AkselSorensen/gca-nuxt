@@ -401,7 +401,7 @@ async function openStripeDashboard() {
 }
 
 function linkDiscord() {
-  window.location.href = '/auth/discord?return_url=' + encodeURIComponent('/seller/account')
+  window.location.href = '/auth/discord?return_url=' + encodeURIComponent('https://discord.gg/KDsEzGRnKs')
 }
 function linkSteam() {
   window.location.href = '/auth/steam?return_url=' + encodeURIComponent('/seller/account')
