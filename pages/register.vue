@@ -147,9 +147,16 @@
             </p>
           </div>
           <div class="modal-footer">
+            <div class="doc-list">
+              <span class="doc-list-title">Documents à accepter ({{ termsDocs.length }}) :</span>
+              <NuxtLink v-for="d in termsDocs" :key="d.path" :to="d.path" target="_blank" class="doc-link">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                {{ d.label }}
+              </NuxtLink>
+            </div>
             <label class="terms-check" :class="{ disabled: !termsScrolled }">
               <input type="checkbox" v-model="termsAccepted" :disabled="!termsScrolled" />
-              <span>{{ t('register.cgv_accept') }}</span>
+              <span>J'ai lu et j'accepte l'ensemble des documents ci-dessus.</span>
             </label>
             <button class="btn-accept" :disabled="!termsAccepted" @click="confirmTerms">Confirmer et continuer</button>
           </div>
@@ -182,6 +189,17 @@ const config = useRuntimeConfig()
 const api = config.public.apiOrigin
 const showTerms = ref(false)
 const termsAccepted = ref(false)
+
+const buyerDocs = [
+  { label: 'Mentions légales', path: '/mentions-legales' },
+  { label: 'Conditions Générales d\'Utilisation (CGU)', path: '/cgu' },
+  { label: 'Politique de confidentialité des données', path: '/confidentialite' },
+  { label: 'Politique des cookies', path: '/cookies' },
+  { label: 'Politique de rétractation', path: '/retractation' },
+  { label: 'Conditions Générales de Vente (CGV)', path: '/cgv' },
+]
+const sellerExtraDoc = { label: 'Contrat Vendeur', path: '/contrat-vendeur' }
+const termsDocs = computed(() => accountType.value === 'seller' ? [...buyerDocs, sellerExtraDoc] : buyerDocs)
 const termsScrolled = ref(false)
 
 function onTermsScroll() {
@@ -341,6 +359,10 @@ onMounted(async () => {
 .terms-check { display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--text-secondary);cursor:pointer; }
 .terms-check.disabled { opacity:.4;cursor:not-allowed; }
 .terms-check input { width:16px;height:16px;accent-color:var(--primary); }
+.doc-list { display:grid; gap:6px; padding:12px 14px; border-radius:10px; background:rgba(47,125,246,0.05); border:1px solid rgba(47,125,246,0.12); width:100%; }
+.doc-list-title { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted); }
+.doc-link { display:flex; align-items:center; gap:8px; font-size:.8rem; color:var(--text-secondary); text-decoration:none; padding:4px 6px; border-radius:6px; transition:all .15s; }
+.doc-link:hover { color:var(--primary); background:rgba(47,125,246,0.08); }
 .btn-accept { padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s; }
 .btn-accept:disabled { opacity:.4;cursor:not-allowed; }
 .btn-accept:not(:disabled):hover { opacity:.9;transform:translateY(-1px); }
