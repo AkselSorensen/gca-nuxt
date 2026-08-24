@@ -1,7 +1,10 @@
 // GET /api/products — liste avec filtres + tri (réplique du monolithe Express)
-import { defineEventHandler, getQuery, createError } from 'h3'
+// Cache navigateur 60s + CDN 5min : données publiques, pas d'utilisateur.
+import { defineEventHandler, getQuery, createError, setResponseHeader } from 'h3'
 import { query } from '../../services/db'
 import { buildWhereClause, mapProduct } from '../../services/products'
+
+const CACHE_PUBLIC = 'public, max-age=60, s-maxage=300, stale-while-revalidate=300'
 
 const allowedSorts: Record<string, string> = {
   popular: 'p.popularity_score DESC, p.views DESC',
@@ -13,6 +16,7 @@ const allowedSorts: Record<string, string> = {
 }
 
 export default defineEventHandler(async (event) => {
+  setResponseHeader(event, 'Cache-Control', CACHE_PUBLIC)
   try {
     const q = getQuery(event)
     const sortMode = String(q.sort || 'popular')

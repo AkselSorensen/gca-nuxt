@@ -1,8 +1,9 @@
 // GET /api/categories — liste des catégories (réplique du monolithe Express)
-import { defineEventHandler, createError } from 'h3'
+import { defineEventHandler, createError, setResponseHeader } from 'h3'
 import { query } from '../services/db'
 
 export default defineEventHandler(async (event) => {
+  setResponseHeader(event, 'Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=600')
   try {
     const result = await query(
       `

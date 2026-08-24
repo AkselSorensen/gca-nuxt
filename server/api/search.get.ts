@@ -1,8 +1,9 @@
 // GET /api/search?q= — recherche produits (réplique du monolithe Express)
-import { defineEventHandler, getQuery, createError } from 'h3'
+import { defineEventHandler, getQuery, createError, setResponseHeader } from 'h3'
 import { query } from '../services/db'
 
 export default defineEventHandler(async (event) => {
+  setResponseHeader(event, 'Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=300')
   try {
     const search = String(getQuery(event).q || '').trim()
     if (!search) return { items: [] }
