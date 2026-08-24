@@ -65,3 +65,24 @@ export async function destroySession(event: H3Event): Promise<void> {
   }
   deleteCookie(event, COOKIE_NAME, { httpOnly: true, sameSite: 'none', secure: true, path: '/' })
 }
+
+// Met à jour l'utilisateur dans la session courante (équivalent de
+// `req.session.user = ...` côté express-session)
+export async function updateSessionUser(event: H3Event, user: any): Promise<void> {
+  const sid = getSessionId(event)
+  if (!sid) return
+  try {
+    const r = await query('SELECT sess FROM user_sessions WHERE sid = $1', [sid])
+    if (!r.rowCount) return
+    const sess = r.rows[0].sess
+    sess.user = user
+    const expires = new Date(Date.now() + MAX_AGE_MS)
+    sess.cookie.expires = expires.toISOString()
+    await query(
+      'UPDATE user_sessions SET sess = $1::json, expire = $2 WHERE sid = $3',
+      [JSON.stringify(sess), expires, sid]
+    )
+  } catch (error) {
+    console.error('[session] updateSessionUser error:', error)
+  }
+}
