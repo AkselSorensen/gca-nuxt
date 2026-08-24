@@ -20,7 +20,7 @@ const { Pool } = require("pg");
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
-const discordInvite = "https://discord.gg/ZbCrwE73uK";
+const discordInvite = "https://discord.gg/KDsEzGRnKs";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,

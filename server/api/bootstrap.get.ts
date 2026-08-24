@@ -3,7 +3,7 @@ import { defineEventHandler, createError } from 'h3'
 import { query } from '../services/db'
 import { getSessionUser, getSessionLocale } from '../utils/auth'
 
-const DISCORD_INVITE = 'https://discord.gg/ZbCrwE73uK'
+const DISCORD_INVITE = 'https://discord.gg/KDsEzGRnKs'
 
 export default defineEventHandler(async (event) => {
   try {

@@ -49,6 +49,10 @@ defineProps({ totalProducts: Number, totalSales: Number, avgRating: String, tota
 <style scoped>
 .hero {
   position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
   padding: 100px 0 80px;
   overflow: hidden;
 }
@@ -139,7 +143,7 @@ defineProps({ totalProducts: Number, totalSales: Number, avgRating: String, tota
 .stat-lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-top: 2px; }
 
 @media (max-width: 640px) {
-  .hero { padding: 60px 0 48px; }
+  .hero { padding: 60px 0 48px; min-height: 100svh; }
   .hero-stats { gap: 20px; flex-wrap: wrap; justify-content: center; }
 }
 </style>
