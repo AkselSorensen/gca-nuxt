@@ -404,35 +404,54 @@
 
   <!-- Product form modal -->
   <div v-if="showProductForm" ref="prodOverlay" class="modal-overlay" @click.self="closeProductForm">
-    <div ref="prodCard" class="form-modal form-modal-lg">
-      <div class="modal-header"><h3>{{ editingId ? 'Modifier le produit' : 'Créer un produit' }}</h3><button class="modal-close" @click="closeProductForm"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div ref="prodCard" class="form-modal form-modal-lg prod-modal">
+      <div class="modal-header">
+        <div>
+          <h3>{{ editingId ? 'Modifier le produit' : 'Créer un produit' }}</h3>
+          <p class="modal-sub">Renseignez les informations de votre produit</p>
+        </div>
+        <button class="modal-close" @click="closeProductForm"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+
       <div class="modal-body form-body">
-        <div class="form-grid-2">
-          <div class="form-left">
-            <div class="field"><label>Titre</label><input v-model="productForm.title" type="text" placeholder="Pack Bâtiments..." /></div>
-            <div class="field"><label>Description courte</label><input v-model="productForm.shortDescription" type="text" placeholder="Courte description..." /></div>
-            <div class="field"><label>Description longue</label><textarea v-model="productForm.description" rows="5" placeholder="Description détaillée du produit..."></textarea></div>
-            <div class="field"><label>Installation</label><textarea v-model="productForm.installation" rows="3" placeholder="Instructions d'installation..."></textarea></div>
+        <!-- 1. Informations -->
+        <div class="form-section">
+          <div class="form-section-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Informations</div>
+          <div class="form-grid-2">
+            <div class="field"><label>Titre *</label><input v-model="productForm.title" type="text" placeholder="Pack Bâtiments..." /></div>
+            <div class="field"><label>Description courte *</label><input v-model="productForm.shortDescription" type="text" placeholder="Courte description..." /></div>
+            <div class="field field-full"><label>Description longue *</label><textarea v-model="productForm.description" rows="4" placeholder="Description détaillée du produit..."></textarea></div>
+            <div class="field field-full"><label>Installation *</label><textarea v-model="productForm.installation" rows="2" placeholder="Instructions d'installation..."></textarea></div>
           </div>
-          <div class="form-right">
-            <div class="form-row">
-              <div class="field"><label>Catégorie</label><select v-model="productForm.categorySlug"><option value="" disabled>Sélectionner</option><option v-for="c in categories" :key="c.slug" :value="c.slug">{{ c.name }}</option></select></div>
-              <div class="field half"><label>Vendeur</label><select v-model="productForm.sellerSlug"><option value="" disabled>Sélectionner</option><option v-for="s in sellers" :key="s.slug" :value="s.slug">{{ s.username }}</option></select></div>
+        </div>
+
+        <!-- 2. Paramètres -->
+        <div class="form-section">
+          <div class="form-section-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/><path d="M4.6 15a1.65 1.65 0 0 0-.33 1.82l-.06.06a2 2 0 1 0 2.83 2.83l.06-.06a1.65 1.65 0 0 1 1.82-.33"/><path d="M14 2h-4v4a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V2z"/></svg> Paramètres</div>
+          <div class="form-grid-2">
+            <div class="field"><label>Catégorie *</label><select v-model="productForm.categorySlug"><option value="" disabled>Sélectionner</option><option v-for="c in categories" :key="c.slug" :value="c.slug">{{ c.name }}</option></select></div>
+            <div class="field"><label>Vendeur *</label><select v-model="productForm.sellerSlug"><option value="" disabled>Sélectionner</option><option v-for="s in sellers" :key="s.slug" :value="s.slug">{{ s.username }}</option></select></div>
+            <div class="field"><label>Plateforme</label>
+              <select v-if="!platformCustom" v-model="productForm.platform">
+                <option v-if="productForm.platform && !platformPresets.includes(productForm.platform)" :value="productForm.platform">{{ productForm.platform }}</option>
+                <option v-for="pf in platformPresets" :key="pf" :value="pf">{{ pf }}</option>
+                <option value="__custom">Autre…</option>
+              </select>
+              <input v-else v-model="productForm.platform" type="text" placeholder="Nom de la plateforme" @blur="platformCustom = false" />
             </div>
-            <div class="form-row">
-              <div class="field"><label>Plateforme</label>
-                <select v-if="!platformCustom" v-model="productForm.platform">
-                  <option v-if="productForm.platform && !platformPresets.includes(productForm.platform)" :value="productForm.platform">{{ productForm.platform }}</option>
-                  <option v-for="pf in platformPresets" :key="pf" :value="pf">{{ pf }}</option>
-                  <option value="__custom">Autre…</option>
-                </select>
-                <input v-else v-model="productForm.platform" type="text" placeholder="Nom de la plateforme" @blur="platformCustom = false" />
+            <div class="field price-fields">
+              <div class="price-inner">
+                <div class="field"><label>Prix (€)</label><input v-model="productForm.price" type="number" step="0.01" min="0" placeholder="0.00" /></div>
+                <div class="field"><label>Remise (%)</label><input v-model="productForm.discountPercent" type="number" min="0" max="100" placeholder="0" /></div>
               </div>
             </div>
-            <div class="form-row">
-              <div class="field"><label>Prix (€)</label><input v-model="productForm.price" type="number" step="0.01" min="0" placeholder="0.00" /></div>
-              <div class="field"><label>Remise (%)</label><input v-model="productForm.discountPercent" type="number" min="0" max="100" placeholder="0" /></div>
-            </div>
+          </div>
+        </div>
+
+        <!-- 3. Média & Fichier -->
+        <div class="form-section">
+          <div class="form-section-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Média &amp; Fichier</div>
+          <div class="form-grid-2">
             <div class="field">
               <label>Image du produit</label>
               <div v-if="!uploadThumb" class="thumb-zone" @click="thumbInput?.click()" @dragover.prevent @drop.prevent="handleThumbUpload">
@@ -445,38 +464,6 @@
                 <button class="thumb-remove" @click="removeThumb"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
               </div>
               <input ref="thumbInput" type="file" accept="image/png,image/jpeg" style="display:none" @change="handleThumbUpload" />
-            </div>
-            <div v-if="editingId" class="field">
-              <label>Images existantes</label>
-              <div class="media-grid">
-                <div v-for="m in productMedia" :key="m.id" class="media-item">
-                  <img :src="m.thumbnail || m.url" alt="" />
-                  <button class="media-remove" @click="removeMedia(m.id)" title="Retirer cette image"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                </div>
-                <button class="media-add" @click="addMediaImage" title="Ajouter une image"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-              </div>
-            </div>
-            <div class="field"><label>Tags</label>
-              <div class="tag-dropdown">
-                <div class="tag-trigger" @click="tagOpen = !tagOpen">
-                  <span v-if="selectedTags.length">{{ selectedTags.length }} tag(s) sélectionné(s)</span>
-                  <span v-else class="ph">Sélectionner des tags…</span>
-                  <svg :class="{ open: tagOpen }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                </div>
-                <div v-if="tagOpen" class="tag-menu">
-                  <label v-for="t in allTags" :key="t" class="tag-opt" :class="{ checked: selectedTags.includes(t) }">
-                    <input type="checkbox" :checked="selectedTags.includes(t)" @change="toggleTag(t)" />
-                    <span>#{{ t }}</span>
-                  </label>
-                  <div v-if="!allTags.length" class="tag-empty">Aucun tag disponible</div>
-                </div>
-              </div>
-              <div v-if="selectedTags.length" class="tag-pills">
-                <span v-for="t in selectedTags" :key="t" class="tag-pill">
-                  #{{ t }}
-                  <button @click="removeTag(t)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                </span>
-              </div>
             </div>
             <div class="field">
               <label>Fichier du produit (zip)</label>
@@ -491,11 +478,49 @@
                 <span class="file-name">{{ uploadFileName }}</span>
                 <button class="thumb-remove" @click="removeFile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
               </div>
+              <input ref="fileInput" type="file" accept=".zip,.rar,.7z" style="display:none" @change="handleFileUpload" />
             </div>
-            <input ref="fileInput" type="file" accept=".zip,.rar,.7z" style="display:none" @change="handleFileUpload" />
+            <div v-if="editingId" class="field field-full">
+              <label>Images existantes</label>
+              <div class="media-grid">
+                <div v-for="m in productMedia" :key="m.id" class="media-item">
+                  <img :src="m.thumbnail || m.url" alt="" />
+                  <button class="media-remove" @click="removeMedia(m.id)" title="Retirer cette image"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                </div>
+                <button class="media-add" @click="addMediaImage" title="Ajouter une image"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Tags -->
+        <div class="form-section">
+          <div class="form-section-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Tags</div>
+          <div class="field">
+            <div class="tag-dropdown">
+              <div class="tag-trigger" @click="tagOpen = !tagOpen">
+                <span v-if="selectedTags.length">{{ selectedTags.length }} tag(s) sélectionné(s)</span>
+                <span v-else class="ph">Sélectionner des tags…</span>
+                <svg :class="{ open: tagOpen }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div v-if="tagOpen" class="tag-menu">
+                <label v-for="t in allTags" :key="t" class="tag-opt" :class="{ checked: selectedTags.includes(t) }">
+                  <input type="checkbox" :checked="selectedTags.includes(t)" @change="toggleTag(t)" />
+                  <span>#{{ t }}</span>
+                </label>
+                <div v-if="!allTags.length" class="tag-empty">Aucun tag disponible</div>
+              </div>
+            </div>
+            <div v-if="selectedTags.length" class="tag-pills">
+              <span v-for="t in selectedTags" :key="t" class="tag-pill">
+                #{{ t }}
+                <button @click="removeTag(t)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              </span>
+            </div>
           </div>
         </div>
       </div>
+
       <div class="modal-actions">
         <label class="check-field"><input type="checkbox" v-model="productForm.isHidden" /> Masqué (caché du catalogue)</label>
         <div class="modal-action-btns">
@@ -1194,8 +1219,18 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 /* Form modal (product) */
 .form-modal { width:100%;max-width:520px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.3); }
 .form-modal-lg { max-width:880px !important; }
-.form-grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:24px; }
+.prod-modal .modal-body { max-height: min(72vh, 680px); overflow-y:auto; }
+.prod-modal .modal-header { display:flex; align-items:flex-start; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--border); background:var(--bg-surface); }
+.prod-modal .modal-header h3 { margin:0; font-size:1.15rem; font-weight:800; }
+.modal-sub { margin:4px 0 0; font-size:.78rem; color:var(--text-muted); }
+.form-grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
 @media(max-width:768px){.form-grid-2{grid-template-columns:1fr}}
+.form-section { padding:18px 24px; }
+.form-section + .form-section { border-top:1px solid var(--border); }
+.form-section-title { display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--text-secondary); margin-bottom:14px; }
+.form-section-title svg { color:var(--primary); }
+.field-full { grid-column: 1 / -1; }
+.price-fields .price-inner { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .check-field { display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text-secondary);cursor:pointer; }
 .check-field input { width:16px;height:16px;accent-color:var(--primary); }
 .modal-action-btns { display:flex;align-items:center;gap:10px;margin-left:auto; }
