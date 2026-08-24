@@ -4,6 +4,7 @@
     <main id="main-content"><slot /></main>
     <AppFooter />
     <AppLoader :visible="showLoader" />
+    <CookieConsent />
   </div>
 </template>
 

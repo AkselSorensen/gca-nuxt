@@ -2,6 +2,7 @@
   <div class="auth-shell">
     <slot />
     <AppLoader :visible="showLoader" />
+    <CookieConsent />
   </div>
 </template>
 
