@@ -605,7 +605,7 @@ async function deleteTag(tg: any) {
 async function loadAmbCodes() {
   ambLoading.value = true
   try {
-    const res = await $fetch(api + '/api/admin/promo-codes', { credentials: 'include', credentials: 'include' })
+    const res = await $fetch(api + '/api/admin/promo-codes', { credentials: 'include' })
     ambCodes.value = res.codes || res || []
   } catch { ambCodes.value = [] }
   finally { ambLoading.value = false }

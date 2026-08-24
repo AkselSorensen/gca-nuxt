@@ -860,6 +860,18 @@ async function initializeDatabase() {
     );
   `);
 
+  // Table des tags — gestion complète (création, renommage, suppression)
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS tags (
+      id SERIAL PRIMARY KEY,
+      name TEXT UNIQUE NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    INSERT INTO tags (name)
+    SELECT DISTINCT unnest(tags) FROM products
+    ON CONFLICT (name) DO NOTHING;
+  `);
+
   // Colonne download_count sur order_items
   try {
     await pool.query(`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS download_count INTEGER NOT NULL DEFAULT 0`);
@@ -1406,7 +1418,7 @@ app.get("/api/bootstrap", async (req, res) => {
               ''
             ) AS thumbnail
           FROM products p
-          WHERE p.is_trending = TRUE
+          WHERE (p.is_trending = TRUE OR 'Tendance' = ANY(p.tags))
           ORDER BY p.popularity_score DESC, p.views DESC
           LIMIT 8
         `
