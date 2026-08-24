@@ -47,7 +47,7 @@
               <strong>{{ Number(item.price).toFixed(2) }}€</strong>
               <span v-if="item.discountPercent > 0" class="price-old">{{ Number(item.oldPrice).toFixed(2) }}€</span>
             </div>
-            <button class="cart-remove" @click="removeItem(i)">
+            <button class="cart-remove" @click="askRemove(i)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
@@ -79,6 +79,25 @@
       </div>
     </div>
   </div>
+
+  <!-- Popup de confirmation suppression -->
+  <Teleport to="body">
+    <Transition name="drop">
+      <div v-if="confirmRemoveIndex !== null" class="confirm-overlay" @click.self="cancelRemove">
+        <div class="confirm-card anim-scale">
+          <div class="confirm-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </div>
+          <h3>Supprimer cet article ?</h3>
+          <p class="confirm-item">{{ items[confirmRemoveIndex]?.title }}</p>
+          <div class="confirm-actions">
+            <button class="btn-cancel" @click="cancelRemove">Annuler</button>
+            <button class="btn-delete" @click="confirmRemove">Supprimer</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -100,6 +119,14 @@ const subtotal = computed(() => items.value.reduce((s, i) => s + Number(i.price)
 const total = computed(() => Math.max(0, subtotal.value - promoDiscount.value))
 
 function removeItem(i: number) { items.value.splice(i, 1); promoStatus.value = 'idle'; promoDiscount.value = 0 }
+
+const confirmRemoveIndex = ref<number | null>(null)
+function askRemove(i: number) { confirmRemoveIndex.value = i }
+function cancelRemove() { confirmRemoveIndex.value = null }
+function confirmRemove() {
+  if (confirmRemoveIndex.value !== null) removeItem(confirmRemoveIndex.value)
+  confirmRemoveIndex.value = null
+}
 
 async function applyPromo() {
   const code = promoCode.value.trim()
@@ -309,6 +336,18 @@ watch(items, (val) => {
 .cart-empty p { color:var(--text-secondary); }
 .btn-browse { padding:12px 24px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-weight:700;text-decoration:none;margin-top:8px;transition:opacity .2s; }
 .btn-browse:hover { opacity:.9; }
+
+/* Popup de confirmation suppression */
+.confirm-overlay { position:fixed; inset:0; z-index:300; display:grid; place-items:center; background:rgba(10,14,20,0.7); backdrop-filter:blur(6px); }
+.confirm-card { width:min(400px, 92vw); padding:28px 24px; border-radius:16px; border:1px solid var(--border); background:var(--bg-card); display:grid; gap:12px; text-align:center; }
+.confirm-icon { width:56px; height:56px; margin:0 auto; border-radius:50%; background:rgba(248,113,113,0.1); display:grid; place-items:center; }
+.confirm-card h3 { margin:0; font-size:1.1rem; font-weight:800; }
+.confirm-item { margin:0; color:var(--text-secondary); font-size:.88rem; }
+.confirm-actions { display:flex; gap:10px; margin-top:8px; }
+.btn-cancel { flex:1; padding:11px; border-radius:10px; border:1px solid var(--border); background:var(--bg-surface); color:var(--text); font-weight:600; font-size:.88rem; cursor:pointer; transition:all .2s; }
+.btn-cancel:hover { background:rgba(255,255,255,0.05); }
+.btn-delete { flex:1; padding:11px; border-radius:10px; border:none; background:linear-gradient(135deg,#f87171,#ef4444); color:#fff; font-weight:700; font-size:.88rem; cursor:pointer; transition:all .2s; }
+.btn-delete:hover { filter:brightness(1.1); }
 
 /* Success */
 .success-banner { text-align:center;padding:60px 20px;display:grid;gap:12px;justify-items:center;border-radius:16px;border:1px solid rgba(110,231,183,0.15);background:rgba(110,231,183,0.03); }
