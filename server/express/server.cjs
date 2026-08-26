@@ -1732,7 +1732,8 @@ app.get("/api/sellers/:slug", async (req, res) => {
     
     // 1. Check if user is a seller
     const sellerResult = await pool.query(
-      `SELECT id, display_name, slug, avatar_url, role, discord_id, created_at FROM users WHERE slug = $1 AND role IN ('seller', 'admin') LIMIT 1`,
+      `SELECT id, display_name, slug, avatar_url, role, discord_id, discord_tag, seller_description, created_at
+       FROM users WHERE slug = $1 AND role IN ('seller', 'admin') LIMIT 1`,
       [slug]
     );
 
@@ -1789,19 +1790,44 @@ app.get("/api/sellers/:slug", async (req, res) => {
       [seller.id]
     );
 
+    // 4. Fetch seller's product reviews
+    const reviewsResult = await pool.query(
+      `SELECT r.id, r.product_id, r.rating, r.comment, r.created_at,
+              u.display_name AS reviewer_name, u.avatar_url AS reviewer_avatar,
+              p.title AS product_title
+       FROM reviews r
+       JOIN users u ON u.id = r.user_id
+       JOIN products p ON p.id = r.product_id
+       WHERE r.product_id IN (SELECT id FROM products WHERE seller_id = $1)
+       ORDER BY r.created_at DESC
+       LIMIT 60`,
+      [seller.id]
+    );
+
     res.json({
       seller: {
         displayName: seller.display_name,
         slug: seller.slug,
         avatarUrl: seller.avatar_url,
-        bio: '',
+        bio: seller.seller_description || '',
         discordId: seller.discord_id,
+        discordTag: seller.discord_tag || '',
         discordLinked: !!seller.discord_id,
         joinedAt: seller.created_at,
         totalUnitsSold: parseInt(publicStatsResult.rows[0].units_sold || 0),
         totalRevenue: parseFloat(publicStatsResult.rows[0].total_revenue || 0),
         sellerNetRevenue: parseFloat(publicStatsResult.rows[0].seller_net_revenue || 0)
       },
+      reviews: reviewsResult.rows.map(r => ({
+        id: r.id,
+        productId: r.product_id,
+        productTitle: r.product_title,
+        rating: Number(r.rating),
+        comment: r.comment,
+        createdAt: r.created_at,
+        reviewerName: r.reviewer_name,
+        reviewerAvatar: r.reviewer_avatar
+      })),
       products: productsResult.rows.map(row => ({
         id: row.id,
         slug: row.slug,

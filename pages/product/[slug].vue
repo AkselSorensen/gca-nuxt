@@ -91,7 +91,10 @@
 
           <!-- Seller card -->
           <div class="seller-card">
-            <div class="seller-avatar">{{ (sellerName?.[0] || 'V').toUpperCase() }}</div>
+            <div class="seller-avatar">
+              <img v-if="product.sellerAvatar" :src="product.sellerAvatar" :alt="sellerName" />
+              <span v-else>{{ (sellerName?.[0] || 'V').toUpperCase() }}</span>
+            </div>
             <div class="seller-info">
               <strong class="seller-name">{{ sellerName }} <svg v-if="product.verifiedSeller" width="14" height="14" viewBox="0 0 24 24" fill="#2f7df6"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9" stroke="#fff" stroke-width="2" fill="none"/></svg></strong>
               <span class="seller-label">{{ t('product.verified') }}</span>
@@ -346,7 +349,8 @@ onMounted(async () => {
 
 /* Seller card */
 .seller-card { display:grid;grid-template-columns:48px 1fr;gap:10px;padding:14px 16px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card); }
-.seller-avatar { width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-size:1rem;font-weight:800;grid-row:span 2; }
+.seller-avatar { width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-size:1rem;font-weight:800;grid-row:span 2;overflow:hidden; }
+.seller-avatar img { width:100%;height:100%;object-fit:cover; }
 .seller-info { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
 .seller-name { font-size:.88rem;font-weight:700;display:flex;align-items:center;gap:4px; }
 .seller-name svg { flex-shrink:0; }
