@@ -94,7 +94,7 @@
           </div>
 
           <!-- Seller card -->
-          <div class="seller-card">
+          <NuxtLink :to="'/seller/' + (product.sellerSlug || product.seller)" class="seller-card">
             <div class="seller-avatar">
               <img v-if="product.sellerAvatar" :src="product.sellerAvatar" :alt="sellerName" />
               <span v-else>{{ (sellerName?.[0] || 'V').toUpperCase() }}</span>
@@ -107,7 +107,8 @@
               <span>{{ sellerProductCount }} produits</span>
               <span>{{ product.rating ? Number(product.rating).toFixed(1) + ' ★' : '' }}</span>
             </div>
-          </div>
+            <svg class="seller-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </NuxtLink>
         </div>
       </div>
 
@@ -359,7 +360,10 @@ onMounted(async () => {
 .badge-item svg { color:var(--green);flex-shrink:0; }
 
 /* Seller card */
-.seller-card { display:grid;grid-template-columns:48px 1fr;gap:10px;padding:14px 16px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card); }
+.seller-card { display:grid;grid-template-columns:48px 1fr auto;gap:10px;padding:14px 16px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);text-decoration:none;color:inherit;transition:border-color .2s,background .2s; }
+.seller-card:hover { border-color:rgba(47,125,246,0.4);background:rgba(47,125,246,0.03); }
+.seller-arrow { align-self:center;color:var(--text-muted);transition:transform .2s,color .2s; }
+.seller-card:hover .seller-arrow { transform:translateX(3px);color:var(--primary); }
 .seller-avatar { width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-size:1rem;font-weight:800;grid-row:span 2;overflow:hidden; }
 .seller-avatar img { width:100%;height:100%;object-fit:cover; }
 .seller-info { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
