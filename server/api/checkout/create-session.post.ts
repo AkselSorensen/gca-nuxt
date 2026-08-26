@@ -32,6 +32,18 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: "Vous possédez déjà l'un de ces articles." })
     }
 
+    // Empêche l'achat de ses propres produits
+    const cartProductRows = await query(
+      'SELECT id, seller_id FROM products WHERE id = ANY($1::int[])',
+      [cart.items.map((i: any) => i.product.id)]
+    )
+    const ownIds = cartProductRows.rows
+      .filter((r: any) => Number(r.seller_id) === Number(user.id))
+      .map((r: any) => r.id)
+    if (ownIds.length) {
+      throw createError({ statusCode: 400, statusMessage: 'Vous ne pouvez pas acheter vos propres produits.' })
+    }
+
     const promoCode = normalizePromoCode(body?.promoCode)
     const promoState = promoCode ? await getValidPromoForCart(promoCode, cart.total) : null
     if (promoCode && !promoState?.promo) {

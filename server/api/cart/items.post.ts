@@ -15,6 +15,15 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    // Empêche un vendeur d'ajouter ses propres produits au panier
+    const prodResult = await query('SELECT seller_id FROM products WHERE id = $1', [productId])
+    if (!prodResult.rowCount) {
+      throw createError({ statusCode: 404, statusMessage: 'Produit introuvable' })
+    }
+    if (Number(prodResult.rows[0].seller_id) === Number(user.id)) {
+      throw createError({ statusCode: 400, statusMessage: 'Vous ne pouvez pas acheter vos propres produits.' })
+    }
+
     const cart = await getCart(user.id)
     await query(
       `

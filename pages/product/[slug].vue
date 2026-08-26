@@ -71,6 +71,10 @@
               {{ t('product.download') }}
             </NuxtLink>
           </div>
+          <div v-else-if="isOwnProduct" class="own-product-note">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+            C'est votre produit — vous ne pouvez pas l'acheter.
+          </div>
           <div v-else class="info-actions">
             <button class="btn-cart-add" @click="addToCart">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/><path d="M20 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -152,6 +156,12 @@ const slug = route.params.slug as string
 
 const { data: prodData, refresh } = await useFetch(api + '/api/products/' + slug, { lazy: true, credentials: 'include' })
 const product = computed(() => prodData.value?.product || prodData.value || null)
+
+// Un vendeur ne peut pas acheter ses propres produits (bloqué serveur + UI)
+const { user } = useAuth()
+const isOwnProduct = computed(() =>
+  !!user.value?.id && !!product.value?.sellerId && Number(user.value.id) === Number(product.value.sellerId)
+)
 
 const currentImg = ref('')
 const activeTab = ref('description')
@@ -337,7 +347,8 @@ onMounted(async () => {
 .btn-cart-add:hover { border-color:var(--border-hover);background:rgba(255,255,255,0.04); }
 .btn-buy { flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s; }
 .btn-buy:hover { opacity:.9;transform:translateY(-1px); }
-.buy-error { color:var(--red);font-size:.82rem;font-weight:600;margin:0; }
+.buy-error { color:var(--red); font-size:.8rem; margin:0; }
+.own-product-note { display:flex; align-items:center; justify-content:center; gap:8px; padding:13px 20px; border-radius:10px; border:1px dashed rgba(47,125,246,0.3); background:rgba(47,125,246,0.05); color:var(--text-secondary); font-size:.85rem; font-weight:600; }
 .owned-actions { display:grid;gap:8px; }
 .btn-download { display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:10px;border:1px solid rgba(110,231,183,0.3);background:rgba(110,231,183,0.1);color:var(--green);font-size:.88rem;font-weight:700;text-decoration:none;transition:all .2s; }
 .btn-download:hover { background:rgba(110,231,183,0.18);border-color:rgba(110,231,183,0.5); }

@@ -20,6 +20,11 @@ export default defineEventHandler(async (event) => {
     if (!prodResult.rowCount) throw createError({ statusCode: 404, statusMessage: 'Produit introuvable' })
     const product = prodResult.rows[0]
 
+    // Empêche un vendeur d'acheter ses propres produits
+    if (Number(product.seller_id) === Number(user.id)) {
+      throw createError({ statusCode: 400, statusMessage: 'Vous ne pouvez pas acheter vos propres produits.' })
+    }
+
     // Empêche le rachat d'un produit déjà possédé
     const ownedCheck = await query(
       `SELECT 1 FROM order_items oi JOIN orders o ON o.id = oi.order_id WHERE oi.product_id = $1 AND o.user_id = $2 AND o.status = 'completed' LIMIT 1`,
