@@ -24,6 +24,7 @@
               </div>
             </div>
             <img v-else :src="currentImg" :alt="product.title" />
+            <img v-if="!showVideo && currentImg" :src="currentImg" alt="" class="gallery-blur" aria-hidden="true" />
             <div v-if="product.discountPercent > 0" class="discount-badge">-{{ product.discountPercent }}%</div>
           </div>
           <div v-if="images.length > 1 || product.videoUrl" class="gallery-thumbs">
@@ -420,7 +421,10 @@ onMounted(async () => {
 /* Gallery */
 .product-gallery { }
 .gallery-main { position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--border);aspect-ratio:16/10;background:var(--bg-surface); }
-.gallery-main img { width:100%;height:100%;object-fit:cover; }
+/* Image principale : entière, jamais rognée (les visuels 4/3, verticaux ou ultra-larges
+   étaient coupés par object-fit:cover). Fond flouté pour combler les bandes. */
+.gallery-main img { width:100%;height:100%;object-fit:contain;position:relative;z-index:1; }
+.gallery-main .gallery-blur { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(22px) saturate(1.2);opacity:.4;transform:scale(1.12);z-index:0; }
 .gallery-main iframe { width:100%;height:100%;border:0; }
 .thumb-video { display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.8rem; overflow:hidden; position:relative; }
 .thumb-video img { width:100%;height:100%;object-fit:cover; }
@@ -434,7 +438,7 @@ onMounted(async () => {
 .video-preview .video-play { position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,0.35);transition:background .2s; }
 .video-preview:hover .video-play { background:rgba(0,0,0,0.2); }
 .video-play svg { color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
-.discount-badge { position:absolute;top:12px;left:12px;padding:5px 12px;border-radius:6px;background:#8b1a1a;color:#fff;font-size:.8rem;font-weight:800; }
+.discount-badge { position:absolute;top:12px;left:12px;padding:5px 12px;border-radius:6px;background:#8b1a1a;color:#fff;font-size:.8rem;font-weight:800;z-index:2; }
 .gallery-thumbs { display:flex;gap:8px;margin-top:10px;flex-wrap:wrap; }
 .thumb-btn { width:60px;height:60px;border-radius:8px;overflow:hidden;border:2px solid var(--border);cursor:pointer;padding:0;background:var(--bg-surface);transition:border-color .2s; }
 .thumb-btn.active { border-color:var(--primary); }
