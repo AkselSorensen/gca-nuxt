@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
     tags,
     thumbnail,
     platform,
+    videoUrl,
   } = await readBody(event)
 
   if (!title || !shortDescription || !description || !installation || !categorySlug || !sellerSlug) {
@@ -48,6 +49,7 @@ export default defineEventHandler(async (event) => {
           price,
           old_price,
           platform,
+          video_url,
           discount_percent,
           tags,
           is_new,
@@ -55,7 +57,7 @@ export default defineEventHandler(async (event) => {
           created_at,
           updated_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE, $15, NOW(), NOW())
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE, $15, $16, NOW(), NOW())
         RETURNING id, slug
       `,
       [
@@ -71,6 +73,7 @@ export default defineEventHandler(async (event) => {
         Number(discountPercent || 0) > 0 ? Number(price || 0) * (1 - Number(discountPercent || 0) / 100) : Number(price || 0),
         Number(price || 0),
         platform || "Garry's Mod",
+        videoUrl || null,
         Number(discountPercent || 0),
         Array.isArray(tags) ? tags : [],
         !!isHidden,

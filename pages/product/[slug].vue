@@ -133,6 +133,13 @@
           <div v-if="activeTab === 'installation'" class="tab-panel">
             <div class="desc-text" v-html="installationHtml || '<p>Aucune instruction d\'installation fournie.</p>'"></div>
           </div>
+          <!-- Vidéo -->
+          <div v-if="activeTab === 'video'" class="tab-panel">
+            <div class="video-frame">
+              <iframe v-if="videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              <p v-else class="video-error">Lien YouTube invalide.</p>
+            </div>
+          </div>
           <!-- Reviews -->
           <div v-if="activeTab === 'reviews'" class="tab-panel reviews-panel">
             <ProductReviews :product="product" :owned="owned" @updated="refresh" />
@@ -207,11 +214,23 @@ const productTags = computed(() => {
 const descriptionHtml = computed(() => product.value?.description || product.value?.shortDescription || '<p>Aucune description disponible.</p>')
 const installationHtml = computed(() => product.value?.installation || '')
 
-const tabs = [
-  { id: 'description', label: 'Description' },
-  { id: 'installation', label: 'Installation' },
-  { id: 'reviews', label: 'Avis' },
-]
+const tabs = computed(() => {
+  const t: { id: string; label: string }[] = [
+    { id: 'description', label: 'Description' },
+    { id: 'installation', label: 'Installation' },
+  ]
+  if (product.value?.videoUrl) t.push({ id: 'video', label: 'Vidéo' })
+  t.push({ id: 'reviews', label: 'Avis' })
+  return t
+})
+
+// Convertit un lien YouTube en URL d'embed (iframe)
+const videoEmbedUrl = computed(() => {
+  const v = product.value?.videoUrl
+  if (!v) return ''
+  const m = String(v).match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/)
+  return m ? `https://www.youtube.com/embed/${m[1]}` : ''
+})
 
 const buying = ref(false)
 const buyError = ref('')
@@ -374,6 +393,9 @@ onMounted(async () => {
 
 /* Tabs */
 .product-tabs { margin-top:8px; }
+.video-frame { position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; border:1px solid var(--border); background:#000; }
+.video-frame iframe { position:absolute; inset:0; width:100%; height:100%; }
+.video-error { padding:40px; text-align:center; color:var(--text-muted); }
 .tabs-header { display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:24px; }
 .tabs-header .tab-btn { padding:10px 18px;border:none;background:transparent;color:var(--text-secondary);font-size:.88rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;font-family:inherit; }
 .tabs-header .tab-btn:hover { color:var(--text); }

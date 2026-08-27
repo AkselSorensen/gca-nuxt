@@ -480,6 +480,10 @@
               </div>
               <input ref="fileInput" type="file" accept=".zip,.rar,.7z" style="display:none" @change="handleFileUpload" />
             </div>
+            <div class="field">
+              <label>Vidéo (lien YouTube)</label>
+              <input v-model="productForm.videoUrl" type="url" placeholder="https://www.youtube.com/watch?v=..." />
+            </div>
             <div v-if="editingId" class="field field-full">
               <label>Images existantes</label>
               <div class="media-grid">
@@ -682,7 +686,7 @@ const sellers = ref<{slug:string;username:string}[]>([])
 
 const productForm = reactive({
   title:'', shortDescription:'', description:'', installation:'',
-  categorySlug:'', sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod",
+  categorySlug:'', sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'',
   tags:'', thumbnail:'', isHidden:false
 })
 const editingId = ref<number | null>(null)
@@ -710,7 +714,7 @@ async function animateProdIn() {
 function openProductForm() {
   editingId.value = null
   productMedia.value = []
-  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", tags:'', thumbnail:'', isHidden:false })
+  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
   showProductForm.value = true
@@ -729,6 +733,7 @@ function editProduct(p: any) {
     price: Number(p.old_price || p.price || 0),
     discountPercent: Number(p.discount_percent || 0),
     platform: p.platform || "Garry's Mod",
+    videoUrl: p.video_url || '',
     tags: (p.tags || []).join(', '),
     thumbnail: '',
     isHidden: Boolean(p.is_hidden)
