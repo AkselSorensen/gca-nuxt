@@ -66,21 +66,6 @@
                 </button>
               </div>
             </div>
-
-            <div class="link-item" :class="{ linked: user?.steamId }">
-              <div class="link-brand brand-steam">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 12-5.373 12-12 0-6.625-5.373-12-12-12zm-1.508 16.542l-3.259-1.296c.135.537.246 1.141.246 1.734 0 .078-.004.156-.012.23-.278.774-.873 1.401-1.643 1.743-.648.288-1.363.343-2.031.219 1.05 1.227 2.606 2.025 4.353 2.025 1.947 0 3.66-.975 4.676-2.447l-2.33-.208zm-4.837-3.168a2.199 2.199 0 0 0 2.199 2.199 2.199 2.199 0 0 0 2.199-2.199 2.199 2.199 0 0 0-2.199-2.199 2.199 2.199 0 0 0-2.199 2.199zm10.839-5.535c0-1.716-1.393-3.109-3.109-3.109s-3.109 1.393-3.109 3.109 1.393 3.109 3.109 3.109 3.109-1.393 3.109-3.109z"/></svg>
-              </div>
-              <div class="link-meta">
-                <strong>Steam</strong>
-                <span class="link-status" :class="{ on: user?.steamId }">{{ user?.steamId ? 'Connecté' : 'Non connecté' }}</span>
-                <p class="link-desc">Associez votre compte Steam pour simplifier vos achats.</p>
-              </div>
-              <div class="link-actions">
-                <button v-if="user?.steamId" class="btn-link-ghost" disabled>✓ Lié</button>
-                <button v-else class="btn-link-brand btn-steam-brand" @click="linkSteam">Lier</button>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -321,9 +306,6 @@ async function submitSellerRequest() {
 function linkDiscord() {
   window.location.href = '/auth/discord?return_url=' + encodeURIComponent('/profile')
 }
-function linkSteam() {
-  window.location.href = '/auth/steam?return_url=' + encodeURIComponent('/profile')
-}
 async function copyId(id: string) {
   try {
     await navigator.clipboard.writeText(id)
@@ -370,7 +352,6 @@ async function copyId(id: string) {
 .link-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-surface); }
 .link-brand { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
 .brand-discord { background: rgba(88,101,242,0.12); color: #5865f2; }
-.brand-steam { background: rgba(24,26,33,0.4); color: #8892a8; }
 .link-meta { flex: 1; min-width: 0; display: grid; gap: 2px; }
 .link-meta strong { font-size: .88rem; }
 .link-status { font-size: .72rem; font-weight: 600; color: var(--text-muted); }
@@ -380,7 +361,6 @@ async function copyId(id: string) {
 .btn-link-ghost { padding: 7px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); font-size: .75rem; font-weight: 600; cursor: pointer; font-family: inherit; }
 .btn-link-brand { padding: 7px 14px; border-radius: 6px; border: none; color: #fff; font-size: .78rem; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; }
 .btn-discord-brand { background: #5865f2; }
-.btn-steam-brand { background: #1b2838; }
 .seller-hint { color: var(--text-secondary); font-size: .88rem; margin: 0; line-height: 1.6; }
 .seller-form { display: grid; gap: 12px; margin-top: 4px; }
 .btn-discord-link { display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;border-radius:8px;border:1px solid rgba(88,101,242,0.35);background:rgba(88,101,242,0.08);color:#8b95f5;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit; }

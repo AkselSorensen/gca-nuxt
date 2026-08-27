@@ -399,7 +399,7 @@ onMounted(async () => {
 .social-btns { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
 .btn-social { display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:9px;border:1px solid var(--border);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;color:var(--text);background:transparent;font-family:inherit; }
 .btn-social:hover { border-color:var(--border-hover);background:rgba(255,255,255,0.03); }
-.btn-steam svg { color:#1b2838; } .btn-discord svg { color:#5865f2; }
+.btn-discord svg { color:#5865f2; }
 .auth-footer { text-align:center;font-size:.85rem;color:var(--text-secondary); }
 .auth-footer a { color:var(--primary);font-weight:600; }
 

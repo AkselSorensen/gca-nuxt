@@ -62,11 +62,7 @@
                 </button>
               </div>
             </div>
-            <!-- Steam -->
-            <div class="link-item" :class="{ linked: steamLinked }">
-              <div class="link-brand brand-steam">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 12-5.373 12-12 0-6.625-5.373-12-12-12zm-1.508 16.542l-3.259-1.296c.135.537.246 1.141.246 1.734 0 .078-.004.156-.012.23-.278.774-.873 1.401-1.643 1.743-.648.288-1.363.343-2.031.219 1.05 1.227 2.606 2.025 4.353 2.025 1.947 0 3.66-.975 4.676-2.447l-2.33-.208zm-4.837-3.168a2.199 2.199 0 0 0 2.199 2.199 2.199 2.199 0 0 0 2.199-2.199 2.199 2.199 0 0 0-2.199-2.199 2.199 2.199 0 0 0-2.199 2.199zm10.839-5.535c0-1.716-1.393-3.109-3.109-3.109s-3.109 1.393-3.109 3.109 1.393 3.109 3.109 3.109 3.109-1.393 3.109-3.109z"/></svg>
-              </div>
+
               <div class="link-meta">
                 <div class="link-name">
                   <strong>{{ t('seller.steam') }}</strong>
@@ -275,7 +271,6 @@ const pageRef = ref<HTMLElement | null>(null)
 const stripeLinked = ref(false)
 const stripeHasAccount = ref(false)
 const discordLinked = ref(false)
-const steamLinked = ref(false)
 const userDiscordId = ref('')
 const userSteamId = ref('')
 const discordCopied = ref(false)
@@ -403,9 +398,6 @@ async function openStripeDashboard() {
 function linkDiscord() {
   window.location.href = '/auth/discord?return_url=' + encodeURIComponent('https://discord.gg/KDsEzGRnKs')
 }
-function linkSteam() {
-  window.location.href = '/auth/steam?return_url=' + encodeURIComponent('/seller/account')
-}
 
 async function copyDiscordId() {
   const id = userDiscordId.value
@@ -512,7 +504,6 @@ onMounted(async () => {
 .link-item.linked { border-color:rgba(110,231,183,.22); background:linear-gradient(135deg, rgba(110,231,183,.05), rgba(255,255,255,0) 65%); }
 .link-brand { width:46px; height:46px; border-radius:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .brand-discord { background:rgba(88,101,242,.15); color:#5865f2; }
-.brand-steam { background:linear-gradient(135deg, #2a475e, #1b2838); color:#66c0f4; border:1px solid rgba(102,192,244,.15); }
 .link-meta { flex:1; min-width:0; display:grid; gap:3px; }
 .link-name { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .link-name strong { font-size:.9rem; font-weight:700; }
@@ -524,7 +515,6 @@ onMounted(async () => {
 .btn-link-brand { display:inline-flex; align-items:center; gap:7px; padding:9px 18px; border-radius:10px; border:none; font-size:.8rem; font-weight:700; cursor:pointer; color:#fff; transition:all .2s; font-family:inherit; }
 .btn-discord-brand { background:#5865f2; box-shadow:0 2px 10px rgba(88,101,242,.25); }
 .btn-discord-brand:hover { background:#4752c4; transform:translateY(-1px); box-shadow:0 4px 16px rgba(88,101,242,.4); }
-.btn-steam-brand { background:linear-gradient(135deg, #2a475e, #1b2838); border:1px solid rgba(102,192,244,.25); }
 .btn-steam-brand:hover { background:linear-gradient(135deg, #35586f, #23313f); transform:translateY(-1px); box-shadow:0 4px 16px rgba(27,40,56,.5); }
 .btn-link-ghost { display:inline-flex; align-items:center; gap:7px; padding:9px 14px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-size:.78rem; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit; }
 .btn-link-ghost:hover { color:var(--text); border-color:var(--text-muted); }

@@ -128,10 +128,10 @@ const { data: bootstrap } = await useFetch(api + '/api/bootstrap')
 const state = computed(() => bootstrap.value || {})
 
 const stats = computed(() => ({
-  totalProducts: state.value.totalProducts ?? 51,
-  totalSales: state.value.totalSales ?? 149,
-  avgRating: (state.value.avgRating ?? 4.8).toFixed(1),
-  totalCreators: state.value.totalCreators ?? state.value.totalSellers ?? 25
+  totalProducts: state.value.totalProducts ?? 0,
+  totalSales: state.value.totalSales ?? 0,
+  avgRating: (state.value.avgRating ?? 0).toFixed(1),
+  totalCreators: state.value.totalCreators ?? state.value.totalSellers ?? 0
 }))
 
 const categoryIcons: Record<string, { icon: string; color: string; bg: string }> = {
