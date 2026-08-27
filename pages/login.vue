@@ -6,7 +6,7 @@ useSeoMeta({
   ogType: 'website',
   robots: 'noindex, nofollow',
 })
-const { login, user } = useAuth()
+const { login, user, checkAuth } = useAuth()
 const { t } = useLang()
 const route = useRoute()
 const tab = ref('user')
@@ -15,6 +15,14 @@ const password = ref('')
 const error = ref('')
 const submitting = ref(false)
 const pageRef = ref<HTMLElement | null>(null)
+
+// Déjà connecté → pas de page de connexion
+if (process.client) {
+  onMounted(async () => {
+    await checkAuth()
+    if (user.value?.id) navigateTo('/')
+  })
+}
 
 // ?discord=required → l'utilisateur n'est pas membre du serveur Discord
 const discordRequired = computed(() => route.query.discord === 'required')

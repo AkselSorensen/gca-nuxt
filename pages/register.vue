@@ -173,6 +173,15 @@ useSeoMeta({
 const { register } = useAuth()
 const { t } = useLang()
 const pageRef = ref<HTMLElement | null>(null)
+
+// Déjà connecté → pas de page d'inscription
+if (process.client) {
+  onMounted(async () => {
+    const { checkAuth, user } = useAuth()
+    await checkAuth()
+    if (user.value?.id) navigateTo('/')
+  })
+}
 const termsScrollRef = ref<HTMLElement | null>(null)
 
 const accountType = ref('buyer')
