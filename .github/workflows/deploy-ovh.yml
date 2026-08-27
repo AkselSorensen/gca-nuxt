@@ -1,0 +1,24 @@
+name: Deploy OVH
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Build & deploy sur le VPS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Déploiement via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.OVH_HOST }}
+          username: gsa
+          key: ${{ secrets.OVH_SSH_KEY }}
+          script: |
+            cd /opt/gsa
+            git pull origin main
+            docker compose up -d --build --force-recreate
+            docker image prune -f
