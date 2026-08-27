@@ -988,6 +988,12 @@ async function initializeDatabase() {
     );
   }
 
+  // Seed de démonstration : désactivé par défaut (SEED_DEMO=1 pour le réactiver).
+  // Sans ce garde, un wipe de la base était annulé au redémarrage du conteneur.
+  if (process.env.SEED_DEMO !== "1") {
+    return;
+  }
+
   const productCount = await pool.query(`SELECT COUNT(*)::int AS count FROM products`);
   if (productCount.rows[0].count > 0) {
     return;

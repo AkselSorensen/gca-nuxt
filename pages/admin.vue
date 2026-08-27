@@ -572,6 +572,10 @@
                   <span>#{{ t }}</span>
                 </label>
                 <div v-if="!allTags.length" class="tag-empty">Aucun tag disponible</div>
+                <div class="tag-create">
+                  <input v-model="newProductTag" placeholder="Créer un tag…" @keyup.enter="createProductTag" />
+                  <button @click="createProductTag" title="Ajouter le tag">+</button>
+                </div>
               </div>
             </div>
             <div v-if="selectedTags.length" class="tag-pills">
@@ -875,6 +879,20 @@ function handleThumbUpload(e: any) {
 }
 function removeThumb() { uploadThumb.value = ''; productForm.thumbnail = '' }
 
+const newProductTag = ref('')
+async function createProductTag() {
+  const name = newProductTag.value.trim().toLowerCase()
+  if (!name) return
+  // Sélection immédiate dans le formulaire
+  if (!selectedTags.value.includes(name)) {
+    selectedTags.value.push(name)
+    productForm.tags = selectedTags.value.join(', ')
+  }
+  newProductTag.value = ''
+  // Création en base (idempotent) puis rafraîchit la liste des tags
+  try { await $fetch(api + '/api/admin/tags', { credentials: 'include', method: 'POST', body: { name } }) } catch {}
+  loadTags()
+}
 function toggleTag(t: string) {
   const idx = selectedTags.value.indexOf(t)
   if (idx > -1) selectedTags.value.splice(idx, 1)
@@ -1487,6 +1505,9 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .tag-opt { display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:4px;font-size:.78rem;cursor:pointer;transition:all .1s;white-space:nowrap;flex:0 0 calc(50% - 2px);box-sizing:border-box; }
 .tag-opt:hover { background:rgba(255,255,255,0.04); }
 .tag-opt.checked { background:rgba(47,125,246,0.1);color:var(--primary);font-weight:600; }
+.tag-create { display:flex; gap:6px; padding:8px 10px; border-top:1px solid var(--border); flex:0 0 100%; }
+.tag-create input { flex:1; min-width:0; padding:7px 10px; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--foreground); font-size:.8rem; }
+.tag-create button { width:30px; border-radius:8px; border:none; background:var(--primary); color:#fff; font-weight:800; cursor:pointer; }
 .tag-opt input { display:none; }
 .tag-empty { padding:12px;text-align:center;font-size:.78rem;color:var(--text-muted);width:100%; }
 .tag-pills { display:flex;flex-wrap:wrap;gap:4px;margin-top:6px; }
