@@ -78,6 +78,7 @@ export function mapProduct(row: any) {
     isFeatured: row.is_featured,
     isNew: row.is_new,
     popularityScore: row.popularity_score,
+    sellerId: Number(row.seller_id) || null,
     sellerName: row.seller_name,
     sellerSlug: row.seller_slug,
     sellerAvatar: row.seller_avatar,

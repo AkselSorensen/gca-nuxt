@@ -266,6 +266,11 @@ async function addToCart() {
   // Connexion requise pour ajouter au panier (comme pour l'achat)
   const { user } = useAuth()
   if (!user.value?.id) return navigateTo('/login?redirect=' + encodeURIComponent(route.fullPath))
+  // Un vendeur ne peut pas ajouter ses propres produits (défense en profondeur, le serveur bloque aussi)
+  if (product.value?.sellerId && Number(user.value.id) === Number(product.value.sellerId)) {
+    buyError.value = 'Vous ne pouvez pas acheter vos propres produits.'
+    return
+  }
   try {
     // localStorage corrompu (JSON invalide) ou saturé → on repart d'un panier vide
     let saved: any[] = []
