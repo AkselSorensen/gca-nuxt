@@ -127,7 +127,7 @@
             <p>Aucun avis pour le moment.</p>
           </div>
           <div v-else class="sp-reviews-list">
-            <div v-for="r in reviews" :key="r.id" class="sp-review">
+            <div v-for="r in visibleReviews" :key="r.id" class="sp-review">
               <div class="sp-review-head">
                 <div class="sp-review-avatar">
                   <img v-if="r.reviewerAvatar" :src="r.reviewerAvatar" :alt="r.reviewerName" />
@@ -144,6 +144,9 @@
               </div>
               <p v-if="r.comment" class="sp-review-comment">{{ r.comment }}</p>
             </div>
+            <button v-if="visibleReviews.length < reviews.length" class="sp-more-btn" @click="reviewsPage++">
+              Afficher plus d'avis ({{ reviews.length - visibleReviews.length }} restants)
+            </button>
           </div>
         </div>
       </main>
@@ -170,6 +173,10 @@ const { data: raw, error: fetchError } = await useFetch(() => api + '/api/seller
 const seller = computed(() => raw.value?.seller || {})
 const products = computed(() => raw.value?.products || [])
 const reviews = computed(() => raw.value?.reviews || [])
+// Pagination des avis : 10 affichés, "Afficher plus" en révèle 10 de plus
+const reviewsPage = ref(1)
+const REVIEWS_PER_PAGE = 10
+const visibleReviews = computed(() => reviews.value.slice(0, reviewsPage.value * REVIEWS_PER_PAGE))
 const loading = computed(() => !raw.value && !fetchError.value)
 const hasError = computed(() => fetchError.value)
 
@@ -360,6 +367,8 @@ onMounted(async () => {
 .sp-review-stars .on { color: #f5b342; }
 .sp-review-date { margin-left: 8px; color: var(--text-muted); font-size: .72rem; }
 .sp-review-comment { margin: 0; color: var(--text-secondary); font-size: .85rem; line-height: 1.65; }
+.sp-more-btn { padding: 11px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); font-weight: 600; font-size: .82rem; cursor: pointer; transition: all .2s; font-family: inherit; }
+.sp-more-btn:hover { background: rgba(255,255,255,0.04); color: var(--text); }
 .sp-pc-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: .75rem; }
 .sp-pc-cat { padding: 2px 8px; border-radius: 4px; background: rgba(47,125,246,0.06); border: 1px solid rgba(47,125,246,0.12); color: var(--primary); font-weight: 600; }
 .sp-pc-rating { display: flex; align-items: center; gap: 3px; color: var(--text-muted); }
