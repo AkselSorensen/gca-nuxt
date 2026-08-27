@@ -108,7 +108,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Catégories multiples (product_categories)
-    const catSlugs = Array.isArray(body.categories) ? body.categories.filter(Boolean) : []
+    const catSlugs = Array.isArray(categories) ? categories.filter(Boolean) : []
     if (catSlugs.length) {
       await query(
         `INSERT INTO product_categories (product_id, category_id)
