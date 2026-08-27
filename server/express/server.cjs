@@ -2585,6 +2585,9 @@ async function ensureRecentMigrations() {
       -- Commission plateforme PAR PRODUIT (NULL = commission plateforme par défaut).
       -- Remplace la commission par vendeur : c'est l'article qui porte le taux.
       ALTER TABLE products ADD COLUMN IF NOT EXISTS commission_percent NUMERIC(5,2);
+      -- Note nullable : un produit sans avis n'a PAS de note (sinon la suppression du
+      -- dernier avis violait la contrainte NOT NULL -> 500 sur DELETE /api/reviews/:id)
+      ALTER TABLE products ALTER COLUMN rating DROP NOT NULL;
     `);
     recentMigrationsApplied = true;
   } catch (e) {

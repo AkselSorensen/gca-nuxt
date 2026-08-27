@@ -3,8 +3,8 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { sendEmail } from '../services/email'
 import { premiumShell } from '../services/email-templates'
 
-// Boîte support OVH en premier (celle qui envoie), copie sur l'adresse des mentions légales.
-const CONTACT_EMAIL = process.env.GSA_CONTACT_EMAIL || 'support-gsa@gsa-store.fr, gsa.storee@yahoo.com'
+// Boîte support OVH (adresse de destination unique du formulaire de contact).
+const CONTACT_EMAIL = process.env.GSA_CONTACT_EMAIL || 'support-gsa@gsa-store.fr'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event).catch(() => ({}))
