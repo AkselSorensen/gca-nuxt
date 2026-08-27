@@ -2,6 +2,7 @@
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'
+import { uploadImageToR2 } from '../../../services/r2'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -85,11 +86,26 @@ export default defineEventHandler(async (event) => {
 
     if (thumbnail) {
       await query('DELETE FROM product_media WHERE product_id = $1 AND sort_order = 0', [productId])
-      await query(
-        `INSERT INTO product_media (product_id, media_type, url, thumbnail_url, sort_order)
-         VALUES ($1, 'image', $2, $2, 0)`,
-        [productId, String(thumbnail)]
-      )
+      if (String(thumbnail).startsWith('data:')) {
+        // Image base64 → R2 (plus de stockage lourd en DB), fallback DB si R2 KO
+        try {
+          const mime = String(thumbnail).match(/^data:([^;,]+)/)?.[1] || 'image/jpeg'
+          await uploadImageToR2(productId, String(thumbnail), mime)
+        } catch (e) {
+          console.error('[admin] R2 upload thumbnail failed, fallback DB:', e)
+          await query(
+            `INSERT INTO product_media (product_id, media_type, url, thumbnail_url, sort_order)
+             VALUES ($1, 'image', $2, $2, 0)`,
+            [productId, String(thumbnail)]
+          )
+        }
+      } else {
+        await query(
+          `INSERT INTO product_media (product_id, media_type, url, thumbnail_url, sort_order)
+           VALUES ($1, 'image', $2, $2, 0)`,
+          [productId, String(thumbnail)]
+        )
+      }
     }
 
     return { ok: true, product: result.rows[0] }

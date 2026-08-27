@@ -766,9 +766,12 @@ function addMediaImage() {
     if (file.size > 8*1024*1024) return toastRef.value?.show('error', 'Max 8 Mo')
     try {
       const compressed = await compressImage(file, 1600, 0.82)
-      const res = await $fetch(api + '/api/admin/products/' + editingId.value + '/media', { credentials: 'include', method: 'POST', body: { url: compressed } })
-      productMedia.value.push({ id: res.id, url: compressed, thumbnail: compressed })
-      toastRef.value?.show('success', 'Image ajoutée')
+      // Upload vers R2 (plus de base64 en DB)
+      const b64 = String(compressed).split(',')[1] || ''
+      const mime = String(compressed).match(/^data:([^;,]+)/)?.[1] || 'image/jpeg'
+      const res = await $fetch(api + '/api/admin/products/' + editingId.value + '/upload-image', { credentials: 'include', method: 'POST', body: { data_base64: b64, mime } })
+      productMedia.value.push({ id: res.id, url: res.url, thumbnail: res.url })
+      toastRef.value?.show('success', 'Image ajoutée (R2)')
       loadProducts()
     } catch (err: any) {
       toastRef.value?.show('error', err?.data?.message || 'Erreur')

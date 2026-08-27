@@ -2,6 +2,7 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'
+import { uploadImageToR2 } from '../../../services/r2'
 import { slugify } from '../../../services/users'
 
 export default defineEventHandler(async (event) => {
@@ -81,11 +82,26 @@ export default defineEventHandler(async (event) => {
     )
 
     if (thumbnail) {
-      await query(
-        `INSERT INTO product_media (product_id, media_type, url, thumbnail_url, sort_order)
-         VALUES ($1, 'image', $2, $2, 0)`,
-        [inserted.rows[0].id, String(thumbnail)]
-      )
+      if (String(thumbnail).startsWith('data:')) {
+        // Image base64 → R2 (plus de stockage lourd en DB), fallback DB si R2 KO
+        try {
+          const mime = String(thumbnail).match(/^data:([^;,]+)/)?.[1] || 'image/jpeg'
+          await uploadImageToR2(inserted.rows[0].id, String(thumbnail), mime)
+        } catch (e) {
+          console.error('[admin] R2 upload thumbnail failed, fallback DB:', e)
+          await query(
+            `INSERT INTO product_media (product_id, media_type, url, thumbnail_url, sort_order)
+             VALUES ($1, 'image', $2, $2, 0)`,
+            [inserted.rows[0].id, String(thumbnail)]
+          )
+        }
+      } else {
+        await query(
+          `INSERT INTO product_media (product_id, media_type, url, thumbnail_url, sort_order)
+           VALUES ($1, 'image', $2, $2, 0)`,
+          [inserted.rows[0].id, String(thumbnail)]
+        )
+      }
     }
 
     return inserted.rows[0]
