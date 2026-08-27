@@ -58,7 +58,7 @@ export default defineEventHandler(async (event) => {
           created_at,
           updated_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, TRUE, $15, $16, NOW(), NOW())
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW(), NOW())
         RETURNING id, slug
       `,
       [
@@ -77,6 +77,7 @@ export default defineEventHandler(async (event) => {
         videoUrl || null,
         Number(discountPercent || 0),
         Array.isArray(tags) ? tags : [],
+        true,
         !!isHidden,
       ]
     )
