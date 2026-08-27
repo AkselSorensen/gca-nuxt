@@ -206,13 +206,13 @@
           <table v-if="sellerRequests.length" class="admin-table">
             <thead><tr><th>Email</th><th>Boutique</th><th>Description</th><th>Discord</th><th>Date</th><th>Actions</th></tr></thead>
             <tbody>
-              <tr v-for="r in sellerRequests" :key="r.id">
+              <tr v-for="r in sellerRequests" :key="r.id" class="clickable-row" @click="openSellerModal(r)">
                 <td><strong>{{ r.displayName || r.email }}</strong></td>
                 <td>{{ r.shopName || '—' }}</td>
                 <td><span class="desc-preview" :title="r.sellerDescription">{{ r.sellerDescription?.substring(0, 60) || '—' }}{{ r.sellerDescription?.length > 60 ? '…' : '' }}</span></td>
                 <td>{{ r.discordTag || '—' }}</td>
                 <td>{{ new Date(r.createdAt).toLocaleDateString('fr-FR') }}</td>
-                <td class="actions">
+                <td class="actions" @click.stop>
                   <button class="btn-action" title="Approuver" @click="approveSeller(r.id)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></button>
                   <button class="btn-action danger" title="Refuser" @click="rejectSeller(r.id)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                 </td>
@@ -387,6 +387,65 @@
   </div>
   <ToastNotif ref="toastRef" />
   <ConfirmModal ref="confirmRef" />
+
+  <!-- Modal détail demande vendeur -->
+  <Teleport to="body">
+    <Transition name="drop">
+      <div v-if="sellerModal" class="modal-overlay" @click.self="sellerModal = null">
+        <div class="seller-detail-modal anim-scale">
+          <div class="seller-detail-head">
+            <div class="seller-detail-avatar">
+              <img v-if="sellerModal.avatarUrl" :src="sellerModal.avatarUrl" :alt="sellerModal.displayName" />
+              <span v-else>{{ (sellerModal.displayName || sellerModal.email || '?')[0].toUpperCase() }}</span>
+            </div>
+            <div class="seller-detail-id">
+              <h3>{{ sellerModal.displayName || sellerModal.email }}</h3>
+              <span>{{ sellerModal.email }}</span>
+            </div>
+            <button class="modal-close" @click="sellerModal = null"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
+
+          <div class="seller-detail-grid">
+            <div class="seller-detail-item">
+              <span class="dd-label">Boutique</span>
+              <strong>{{ sellerModal.shopName || '—' }}</strong>
+            </div>
+            <div class="seller-detail-item">
+              <span class="dd-label">Discord</span>
+              <strong class="dd-discord">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#5865f2"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2914a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z"/></svg>
+                {{ sellerModal.discordTag || '—' }}
+              </strong>
+            </div>
+            <div class="seller-detail-item">
+              <span class="dd-label">Demande envoyée le</span>
+              <strong>{{ sellerModal.createdAt ? new Date(sellerModal.createdAt).toLocaleDateString('fr-FR') : '—' }}</strong>
+            </div>
+            <div class="seller-detail-item">
+              <span class="dd-label">Statut</span>
+              <strong class="dd-status pending">En attente</strong>
+            </div>
+          </div>
+
+          <div class="seller-detail-desc">
+            <span class="dd-label">Description</span>
+            <p>{{ sellerModal.sellerDescription || 'Aucune description fournie.' }}</p>
+          </div>
+
+          <div class="seller-detail-actions">
+            <button class="btn-accept" @click="approveSeller(sellerModal.id)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Accepter
+            </button>
+            <button class="btn-refuse" @click="rejectSeller(sellerModal.id)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Refuser
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 
   <!-- Name prompt for featured -->
   <div v-if="featPrompt.show" ref="featOverlay" class="modal-overlay" @click.self="cancelFeat">
@@ -680,6 +739,8 @@ async function saveAmbCode() {
 // ─── Products ──────────────────────────────────────────
 const products = ref<any[]>([])
 const sellerRequests = ref<any[]>([])
+const sellerModal = ref<any | null>(null)
+function openSellerModal(r: any) { sellerModal.value = r }
 const showProductForm = ref(false)
 const categories = ref<{slug:string;name:string}[]>([])
 const sellers = ref<{slug:string;username:string}[]>([])
@@ -955,6 +1016,7 @@ async function loadSellerRequests() {
 }
 
 async function approveSeller(id: number) {
+  sellerModal.value = null
   try {
     await $fetch(api + '/api/admin/seller-requests/' + id + '/approve', { credentials: 'include', method: 'POST' })
     toastRef.value?.show('success', 'Vendeur approuvé ✓')
@@ -966,6 +1028,7 @@ async function approveSeller(id: number) {
 }
 
 async function rejectSeller(id: number) {
+  sellerModal.value = null
   const confirmed = await confirmRef.value?.ask({ title: 'Refuser ce vendeur ?', message: 'Cette action est irréversible. Il pourra refaire une demande.', confirmText: 'Refuser', danger: true })
   if (!confirmed) return
   try {
@@ -1315,6 +1378,30 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 /* ─── Table ─── */
 .table-wrap { overflow-x:auto; }
 .admin-table { width:100%;border-collapse:collapse;font-size:.85rem; }
+.clickable-row { cursor:pointer; transition:background .15s; }
+.clickable-row:hover { background:rgba(47,125,246,0.05); }
+
+/* Modal détail demande vendeur */
+.seller-detail-modal { width:100%;max-width:520px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.3); }
+.seller-detail-head { display:flex;align-items:center;gap:14px;padding:20px 22px;border-bottom:1px solid var(--border);background:rgba(47,125,246,0.04); }
+.seller-detail-avatar { width:52px;height:52px;min-width:52px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-size:1.2rem;font-weight:800; }
+.seller-detail-avatar img { width:100%;height:100%;object-fit:cover; }
+.seller-detail-id { flex:1;min-width:0;display:grid;gap:2px; }
+.seller-detail-id h3 { margin:0;font-size:1.05rem; }
+.seller-detail-id span { color:var(--text-muted);font-size:.8rem;overflow:hidden;text-overflow:ellipsis; }
+.seller-detail-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:20px 22px; }
+.seller-detail-item { display:grid;gap:4px; }
+.dd-label { font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em; }
+.seller-detail-item strong { font-size:.9rem; }
+.dd-discord { display:flex;align-items:center;gap:6px;color:#8b95f5; }
+.dd-status.pending { color:var(--warning); }
+.seller-detail-desc { padding:0 22px 20px; }
+.seller-detail-desc p { margin:8px 0 0;color:var(--text-secondary);font-size:.88rem;line-height:1.65;white-space:pre-wrap;background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;padding:14px;max-height:220px;overflow-y:auto; }
+.seller-detail-actions { display:flex;gap:10px;padding:16px 22px;border-top:1px solid var(--border); }
+.btn-accept { flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;transition:filter .2s;font-family:inherit; }
+.btn-accept:hover { filter:brightness(1.1); }
+.btn-refuse { flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:10px;border:none;background:rgba(248,113,113,0.12);color:var(--red);font-size:.88rem;font-weight:700;cursor:pointer;transition:background .2s;font-family:inherit; }
+.btn-refuse:hover { background:rgba(248,113,113,0.22); }
 .admin-table th { text-align:left;padding:12px 14px;font-weight:700;color:var(--text-muted);text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;border-bottom:1px solid var(--border); }
 .admin-table td { padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.03); }
 .buyer-cell { display:grid; gap:2px; }
