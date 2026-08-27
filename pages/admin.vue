@@ -254,6 +254,37 @@
         </div>
       </div>
 
+      <!-- ==================== CATÉGORIES ==================== -->
+      <div v-if="activeTab === 'categories'" class="tab-content">
+        <div class="tab-header">
+          <h2>Catégories</h2>
+          <div class="tab-actions">
+            <input v-model="catForm.name" placeholder="Nom (ex. HUD)" class="tag-add-input" style="max-width:150px" />
+            <input v-model="catForm.slug" placeholder="Slug (vide = auto)" class="tag-add-input" style="max-width:160px" />
+            <input v-model="catForm.description" placeholder="Description courte…" class="tag-add-input" style="max-width:240px" @keyup.enter="submitCategory" />
+            <button class="btn-primary" :disabled="catSaving" @click="submitCategory">{{ catEditingId ? '💾 Enregistrer' : '+ Créer' }}</button>
+            <button v-if="catEditingId" class="btn-ghost" @click="resetCatForm">Annuler</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table v-if="categoryList.length" class="admin-table">
+            <thead><tr><th>Nom</th><th>Slug</th><th>Description</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr v-for="c in categoryList" :key="c.id">
+                <td><span class="tag-badge">{{ c.name }}</span></td>
+                <td><code style="font-size:.8rem;color:var(--text-muted)">{{ c.slug }}</code></td>
+                <td style="color:var(--text-secondary);font-size:.82rem">{{ c.description || '—' }}</td>
+                <td class="actions">
+                  <button class="btn-action" title="Modifier" @click="startCatEdit(c)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                  <button class="btn-action danger" title="Supprimer" @click="deleteCategory(c)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else class="empty-tab">Aucune catégorie. Créez votre première catégorie (ex. HUD, Mapping, Particles…).</div>
+        </div>
+      </div>
+
       <!-- ==================== REVENUS ==================== -->
       <div v-if="activeTab === 'revenue'" class="tab-content">
         <div class="tab-header">
@@ -642,6 +673,7 @@ if (process.client) {
 const activeTab = ref('products')
 const tabs = [
   { id:'products', label:'Produits', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
+  { id:'categories', label:'Catégories', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' },
   { id:'users', label:'Utilisateurs', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
   { id:'featured', label:'Mise en avant', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' },
   { id:'pages', label:'Pages', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
@@ -697,8 +729,7 @@ async function saveTagRename(tg: any) {
     await loadTags()
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || 'Erreur')
-  }
-}
+  }}
 async function deleteTag(tg: any) {
   const ok = await confirmRef.value?.ask({ title: 'Supprimer le tag', message: `Le tag "#${tg.name}" sera retiré de tous les produits.`, confirmText: 'Supprimer', danger: true })
   if (!ok) return
@@ -706,6 +737,54 @@ async function deleteTag(tg: any) {
     await $fetch(api + '/api/admin/tags/' + tg.id, { credentials: 'include', method: 'DELETE' })
     toastRef.value?.show('success', 'Tag supprimé')
     await loadTags()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur')
+  }
+}
+// ─── Catégories ───────────────────────────────────────
+const categoryList = ref<any[]>([])
+const catForm = reactive({ name: '', slug: '', description: '' })
+const catEditingId = ref<number | null>(null)
+const catSaving = ref(false)
+
+async function loadCategories() {
+  try {
+    const r = await $fetch(api + '/api/admin/categories', { credentials: 'include' })
+    categoryList.value = r.categories || []
+  } catch { categoryList.value = [] }
+}
+function resetCatForm() { catForm.name = ''; catForm.slug = ''; catForm.description = ''; catEditingId.value = null }
+async function submitCategory() {
+  const name = catForm.name.trim()
+  if (!name) return
+  catSaving.value = true
+  try {
+    if (catEditingId.value) {
+      await $fetch(api + '/api/admin/categories/' + catEditingId.value, { credentials: 'include', method: 'PATCH', body: { ...catForm } })
+      toastRef.value?.show('success', 'Catégorie modifiée')
+    } else {
+      await $fetch(api + '/api/admin/categories', { credentials: 'include', method: 'POST', body: { ...catForm } })
+      toastRef.value?.show('success', 'Catégorie créée')
+    }
+    resetCatForm()
+    await loadCategories()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.message || 'Erreur')
+  } finally { catSaving.value = false }
+}
+function startCatEdit(c: any) {
+  catEditingId.value = c.id
+  catForm.name = c.name
+  catForm.slug = c.slug || ''
+  catForm.description = c.description || ''
+}
+async function deleteCategory(c: any) {
+  const ok = await confirmRef.value?.ask({ title: 'Supprimer la catégorie', message: `La catégorie "${c.name}" sera supprimée.`, confirmText: 'Supprimer', danger: true })
+  if (!ok) return
+  try {
+    await $fetch(api + '/api/admin/categories/' + c.id, { credentials: 'include', method: 'DELETE' })
+    toastRef.value?.show('success', 'Catégorie supprimée')
+    await loadCategories()
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || 'Erreur')
   }
@@ -1244,7 +1323,7 @@ async function savePage(page: typeof editablePages.value[0]) {
   finally { page.saving = false }
 }
 
-onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests(); loadTags(); loadRevenue() })
+onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests(); loadTags(); loadCategories(); loadRevenue() })
 </script>
 
 <style scoped>
