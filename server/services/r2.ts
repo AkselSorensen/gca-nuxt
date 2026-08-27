@@ -39,7 +39,7 @@ export async function uploadImageToR2(productId: number, dataUrl: string, mime =
     [productId, '/api/media/placeholder', key]
   )
   const mediaId = inserted.rows[0].id
-  await query('UPDATE product_media SET url = $1 WHERE id = $2', [`/api/media/${mediaId}`, mediaId])
+  await query('UPDATE product_media SET url = $1, thumbnail_url = $1 WHERE id = $2', [`/api/media/${mediaId}`, mediaId])
 
   return { mediaId, url: `/api/media/${mediaId}`, key, size: buffer.length }
 }
