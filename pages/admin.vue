@@ -391,7 +391,7 @@
   <!-- Modal détail demande vendeur -->
   <Teleport to="body">
     <Transition name="drop">
-      <div v-if="sellerModal" class="modal-overlay" @click.self="sellerModal = null">
+      <div v-if="sellerModal" class="modal-overlay">
         <div class="seller-detail-modal anim-scale">
           <div class="seller-detail-head">
             <div class="seller-detail-avatar">
@@ -462,7 +462,7 @@
   </div>
 
   <!-- Product form modal -->
-  <div v-if="showProductForm" ref="prodOverlay" class="modal-overlay" @click.self="closeProductForm">
+  <div v-if="showProductForm" ref="prodOverlay" class="modal-overlay">
     <div ref="prodCard" class="form-modal form-modal-lg prod-modal">
       <div class="modal-header">
         <div>
@@ -595,7 +595,7 @@
   </div>
 
   <!-- Ambassador form modal -->
-  <div v-if="showAmbForm" ref="ambOverlay" class="modal-overlay" @click.self="showAmbForm = false">
+  <div v-if="showAmbForm" ref="ambOverlay" class="modal-overlay">
     <div ref="ambCard" class="form-modal" style="max-width:480px">
       <div class="modal-header"><h3>Nouveau code ambassadeur</h3><button class="modal-close" @click="showAmbForm = false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
       <div class="modal-body form-body">
