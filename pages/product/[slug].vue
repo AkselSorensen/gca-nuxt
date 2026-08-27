@@ -23,8 +23,9 @@
                 <span class="yt-badge"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>
               </div>
             </div>
-            <img v-else :src="currentImg" :alt="product.title" />
-            <img v-if="!showVideo && currentImg" :src="currentImg" alt="" class="gallery-blur" aria-hidden="true" />
+            <img v-if="currentImg" :src="currentImg" :alt="product.title" />
+            <img v-if="currentImg" :src="currentImg" alt="" class="gallery-blur" aria-hidden="true" />
+            <div v-else class="gallery-empty"><div class="loader"></div></div>
             <div v-if="product.discountPercent > 0" class="discount-badge">-{{ product.discountPercent }}%</div>
           </div>
           <div v-if="images.length > 1 || product.videoUrl" class="gallery-thumbs">
@@ -270,7 +271,13 @@ const images = computed(() => {
   return imgs.length ? imgs : ['/placeholder.svg']
 })
 
-watch(images, (imgs) => { if (!currentImg.value) currentImg.value = imgs[0] }, { immediate: true })
+// Watcher : sert la 1re image dès qu'elle arrive (et même si la liste change)
+watch(images, (imgs) => {
+  if (imgs.length) {
+    // Garde l'image courante si elle est toujours dans la liste, sinon reprend la 1re
+    if (!currentImg.value || !imgs.includes(currentImg.value)) currentImg.value = imgs[0]
+  }
+}, { immediate: true })
 
 const categoryName = computed(() => product.value?.categoryName || product.value?.categorySlug || product.value?.category || 'Produit')
 const productCats = computed(() => {
@@ -433,6 +440,7 @@ onMounted(async () => {
    étaient coupés par object-fit:cover). Fond flouté pour combler les bandes. */
 .gallery-main img { width:100%;height:100%;object-fit:contain;position:relative;z-index:1; }
 .gallery-main .gallery-blur { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(22px) saturate(1.2);opacity:.4;transform:scale(1.12);z-index:0; }
+.gallery-empty { position:absolute;inset:0;display:grid;place-items:center;background:var(--bg-surface);z-index:0; }
 .gallery-main iframe { width:100%;height:100%;border:0; }
 .thumb-video { display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.8rem; overflow:hidden; position:relative; }
 .thumb-video img { width:100%;height:100%;object-fit:cover; }

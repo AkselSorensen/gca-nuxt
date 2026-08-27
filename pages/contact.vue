@@ -58,7 +58,7 @@
             <div>
               <h3>Par email</h3>
               <p>Le formulaire envoie directement votre message à l'équipe GSA.</p>
-              <span class="ci-mail">gsa.storee@yahoo.com</span>
+              <span class="ci-mail">support-gsa@gsa-store.fr</span>
             </div>
           </div>
 
