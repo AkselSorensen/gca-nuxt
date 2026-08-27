@@ -961,9 +961,14 @@ function addMediaImage() {
         // Mode édition : upload direct vers R2
         const b64 = String(compressed).split(',')[1] || ''
         const mime = String(compressed).match(/^data:([^;,]+)/)?.[1] || 'image/jpeg'
-        const res = await $fetch(api + '/api/admin/products/' + editingId.value + '/upload-image', { credentials: 'include', method: 'POST', body: { data_base64: b64, mime } })
-        productMedia.value.push({ id: res.id, url: res.url, thumbnail: res.url })
-        toastRef.value?.show('success', 'Image ajoutée (R2)')
+        let res: any = await $fetch(api + '/api/admin/products/' + editingId.value + '/upload-image', { credentials: 'include', method: 'POST', body: { data_base64: b64, mime } })
+        // Filet : si la route R2 ne répond pas correctement (204 du fallback…), on passe par /media
+        if (!res?.id) {
+          res = await $fetch(api + '/api/admin/products/' + editingId.value + '/media', { credentials: 'include', method: 'POST', body: { url: String(compressed) } })
+        }
+        if (!res?.id) throw new Error("L'image n'a pas été enregistrée (route média indisponible)")
+        productMedia.value.push({ id: res.id, url: res.url || String(compressed), thumbnail: res.url || String(compressed) })
+        toastRef.value?.show('success', 'Image ajoutée')
         loadProducts()
       } else {
         // Mode création : mise en attente, upload après la création du produit
@@ -971,7 +976,9 @@ function addMediaImage() {
         toastRef.value?.show('success', 'Image ajoutée (upload après création)')
       }
     } catch (err: any) {
-      toastRef.value?.show('error', err?.data?.message || 'Erreur')
+      // On affiche la VRAIE cause (Nitro renvoie statusMessage, pas message)
+      console.error('[admin] ajout image échoué:', err)
+      toastRef.value?.show('error', err?.data?.statusMessage || err?.data?.message || err?.message || 'Erreur')
     }
   }
   input.click()
