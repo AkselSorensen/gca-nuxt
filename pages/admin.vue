@@ -259,31 +259,50 @@
         <div class="tab-header">
           <h2>Catégories</h2>
           <div class="tab-actions">
-            <input v-model="catForm.name" placeholder="Nom (ex. HUD)" class="tag-add-input" style="max-width:150px" />
-            <input v-model="catForm.slug" placeholder="Slug (vide = auto)" class="tag-add-input" style="max-width:160px" />
-            <input v-model="catForm.description" placeholder="Description courte…" class="tag-add-input" style="max-width:240px" @keyup.enter="submitCategory" />
-            <button class="btn-primary" :disabled="catSaving" @click="submitCategory">{{ catEditingId ? '💾 Enregistrer' : '+ Créer' }}</button>
-            <button v-if="catEditingId" class="btn-ghost" @click="resetCatForm">Annuler</button>
+            <button class="btn-primary" @click="openCatModal">+ Créer une catégorie</button>
           </div>
         </div>
         <div class="table-wrap">
           <table v-if="categoryList.length" class="admin-table">
-            <thead><tr><th>Nom</th><th>Slug</th><th>Description</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Nom</th><th>Lien</th><th>Description</th><th>Actions</th></tr></thead>
             <tbody>
               <tr v-for="c in categoryList" :key="c.id">
                 <td><span class="tag-badge">{{ c.name }}</span></td>
                 <td><code style="font-size:.8rem;color:var(--text-muted)">{{ c.slug }}</code></td>
                 <td style="color:var(--text-secondary);font-size:.82rem">{{ c.description || '—' }}</td>
                 <td class="actions">
-                  <button class="btn-action" title="Modifier" @click="startCatEdit(c)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                  <button class="btn-action" title="Modifier" @click="openCatEdit(c)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                   <button class="btn-action danger" title="Supprimer" @click="deleteCategory(c)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                 </td>
               </tr>
             </tbody>
           </table>
-          <div v-else class="empty-tab">Aucune catégorie. Créez votre première catégorie (ex. HUD, Mapping, Particles…).</div>
+          <div v-else class="empty-tab">Aucune catégorie. Cliquez sur « Créer une catégorie » pour commencer (ex. HUD, Mapping, Particles…).</div>
         </div>
       </div>
+
+      <!-- Modal catégorie -->
+      <Teleport to="body">
+        <Transition name="drop">
+          <div v-if="showCatModal" class="modal-overlay">
+            <div class="modal-card" style="max-width:440px">
+              <div class="modal-head">
+                <h3>{{ catEditingId ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h3>
+                <button class="modal-close" @click="showCatModal = false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              </div>
+              <div class="modal-body">
+                <div class="field"><label>Nom de la catégorie</label><input v-model="catForm.name" type="text" placeholder="ex. HUD, Mapping, Particles…" @keyup.enter="submitCategory" /></div>
+                <div class="field"><label>Description courte</label><input v-model="catForm.description" type="text" placeholder="ex. Interfaces et HUD pour vos serveurs" @keyup.enter="submitCategory" /></div>
+                <div class="field"><label>Lien (optionnel)</label><input v-model="catForm.slug" type="text" placeholder="ex. hud — laissé vide, il est généré automatiquement" @keyup.enter="submitCategory" /></div>
+              </div>
+              <div class="modal-foot">
+                <button class="btn-ghost" @click="showCatModal = false">Annuler</button>
+                <button class="btn-primary" :disabled="catSaving" @click="submitCategory">{{ catEditingId ? 'Enregistrer' : 'Créer la catégorie' }}</button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
 
       <!-- ==================== REVENUS ==================== -->
       <div v-if="activeTab === 'revenue'" class="tab-content">
@@ -746,14 +765,25 @@ const categoryList = ref<any[]>([])
 const catForm = reactive({ name: '', slug: '', description: '' })
 const catEditingId = ref<number | null>(null)
 const catSaving = ref(false)
+const showCatModal = ref(false)
 
 async function loadCategories() {
   try {
     const r = await $fetch(api + '/api/admin/categories', { credentials: 'include' })
     categoryList.value = r.categories || []
+    // Synchronise aussi le dropdown catégorie du formulaire produit (dynamique)
+    categories.value = r.categories || []
   } catch { categoryList.value = [] }
 }
 function resetCatForm() { catForm.name = ''; catForm.slug = ''; catForm.description = ''; catEditingId.value = null }
+function openCatModal() { resetCatForm(); showCatModal.value = true }
+function openCatEdit(c: any) {
+  catEditingId.value = c.id
+  catForm.name = c.name
+  catForm.slug = c.slug || ''
+  catForm.description = c.description || ''
+  showCatModal.value = true
+}
 async function submitCategory() {
   const name = catForm.name.trim()
   if (!name) return
@@ -767,16 +797,11 @@ async function submitCategory() {
       toastRef.value?.show('success', 'Catégorie créée')
     }
     resetCatForm()
+    showCatModal.value = false
     await loadCategories()
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || 'Erreur')
   } finally { catSaving.value = false }
-}
-function startCatEdit(c: any) {
-  catEditingId.value = c.id
-  catForm.name = c.name
-  catForm.slug = c.slug || ''
-  catForm.description = c.description || ''
 }
 async function deleteCategory(c: any) {
   const ok = await confirmRef.value?.ask({ title: 'Supprimer la catégorie', message: `La catégorie "${c.name}" sera supprimée.`, confirmText: 'Supprimer', danger: true })
@@ -1056,8 +1081,10 @@ async function saveProduct() {
 
 async function loadFormData() {
   try {
+    // Catégories : API admin directe (PAS bootstrap — il est caché SWR et reste périmé)
+    const catRes = await $fetch(api + '/api/admin/categories', { credentials: 'include' }).catch(() => ({ categories: [] }))
+    categories.value = catRes.categories || []
     const b = await $fetch(api + '/api/bootstrap', { credentials: 'include' })
-    categories.value = b.categories || []
     // Vrais vendeurs depuis la DB (slug réel), fallback sur l'ancienne liste
     sellers.value = b.sellers?.length
       ? b.sellers.map((s: any) => ({ slug: s.slug, username: s.username }))
