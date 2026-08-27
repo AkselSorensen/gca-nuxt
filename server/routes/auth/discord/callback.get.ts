@@ -55,6 +55,11 @@ export default defineEventHandler(async (event) => {
     const avatarUrl = discordUser.avatar
       ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
       : null
+    // Tag Discord affichable : username#discriminator (ou username seul sur les nouveaux comptes)
+    const discordTag =
+      discordUser.discriminator && String(discordUser.discriminator) !== '0'
+        ? `${discordUser.username}#${discordUser.discriminator}`
+        : discordUser.username
 
     // 2) Vérification : le compte Discord doit être membre du serveur GSA
     let isMember = false
@@ -99,8 +104,9 @@ export default defineEventHandler(async (event) => {
     const sessionUser = await getSessionUser(event)
     if (sessionUser?.id) {
       await query(
-        `UPDATE users SET discord_id = $1, avatar_url = COALESCE(NULLIF(avatar_url, ''), $2) WHERE id = $3`,
-        [String(discordUser.id), avatarUrl, sessionUser.id]
+        `UPDATE users SET discord_id = $1, avatar_url = COALESCE(NULLIF(avatar_url, ''), $2),
+         discord_tag = COALESCE(NULLIF($4, ''), discord_tag) WHERE id = $3`,
+        [String(discordUser.id), avatarUrl, sessionUser.id, discordTag]
       )
       const updated = await query('SELECT * FROM users WHERE id = $1', [sessionUser.id])
       await updateSessionUser(event, sanitizeUser(updated.rows[0]))
@@ -121,8 +127,9 @@ export default defineEventHandler(async (event) => {
     if (existing.rowCount) {
       userRow = existing.rows[0]
       await query(
-        `UPDATE users SET display_name = $2, avatar_url = $3, discord_id = $4 WHERE id = $1`,
-        [userRow.id, displayName, avatarUrl, String(discordUser.id)]
+        `UPDATE users SET display_name = $2, avatar_url = $3, discord_id = $4,
+         discord_tag = COALESCE(NULLIF($5, ''), discord_tag) WHERE id = $1`,
+        [userRow.id, displayName, avatarUrl, String(discordUser.id), discordTag]
       )
       const updated = await query('SELECT * FROM users WHERE id = $1', [userRow.id])
       userRow = updated.rows[0]
@@ -136,15 +143,15 @@ export default defineEventHandler(async (event) => {
            VALUES ($1, $2, $3, $4, 'customer', $5, $6, 'fr', 'pending', $7, $8, $9)
            RETURNING *`,
           [email, hashPassword(`discord-${discordUser.id}`), displayName, slug, avatarUrl, String(discordUser.id),
-           sellerData.shopName || displayName, sellerData.bio || '', sellerData.discordTag || '']
+           sellerData.shopName || displayName, sellerData.bio || '', discordTag || sellerData.discordTag || '']
         )
         userRow = inserted.rows[0]
       } else {
         const inserted = await query(
-          `INSERT INTO users (email, password_hash, display_name, slug, role, avatar_url, discord_id, preferred_language)
-           VALUES ($1, $2, $3, $4, 'customer', $5, $6, 'fr')
+          `INSERT INTO users (email, password_hash, display_name, slug, role, avatar_url, discord_id, preferred_language, discord_tag)
+           VALUES ($1, $2, $3, $4, 'customer', $5, $6, 'fr', $7)
            RETURNING *`,
-          [email, hashPassword(`discord-${discordUser.id}`), displayName, slug, avatarUrl, String(discordUser.id)]
+          [email, hashPassword(`discord-${discordUser.id}`), displayName, slug, avatarUrl, String(discordUser.id), discordTag]
         )
         userRow = inserted.rows[0]
       }
