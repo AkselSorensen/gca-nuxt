@@ -285,8 +285,8 @@
       <Teleport to="body">
         <Transition name="drop">
           <div v-if="showCatModal" class="modal-overlay">
-            <div class="modal-card" style="max-width:440px">
-              <div class="modal-head">
+            <div class="form-modal" style="max-width:460px">
+              <div class="modal-header">
                 <h3>{{ catEditingId ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h3>
                 <button class="modal-close" @click="showCatModal = false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
               </div>
@@ -295,7 +295,7 @@
                 <div class="field"><label>Description courte</label><input v-model="catForm.description" type="text" placeholder="ex. Interfaces et HUD pour vos serveurs" @keyup.enter="submitCategory" /></div>
                 <div class="field"><label>Lien (optionnel)</label><input v-model="catForm.slug" type="text" placeholder="ex. hud — laissé vide, il est généré automatiquement" @keyup.enter="submitCategory" /></div>
               </div>
-              <div class="modal-foot">
+              <div class="modal-actions">
                 <button class="btn-ghost" @click="showCatModal = false">Annuler</button>
                 <button class="btn-primary" :disabled="catSaving" @click="submitCategory">{{ catEditingId ? 'Enregistrer' : 'Créer la catégorie' }}</button>
               </div>
