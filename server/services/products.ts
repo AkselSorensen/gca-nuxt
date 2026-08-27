@@ -81,6 +81,8 @@ export function mapProduct(row: any) {
     sellerName: row.seller_name,
     sellerSlug: row.seller_slug,
     sellerAvatar: row.seller_avatar,
+    sellerRating: row.seller_rating > 0 ? Number(row.seller_rating) : null,
+    sellerReviewCount: Number(row.seller_review_count || 0),
     category: row.category_name,
     categorySlug: row.category_slug,
     tags: row.tags || [],
@@ -106,6 +108,8 @@ export async function getProductBySlug(slug: string, userId: number | null = nul
         s.display_name AS seller_name,
         s.slug AS seller_slug,
         s.avatar_url AS seller_avatar,
+        (SELECT COALESCE(AVG(p2.rating), 0) FROM products p2 WHERE p2.seller_id = s.id AND p2.review_count > 0) AS seller_rating,
+        (SELECT COALESCE(SUM(p2.review_count), 0) FROM products p2 WHERE p2.seller_id = s.id) AS seller_review_count,
         COALESCE(
           json_agg(
             json_build_object(
