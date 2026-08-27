@@ -7,7 +7,10 @@
         <span class="sep">/</span>
         <NuxtLink to="/catalogue">Marketplace</NuxtLink>
         <span class="sep">/</span>
-        <span class="current">{{ categoryName }}</span>
+        <span v-if="productCats.length" class="current">
+          <NuxtLink v-for="c in productCats" :key="c.slug" :to="'/catalogue?c=' + c.slug" class="bc-cat">{{ c.name }}</NuxtLink>
+        </span>
+        <span v-else class="current">{{ categoryName }}</span>
       </nav>
 
       <div class="product-layout">
@@ -262,6 +265,15 @@ const images = computed(() => {
 watch(images, (imgs) => { if (!currentImg.value) currentImg.value = imgs[0] }, { immediate: true })
 
 const categoryName = computed(() => product.value?.categoryName || product.value?.categorySlug || product.value?.category || 'Produit')
+const productCats = computed(() => {
+  const list = product.value?.categories || []
+  // Ajoute la catégorie principale si absente de la liste
+  const slugs = list.map((c: any) => c.slug)
+  if (product.value?.categorySlug && !slugs.includes(product.value.categorySlug)) {
+    list.unshift({ name: categoryName.value, slug: product.value.categorySlug })
+  }
+  return list
+})
 const sellerName = computed(() => product.value?.sellerName || product.value?.seller || 'Vendeur')
 const sellerProductCount = computed(() => product.value?.sellerProductCount || 0)
 const owned = computed(() => Boolean(product.value?.owned))

@@ -13,7 +13,10 @@ export default defineEventHandler(async (event) => {
     const [sessionUser, locale] = await Promise.all([getSessionUser(event), getSessionLocale(event)])
 
     const [categories, trending, discounts, featured, stats] = await Promise.all([
-      query(`SELECT c.name, c.slug, c.description, COALESCE(COUNT(p.id), 0)::int AS "productCount" FROM categories c LEFT JOIN products p ON p.category_id = c.id AND p.is_hidden = FALSE GROUP BY c.name, c.slug, c.description, c.sort_order ORDER BY c.sort_order ASC, c.name ASC`),
+      query(`SELECT c.name, c.slug, c.description,
+        (SELECT COUNT(DISTINCT p2.id) FROM products p2
+         WHERE p2.is_hidden = FALSE AND (p2.category_id = c.id OR EXISTS (SELECT 1 FROM product_categories pc WHERE pc.category_id = c.id AND pc.product_id = p2.id)))::int AS "productCount"
+        FROM categories c ORDER BY c.sort_order ASC, c.name ASC`),
       query(
         `
           SELECT

@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   const {
     title, price, discountPercent, isFeatured, isTrending, isNew,
     shortDescription, description, installation, categorySlug, sellerSlug, tags, isHidden,
-    thumbnail, platform, videoUrl,
+    thumbnail, platform, videoUrl, categories,
   } = await readBody(event)
 
   try {
@@ -83,6 +83,20 @@ export default defineEventHandler(async (event) => {
       values
     )
     if (!result.rowCount) throw createError({ statusCode: 404, statusMessage: 'Product not found' })
+
+    // Catégories multiples : remplacement complet de la liaison
+    if (categories !== undefined) {
+      await query('DELETE FROM product_categories WHERE product_id = $1', [productId])
+      const catSlugs = Array.isArray(categories) ? categories.filter(Boolean) : []
+      if (catSlugs.length) {
+        await query(
+          `INSERT INTO product_categories (product_id, category_id)
+           SELECT $1, id FROM categories WHERE slug = ANY($2)
+           ON CONFLICT DO NOTHING`,
+          [productId, catSlugs]
+        )
+      }
+    }
 
     if (thumbnail) {
       await query('DELETE FROM product_media WHERE product_id = $1 AND sort_order = 0', [productId])

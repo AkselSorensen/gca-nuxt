@@ -14,7 +14,8 @@ export function buildWhereClause(query: Record<string, any> = {}) {
     index += 1
   }
   if (query.category) {
-    clauses.push(`c.slug = $${index}`)
+    // Catégorie principale OU catégorie secondaire (product_categories)
+    clauses.push(`(c.slug = $${index} OR EXISTS (SELECT 1 FROM product_categories pc JOIN categories c2 ON c2.id = pc.category_id WHERE pc.product_id = p.id AND c2.slug = $${index}))`)
     values.push(String(query.category))
     index += 1
   }
@@ -87,6 +88,7 @@ export function mapProduct(row: any) {
     sellerProductCount: Number(row.seller_product_count || 0),
     category: row.category_name,
     categorySlug: row.category_slug,
+    categories: Array.isArray(row.all_categories) ? row.all_categories : [],
     tags: row.tags || [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -107,6 +109,7 @@ export async function getProductBySlug(slug: string, userId: number | null = nul
         p.*,
         c.name AS category_name,
         c.slug AS category_slug,
+        (SELECT json_agg(json_build_object('name', c3.name, 'slug', c3.slug)) FROM product_categories pc2 JOIN categories c3 ON c3.id = pc2.category_id WHERE pc2.product_id = p.id) AS all_categories,
         s.display_name AS seller_name,
         s.slug AS seller_slug,
         s.avatar_url AS seller_avatar,

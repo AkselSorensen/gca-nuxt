@@ -21,6 +21,8 @@ export default defineEventHandler(async (event) => {
     thumbnail,
     platform,
     videoUrl,
+    categories,
+    extraImages,
   } = await readBody(event)
 
   if (!title || !shortDescription || !description || !installation || !categorySlug || !sellerSlug) {
@@ -102,6 +104,28 @@ export default defineEventHandler(async (event) => {
            VALUES ($1, 'image', $2, $2, 0)`,
           [inserted.rows[0].id, String(thumbnail)]
         )
+      }
+    }
+
+    // Catégories multiples (product_categories)
+    const catSlugs = Array.isArray(body.categories) ? body.categories.filter(Boolean) : []
+    if (catSlugs.length) {
+      await query(
+        `INSERT INTO product_categories (product_id, category_id)
+         SELECT $1, id FROM categories WHERE slug = ANY($2)
+         ON CONFLICT DO NOTHING`,
+        [inserted.rows[0].id, catSlugs]
+      )
+    }
+
+    // Images supplémentaires (création) → R2
+    const extraImgs = Array.isArray(body.extraImages) ? body.extraImages.filter((x: any) => typeof x === 'string' && x.startsWith('data:')) : []
+    for (const img of extraImgs) {
+      try {
+        const mime = String(img).match(/^data:([^;,]+)/)?.[1] || 'image/jpeg'
+        await uploadImageToR2(inserted.rows[0].id, String(img), mime)
+      } catch (e) {
+        console.error('[admin] R2 extra image failed:', e)
       }
     }
 

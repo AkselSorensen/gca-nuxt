@@ -538,7 +538,12 @@
         <div class="form-section">
           <div class="form-section-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/><path d="M4.6 15a1.65 1.65 0 0 0-.33 1.82l-.06.06a2 2 0 1 0 2.83 2.83l.06-.06a1.65 1.65 0 0 1 1.82-.33"/><path d="M14 2h-4v4a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V2z"/></svg> Paramètres</div>
           <div class="form-grid-2">
-            <div class="field"><label>Catégorie *</label><select v-model="productForm.categorySlug"><option value="" disabled>Sélectionner</option><option v-for="c in categories" :key="c.slug" :value="c.slug">{{ c.name }}</option></select></div>
+            <div class="field"><label>Catégories * <small>(plusieurs possibles)</small></label>
+              <div class="cat-multi">
+                <button v-for="c in categories" :key="c.slug" type="button" class="cat-chip" :class="{ on: productForm.categories.includes(c.slug) }" @click="toggleCat(c.slug)">{{ c.name }}</button>
+                <span v-if="!categories.length" class="tag-empty">Aucune catégorie — créez-en dans l'onglet Catégories</span>
+              </div>
+            </div>
             <div class="field"><label>Vendeur *</label><select v-model="productForm.sellerSlug"><option value="" disabled>Sélectionner</option><option v-for="s in sellers" :key="s.slug" :value="s.slug">{{ s.username }}</option></select></div>
             <div class="field"><label>Plateforme</label>
               <select v-if="!platformCustom" v-model="productForm.platform">
@@ -865,7 +870,7 @@ const sellers = ref<{slug:string;username:string}[]>([])
 
 const productForm = reactive({
   title:'', shortDescription:'', description:'', installation:'',
-  categorySlug:'', sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'',
+  categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'',
   tags:'', thumbnail:'', isHidden:false
 })
 const editingId = ref<number | null>(null)
@@ -894,7 +899,7 @@ async function animateProdIn() {
 function openProductForm() {
   editingId.value = null
   productMedia.value = []
-  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
+  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
   showProductForm.value = true
@@ -909,6 +914,7 @@ function editProduct(p: any) {
     description: p.description || '',
     installation: p.installation || '',
     categorySlug: p.category_slug || '',
+    categories: Array.isArray(p.categories) ? p.categories.map((c: any) => c.slug) : (p.category_slug ? [p.category_slug] : []),
     sellerSlug: p.seller_slug || '',
     price: Number(p.old_price || p.price || 0),
     discountPercent: Number(p.discount_percent || 0),
@@ -969,7 +975,7 @@ function closeProductForm() {
   showProductForm.value = false
   editingId.value = null
   productMedia.value = []
-  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
+  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
 }
@@ -994,6 +1000,13 @@ function handleThumbUpload(e: any) {
 function removeThumb() { uploadThumb.value = ''; productForm.thumbnail = '' }
 
 const newProductTag = ref('')
+function toggleCat(slug: string) {
+  const i = productForm.categories.indexOf(slug)
+  if (i >= 0) productForm.categories.splice(i, 1)
+  else productForm.categories.push(slug)
+  // La première catégorie sélectionnée = catégorie principale
+  productForm.categorySlug = productForm.categories[0] || ''
+}
 async function createProductTag() {
   const name = newProductTag.value.trim().toLowerCase()
   if (!name) return
@@ -1052,6 +1065,7 @@ async function saveProduct() {
     const payload = {
       ...productForm,
       tags: productForm.tags.split(',').map((t:string) => t.trim()).filter(Boolean),
+      categories: productForm.categories,
       extraImages: pendingMedia.value,
     }
     const res = isEdit
@@ -1622,6 +1636,10 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .tag-opt { display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:4px;font-size:.78rem;cursor:pointer;transition:all .1s;white-space:nowrap;flex:0 0 calc(50% - 2px);box-sizing:border-box; }
 .tag-opt:hover { background:rgba(255,255,255,0.04); }
 .tag-opt.checked { background:rgba(47,125,246,0.1);color:var(--primary);font-weight:600; }
+.cat-multi { display:flex;flex-wrap:wrap;gap:8px; }
+.cat-chip { padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text-secondary);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit; }
+.cat-chip:hover { border-color:var(--primary); }
+.cat-chip.on { background:rgba(47,125,246,0.12);border-color:var(--primary);color:var(--primary);font-weight:700; }
 .tag-create { display:flex; gap:6px; padding:8px 10px; border-top:1px solid var(--border); flex:0 0 100%; }
 .tag-create input { flex:1; min-width:0; padding:7px 10px; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--foreground); font-size:.8rem; }
 .tag-create button { width:30px; border-radius:8px; border:none; background:var(--primary); color:#fff; font-weight:800; cursor:pointer; }
