@@ -622,12 +622,18 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
-const { user, logout } = useAuth()
+const { user, logout, checkAuth } = useAuth()
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
 
-// Redirect if not admin
-if (user.value?.role !== 'admin') navigateTo('/')
+// Garde admin : côté client uniquement — on attend la vérification d'auth
+// (sinon user est null au setup → redirect home à CHAQUE chargement, même admin).
+// Au SSR on ne redirige pas : le shell rend, le client valide après hydration
+// (les données sont de toute façon protégées par l'API requireAdmin).
+if (process.client) {
+  await checkAuth()
+  if (user.value?.role !== 'admin') navigateTo('/')
+}
 
 const activeTab = ref('products')
 const tabs = [
