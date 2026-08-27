@@ -50,6 +50,7 @@ export default defineEventHandler(async (event) => {
           p.updated_at,
           c.name AS category_name,
           c.slug AS category_slug,
+          (SELECT json_agg(json_build_object('name', c3.name, 'slug', c3.slug)) FROM product_categories pc2 JOIN categories c3 ON c3.id = pc2.category_id WHERE pc2.product_id = p.id) AS all_categories,
           u.display_name AS seller_name,
           u.slug AS seller_slug,
           u.avatar_url AS seller_avatar,
