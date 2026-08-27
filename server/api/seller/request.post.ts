@@ -29,6 +29,12 @@ export default defineEventHandler(async (event) => {
   if (!shopName) {
     throw createError({ statusCode: 400, statusMessage: 'Le nom de la boutique est requis.' })
   }
+  if (!sellerDescription) {
+    throw createError({ statusCode: 400, statusMessage: 'La description de votre activité est requise.' })
+  }
+  if (!discordTag) {
+    throw createError({ statusCode: 400, statusMessage: 'Votre tag Discord est requis.' })
+  }
 
   await query(
     `UPDATE users
