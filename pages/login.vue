@@ -1,5 +1,11 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
+useSeoMeta({
+  title: 'Connexion — GSA Store',
+  description: 'Connectez-vous à GSA Store pour accéder à votre compte, vos téléchargements et vos avantages clients.',
+  ogType: 'website',
+  robots: 'noindex, nofollow',
+})
 const { login, user } = useAuth()
 const { t } = useLang()
 const route = useRoute()

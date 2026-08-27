@@ -76,6 +76,14 @@
 </template>
 
 <script setup lang="ts">
+useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/contact' }] })
+useSeoMeta({
+  title: 'Contact — GSA Store',
+  description: 'Contactez l\'équipe GSA Store : support, questions, prestations.',
+  ogType: 'website',
+  
+})
+
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
 

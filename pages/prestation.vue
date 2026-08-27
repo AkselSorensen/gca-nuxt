@@ -47,6 +47,14 @@
 </template>
 
 <script setup lang="ts">
+useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/prestation' }] })
+useSeoMeta({
+  title: 'Prestations — Game Design & Modélisation 3D — GSA Store',
+  description: 'Prestations GSA : game design et modélisation 3D pour vos projets.',
+  ogType: 'website',
+  
+})
+
 const pageRef = ref<HTMLElement | null>(null)
 const { t } = useLang()
 onMounted(async () => {

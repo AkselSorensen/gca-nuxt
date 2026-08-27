@@ -113,6 +113,14 @@
 </template>
 
 <script setup lang="ts">
+useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/' }] })
+useSeoMeta({
+  title: 'GSA Store — Des assets premium, prêts à déployer.',
+  description: 'GSA Store — Pas une boutique. Un standard. Des assets premium pour Garry\'s Mod : mapping, particules, HUD, animations.',
+  ogType: 'website',
+  
+})
+
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
 const { t } = useLang()

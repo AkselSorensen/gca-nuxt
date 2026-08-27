@@ -171,6 +171,28 @@ const sellerSlug = route.params.id as string
 const { data: raw, error: fetchError } = await useFetch(() => api + '/api/sellers/' + sellerSlug, { lazy: true })
 
 const seller = computed(() => raw.value?.seller || {})
+
+// ===== SEO dynamique =====
+const truncateText = (s: string, max: number) => {
+  const clean = (s || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+  return clean.length > max ? clean.slice(0, max - 1).trimEnd() + '…' : clean
+}
+
+const sellerName = computed(() => seller.value?.displayName || 'Vendeur')
+const seoTitle = computed(() => sellerName.value + ' — Vendeur GSA Store')
+const seoDescription = computed(() => truncateText(seller.value?.bio || 'Découvrez les créations de ' + sellerName.value + ' sur GSA Store.', 150))
+
+useSeoMeta({
+  title: seoTitle,
+  description: seoDescription,
+  ogType: 'profile',
+  ogTitle: seoTitle,
+  ogDescription: seoDescription,
+})
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: 'https://gsa-store.fr/seller/' + sellerSlug }],
+}))
 const products = computed(() => raw.value?.products || [])
 const reviews = computed(() => raw.value?.reviews || [])
 // Pagination des avis : 10 affichés, "Afficher plus" en révèle 10 de plus

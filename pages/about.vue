@@ -113,6 +113,14 @@
 </template>
 
 <script setup lang="ts">
+useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/about' }] })
+useSeoMeta({
+  title: 'À propos — GSA Store',
+  description: 'GSA, pas une boutique. Un standard. Découvrez notre vision de la marketplace.',
+  ogType: 'website',
+  
+})
+
 const pageRef = ref<HTMLElement | null>(null)
 onMounted(async () => {
   const { load, pageEntrance } = await import('~/composables/useAnimation')

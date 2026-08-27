@@ -164,6 +164,12 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
+useSeoMeta({
+  title: 'Inscription — GSA Store',
+  description: 'Créez votre compte GSA Store : acheteurs et vendeurs d\'assets premium pour Garry\'s Mod.',
+  ogType: 'website',
+  robots: 'noindex, nofollow',
+})
 const { register } = useAuth()
 const { t } = useLang()
 const pageRef = ref<HTMLElement | null>(null)

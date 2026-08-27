@@ -170,6 +170,59 @@ const slug = route.params.slug as string
 const { data: prodData, refresh } = await useFetch(api + '/api/products/' + slug, { lazy: true, credentials: 'include' })
 const product = computed(() => prodData.value?.product || prodData.value || null)
 
+// ===== SEO dynamique =====
+const truncateText = (s: string, max: number) => {
+  const clean = (s || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+  return clean.length > max ? clean.slice(0, max - 1).trimEnd() + '…' : clean
+}
+
+const seoTitle = computed(() => (product.value?.title ? product.value.title + ' — GSA Store' : 'GSA Store'))
+const seoDescription = computed(() => truncateText(product.value?.shortDescription || product.value?.description || '', 150))
+const seoImage = computed(() => {
+  const url = product.value?.media?.[0]?.url || ''
+  if (url.startsWith('http') || url.startsWith('data:')) return url
+  if (url.startsWith('/api/media/')) return 'https://gsa-store.fr' + url
+  return 'https://gsa-store.fr/logo.png'
+})
+const seoCanonical = computed(() => (product.value?.slug ? 'https://gsa-store.fr/product/' + product.value.slug : ''))
+
+useSeoMeta({
+  title: seoTitle,
+  description: seoDescription,
+  ogType: 'product',
+  ogTitle: seoTitle,
+  ogDescription: seoDescription,
+  ogImage: seoImage,
+  ogUrl: seoCanonical,
+  twitterCard: 'summary_large_image',
+})
+
+useHead(() => {
+  const p = product.value
+  if (!p) return {}
+  const ldJson = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: p.title || '',
+    image: seoImage.value,
+    description: seoDescription.value,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'EUR',
+      price: Number(p.price || 0),
+      availability: 'https://schema.org/InStock',
+      ...(p.sellerName ? { seller: { '@type': 'Person', name: p.sellerName } } : {}),
+    },
+    ...(Number(p.rating) > 0
+      ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: Number(p.rating), reviewCount: Number(p.reviewCount) || 0 } }
+      : {}),
+  }
+  return {
+    link: seoCanonical.value ? [{ rel: 'canonical', href: seoCanonical.value }] : [],
+    script: [{ type: 'application/ld+json', children: JSON.stringify(ldJson) }],
+  }
+})
+
 // Un vendeur ne peut pas acheter ses propres produits (bloqué serveur + UI)
 const { user } = useAuth()
 const isOwnProduct = computed(() =>

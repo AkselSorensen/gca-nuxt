@@ -10,9 +10,14 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'GSA - Marketplace Garry\'s Mod',
+      htmlAttrs: { lang: 'fr' },
+      title: 'GSA Store — Des assets premium, prêts à déployer.',
       meta: [
-        { name: 'description', content: 'GSA structure la distribution d\'assets Garry\'s Mod.' }
+        { name: 'description', content: 'GSA Store — Des assets premium, prêts à déployer.' },
+        { property: 'og:locale', content: 'fr_FR' },
+        { property: 'og:site_name', content: 'GSA Store' },
+        { property: 'og:image', content: 'https://gsa-store.fr/og-banner.png' },
+        { name: 'twitter:card', content: 'summary_large_image' }
       ],
       link: [
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },
