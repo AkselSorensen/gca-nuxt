@@ -3,6 +3,7 @@ import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'
 import { uploadImageToR2 } from '../../../services/r2'
+import { purgeRouteCache } from '../../../utils/cache'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -122,6 +123,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    await purgeRouteCache()
     return { ok: true, product: result.rows[0] }
   } catch (error: any) {
     if (error?.statusCode) throw error

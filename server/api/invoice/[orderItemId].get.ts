@@ -48,17 +48,14 @@ function generatePdf(order: any): Promise<Buffer> {
     const W = doc.page.width - 96
     const usableBottom = doc.page.height - 60
 
-    // Header sombre avec logo sur carte blanche
+    // Header sombre avec logo (sans encadrement)
     doc.rect(0, 0, doc.page.width, 84).fill(dark)
     const logoBuffer = Buffer.from(String(logoB64).split(',')[1] || '', 'base64')
-    doc.roundedRect(48, 14, 96, 56, 12).fill('#ffffff')
     if (logoBuffer.length > 0) {
-      doc.image(logoBuffer, 48 + 12, 14 + 8, { fit: [72, 40] })
+      doc.image(logoBuffer, 48, 22, { fit: [80, 40] })
     }
-    doc.font('Helvetica').fontSize(9).fillColor('#8892a8')
-      .text('GSA Store', 158, 30)
-    doc.font('Helvetica').fontSize(7.5).fillColor('#8892a8')
-      .text("Marketplace Garry's Mod", 158, 44)
+    doc.font('Helvetica-Bold').fontSize(10).fillColor('#ffffff')
+      .text('GSA Store', 140, 36)
     doc.fillColor(primary).font('Helvetica-Bold').fontSize(20).text('FACTURE', 0, 26, { align: 'right', width: W })
 
     doc.fillColor(muted).font('Helvetica').fontSize(8.5)
@@ -87,12 +84,8 @@ function generatePdf(order: any): Promise<Buffer> {
         rowY = 48
       }
       const titleHeight = doc.heightOfString(item.title, { width: 280 })
-      const feePct = formatPercent(item.platform_fee_percent)
-      const detailLine = `Dont frais GSA (${feePct}) : ${formatEuro(item.platform_fee_amount)} · Net vendeur : ${formatEuro(item.seller_net_amount)}`
-      const rowHeight = Math.max(20, titleHeight + 14)
+      const rowHeight = Math.max(20, titleHeight + 4)
       doc.text(item.title, 48, rowY, { width: 280 })
-      doc.fontSize(7.5).fillColor(muted)
-        .text(detailLine, 48, rowY + titleHeight + 1, { width: 280 })
       doc.fontSize(9).fillColor(dark)
       doc.text(String(item.quantity), 0, rowY, { align: 'right', width: 340 })
       doc.text(formatEuro(item.price), 0, rowY, { align: 'right', width: 440 })
@@ -110,46 +103,25 @@ function generatePdf(order: any): Promise<Buffer> {
     }
     rowY += 6
     doc.fontSize(9)
-    doc.fillColor(muted).text('PRIX HT', 0, rowY, { align: 'right', width: 440 })
+    doc.fillColor(muted).text('PRIX HT *', 0, rowY, { align: 'right', width: 440 })
     doc.fillColor(dark).text(formatEuro(subtotal), 0, rowY, { align: 'right', width: W })
     rowY += 15
 
-    const totalFees = items.reduce((acc: number, it: any) => acc + Number(it.platform_fee_amount || 0), 0)
-    const totalNet = items.reduce((acc: number, it: any) => acc + Number(it.seller_net_amount || 0), 0)
-    const feePercent = items.find((it: any) => it.platform_fee_percent)?.platform_fee_percent || 0
-    if (totalFees > 0) {
-      doc.fillColor(muted).text(`Dont frais GSA (${formatPercent(feePercent)})`, 0, rowY, { align: 'right', width: 440 })
-      doc.fillColor(dark).text(`-${formatEuro(totalFees)}`, 0, rowY, { align: 'right', width: W })
-      rowY += 15
-    }
-    if (totalNet > 0) {
-      doc.fillColor(muted).text('Net vendeur', 0, rowY, { align: 'right', width: 440 })
-      doc.fillColor(dark).text(formatEuro(totalNet), 0, rowY, { align: 'right', width: W })
-      rowY += 15
-    }
-    // Frais de traitement Stripe — formule fixe 1,5 % + 0,25 €
-    const stripeFee = Number(order.stripe_fee_amount || 0) > 0
-      ? Number(order.stripe_fee_amount)
-      : Math.round((subtotal * 0.015 + 0.25) * 100) / 100
-    if (stripeFee > 0) {
-      doc.fillColor(muted).text('Frais de traitement Stripe (1,5 % + 0,25 €)', 0, rowY, { align: 'right', width: 440 })
-      doc.fillColor(dark).text(formatEuro(stripeFee), 0, rowY, { align: 'right', width: W })
-      rowY += 15
-    }
     if (discount > 0) {
       doc.fillColor(muted).text('Remise (code promo)', 0, rowY, { align: 'right', width: 440 })
       doc.fillColor('#dc2626').text(`-${formatEuro(discount)}`, 0, rowY, { align: 'right', width: W })
       rowY += 15
     }
-    // TVA — ligne dans la section des totaux (avant le total TTC)
-    doc.fillColor(muted).text('TVA non applicable, art. 293 B du CGI', 0, rowY, { align: 'right', width: 440 })
-    doc.fillColor(dark).text(formatEuro(0), 0, rowY, { align: 'right', width: W })
-    rowY += 15
 
-    const totalTTC = subtotal + stripeFee - discount
+    // Total réellement payé par l'acheteur (montant encaissé par Stripe)
+    const totalTTC = total > 0 ? total : Math.max(0, subtotal - discount)
     doc.rect(48, rowY - 4, W, 24).fill(dark)
     doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(10.5).text('TOTAL TTC', 0, rowY + 4, { align: 'right', width: W - 70 })
     doc.text(formatEuro(totalTTC), 0, rowY + 4, { align: 'right', width: W })
+
+    // Astérisque : mention TVA sous le total TTC
+    doc.font('Helvetica').fontSize(7.5).fillColor(muted)
+      .text('* TVA non applicable, art. 293 B du CGI', 0, rowY + 26, { align: 'right', width: W })
 
     doc.fillColor(muted).font('Helvetica').fontSize(7.5)
     doc.text('Paiement sécurisé via Stripe.', 48, rowY + 40)

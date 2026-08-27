@@ -4,6 +4,7 @@ import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'
 import { uploadImageToR2 } from '../../../services/r2'
 import { slugify } from '../../../services/users'
+import { purgeRouteCache } from '../../../utils/cache'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -129,6 +130,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    await purgeRouteCache()
     return inserted.rows[0]
   } catch (error: any) {
     if (error?.statusCode) throw error

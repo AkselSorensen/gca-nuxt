@@ -2,6 +2,7 @@
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'
+import { purgeRouteCache } from '../../../utils/cache'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -11,6 +12,7 @@ export default defineEventHandler(async (event) => {
   try {
     const result = await query('DELETE FROM products WHERE id = $1 RETURNING id', [productId])
     if (!result.rowCount) throw createError({ statusCode: 404, statusMessage: 'Product not found' })
+    await purgeRouteCache()
     return { ok: true }
   } catch (error: any) {
     if (error?.statusCode) throw error

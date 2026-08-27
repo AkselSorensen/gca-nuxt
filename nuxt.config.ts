@@ -39,8 +39,8 @@ export default defineNuxtConfig({
   // régénérées en arrière-plan — plus de cold start Vercel pour les visiteurs.
   routeRules: {
     '/': { swr: 60 },
-    '/catalogue': { swr: 300 },
-    '/product/**': { swr: 300 },
+    '/catalogue': { swr: 60 },
+    '/product/**': { swr: 60 },
     '/about': { swr: 3600 },
     '/prestation': { swr: 3600 }
   }
