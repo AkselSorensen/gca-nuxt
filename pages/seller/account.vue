@@ -62,26 +62,6 @@
                 </button>
               </div>
             </div>
-
-              <div class="link-meta">
-                <div class="link-name">
-                  <strong>{{ t('seller.steam') }}</strong>
-                  <span class="link-status" :class="{ on: steamLinked }">{{ steamLinked ? t('seller.connected') : t('seller.not_connected') }}</span>
-                </div>
-                <p class="link-desc">{{ t('seller.steam_desc') }}</p>
-                <span v-if="userSteamId" class="link-id">ID: {{ userSteamId }}</span>
-              </div>
-              <div class="link-actions">
-                <button v-if="steamLinked" class="btn-link-ghost" disabled>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                  {{ t('seller.connected') }}
-                </button>
-                <button v-else class="btn-link-brand btn-steam-brand" @click="linkSteam">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  {{ t('seller.link') }}
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 
