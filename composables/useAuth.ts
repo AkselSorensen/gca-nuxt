@@ -45,6 +45,8 @@ export const useAuth = () => {
       await $fetch(api + '/api/auth/logout', { method: 'POST', credentials: 'include' })
     } catch {}
     user.value = null
+    // Vide le panier local (réservé aux connectés) à la déconnexion
+    try { localStorage.removeItem('gsa-cart') } catch {}
     // Rechargement complet : garantit que le cookie supprimé est bien pris en
     // compte et que checkAuth repart de zéro (navigateTo gardait l'état fantôme)
     window.location.href = '/'
