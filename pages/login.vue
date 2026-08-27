@@ -17,8 +17,10 @@ const discordAttempted = computed(() => route.query.attempted === '1')
 
 function discordLogin() {
   const isSeller = tab.value === 'seller'
+  // Honore ?redirect= (ex. guest qui voulait acheter → retour sur la page produit)
+  const redirect = route.query.redirect ? String(route.query.redirect) : ''
   const params = new URLSearchParams({
-    return_url: route.path,
+    return_url: redirect || route.path,
     account_type: isSeller ? 'seller' : 'buyer',
   })
   window.location.href = '/auth/discord?' + params.toString()
@@ -50,6 +52,7 @@ async function handleLogin() {
       return
     }
     if (role === 'admin') navigateTo('/admin')
+    else if (route.query.redirect) navigateTo(String(route.query.redirect))
     else if (role === 'seller' && slug) navigateTo('/seller/' + slug)
     else navigateTo('/')
   } catch (e: any) {
@@ -102,7 +105,7 @@ onMounted(async () => {
           {{ submitting ? 'Redirection…' : (tab === 'seller' ? 'Se connecter en tant que vendeur avec Discord' : 'Se connecter avec Discord') }}
         </button>
         <p class="discord-note anim-fade">Vous devez être membre du serveur Discord GSA pour accéder à la plateforme.</p>
-        <p class="auth-footer anim-fade">Pas encore de compte ? <NuxtLink to="/register">S'inscrire</NuxtLink></p>
+        <p class="auth-footer anim-fade">Pas encore de compte ? <NuxtLink :to="route.query.redirect ? '/register?redirect=' + encodeURIComponent(String(route.query.redirect)) : '/register'">S'inscrire</NuxtLink></p>
       </div>
 
       <!-- Admin Login -->
