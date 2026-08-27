@@ -3,6 +3,7 @@
 import { defineEventHandler, readRawBody, getHeader, createError } from 'h3'
 import { pool, query } from '../../services/db'
 import { stripe, maybeCreateSellerTransfers, recordStripeFee } from '../../services/stripe'
+import { notifyOrderEmails } from '../../services/notifications'
 
 export default defineEventHandler(async (event) => {
   const sig = getHeader(event, 'stripe-signature') || ''
@@ -72,6 +73,8 @@ export default defineEventHandler(async (event) => {
         console.log(`Webhook buy-now: order ${orderInsert.rows[0].id} created for user ${userId}`)
         await maybeCreateSellerTransfers(orderInsert.rows[0].id, session)
         await recordStripeFee(orderInsert.rows[0].id, session)
+        // Emails : facture + invitation avis (acheteur) + notification de vente (vendeur)
+        await notifyOrderEmails(orderInsert.rows[0].id, session.customer_details?.email || '')
         return { received: true, orderId: orderInsert.rows[0].id }
       }
 
@@ -134,6 +137,8 @@ export default defineEventHandler(async (event) => {
         console.log(`Webhook: order ${orderId} created for user ${userId}`)
         await maybeCreateSellerTransfers(orderId, session)
         await recordStripeFee(orderId, session)
+        // Emails : facture + invitation avis (acheteur) + notification de vente (vendeur)
+        await notifyOrderEmails(orderId, session.customer_details?.email || '')
       } catch (err) {
         await client.query('ROLLBACK')
         console.error('Webhook order creation error:', err)
