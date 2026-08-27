@@ -16,6 +16,7 @@ export default defineEventHandler(async (event) => {
       charges: [],
       transfers: [],
       orders: [],
+      sales: [],
       sellersList: [],
     }
 
@@ -165,6 +166,52 @@ export default defineEventHandler(async (event) => {
       sellerIds: Array.isArray(r.seller_ids) ? r.seller_ids.map(Number) : [],
       createdAt: r.created_at,
     }))
+
+    // Ventes ligne par ligne (achat groupé = 1 ligne par article) — suivi des dispatchs d'argent
+    try {
+      const sales = await query(
+        `
+          SELECT
+            oi.id, oi.order_id, o.created_at, o.stripe_session_id,
+            p.title, p.slug,
+            oi.quantity, oi.price,
+            oi.platform_fee_percent, oi.platform_fee_amount, oi.seller_net_amount,
+            oi.transfer_id, oi.transfer_status,
+            s.id AS seller_id, s.display_name AS seller_name,
+            bu.email AS buyer_email, bu.display_name AS buyer_name
+          FROM order_items oi
+          JOIN orders o ON o.id = oi.order_id
+          LEFT JOIN products p ON p.id = oi.product_id
+          LEFT JOIN users s ON s.id = oi.seller_id
+          LEFT JOIN users bu ON bu.id = o.user_id
+          WHERE o.status = 'completed'
+          ORDER BY o.created_at DESC, oi.id ASC
+          LIMIT 300
+        `
+      )
+      out.sales = sales.rows.map((r: any) => ({
+        id: r.id,
+        orderId: r.order_id,
+        createdAt: r.created_at,
+        title: r.title || '(produit supprimé)',
+        slug: r.slug || '',
+        quantity: Number(r.quantity || 1),
+        price: Number(r.price || 0),
+        gross: Number(r.price || 0) * Number(r.quantity || 1),
+        feePercent: Number(r.platform_fee_percent || 0),
+        platformFee: Number(r.platform_fee_amount || 0),
+        sellerNet: Number(r.seller_net_amount || 0),
+        transferId: r.transfer_id || null,
+        transferStatus: r.transfer_status || 'pending',
+        sellerId: r.seller_id ? Number(r.seller_id) : null,
+        sellerName: r.seller_name || '—',
+        buyerEmail: r.buyer_email || '',
+        buyerName: r.buyer_name || '',
+      }))
+    } catch (e: any) {
+      console.error('[revenue] ventes par article:', e?.message || e)
+      out.sales = []
+    }
 
     // Liste des vendeurs pour le filtre admin
     try {

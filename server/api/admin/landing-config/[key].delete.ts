@@ -2,6 +2,7 @@
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'
+import { purgeRouteCache } from '../../../utils/cache'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -9,6 +10,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     await query('DELETE FROM admin_landing_config WHERE section_key = $1', [sectionKey])
+    await purgeRouteCache()
     return { ok: true, deleted: true }
   } catch (error: any) {
     console.error('Landing config delete error:', error)

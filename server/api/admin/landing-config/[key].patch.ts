@@ -2,6 +2,7 @@
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'
+import { purgeRouteCache } from '../../../utils/cache'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -40,6 +41,7 @@ export default defineEventHandler(async (event) => {
       await query(`UPDATE admin_landing_config SET ${updates.join(', ')} WHERE section_key = $${idx}`, values)
     }
 
+    await purgeRouteCache()
     return { ok: true }
   } catch (error: any) {
     if (error?.statusCode) throw error

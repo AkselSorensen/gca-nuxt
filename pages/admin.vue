@@ -64,7 +64,7 @@
         </div>
         <div class="table-wrap">
           <table v-if="filteredUsers.length" class="admin-table">
-            <thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Date</th></tr></thead>
+            <thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Date</th><th>Actions</th></tr></thead>
             <tbody>
               <tr v-for="u in filteredUsers" :key="u.id">
                 <td>{{ u.id }}</td>
@@ -72,6 +72,12 @@
                 <td>{{ u.email }}</td>
                 <td><span class="role-badge" :class="u.role">{{ u.role }}</span></td>
                 <td>{{ u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—' }}</td>
+                <td class="actions">
+                  <button v-if="u.role === 'seller'" type="button" class="btn-action danger" title="Révoquer le rôle vendeur" @click="revokeSeller(u)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-9.33-5"/><path d="M6 8a6 6 0 0 0 9.33 5"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+                  </button>
+                  <span v-else class="muted">—</span>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -355,9 +361,67 @@
             </div>
           </div>
 
+          <!-- Onglets internes + recherche -->
+          <div class="rev-subtabs">
+            <button type="button" class="rev-subtab" :class="{ active: revTab === 'sales' }" @click="revTab = 'sales'">
+              Ventes par article <span class="rev-subtab-count">{{ revenue.sales?.length || 0 }}</span>
+            </button>
+            <button type="button" class="rev-subtab" :class="{ active: revTab === 'orders' }" @click="revTab = 'orders'">
+              Commandes <span class="rev-subtab-count">{{ revenue.orders?.length || 0 }}</span>
+            </button>
+            <button type="button" class="rev-subtab" :class="{ active: revTab === 'charges' }" @click="revTab = 'charges'">
+              Paiements Stripe <span class="rev-subtab-count">{{ revenue.charges?.length || 0 }}</span>
+            </button>
+            <button type="button" class="rev-subtab" :class="{ active: revTab === 'transfers' }" @click="revTab = 'transfers'">
+              Transferts <span class="rev-subtab-count">{{ revenue.transfers?.length || 0 }}</span>
+            </button>
+            <label class="rev-search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input v-model="revSearch" type="search" placeholder="Rechercher : produit, client, vendeur, n° commande…" />
+            </label>
+          </div>
+
+          <!-- Ventes par article (achat groupé = 1 ligne par produit) -->
+          <div v-if="revTab === 'sales'" class="table-wrap">
+            <table v-if="filteredSales.length" class="admin-table">
+              <thead><tr><th>Cmd</th><th>Date</th><th>Article</th><th>Client</th><th>Vendeur</th><th>Qté</th><th>Brut</th><th>Comm.</th><th>Commission GSA</th><th>Net vendeur</th><th>Reversement</th></tr></thead>
+              <tbody>
+                <tr v-for="s in filteredSales" :key="s.id">
+                  <td>#{{ s.orderId }}</td>
+                  <td>{{ new Date(s.createdAt).toLocaleDateString('fr-FR') }}</td>
+                  <td><strong>{{ s.title }}</strong></td>
+                  <td>
+                    <div v-if="s.buyerName || s.buyerEmail" class="buyer-cell">
+                      <span v-if="s.buyerName" class="buyer-name">{{ s.buyerName }}</span>
+                      <span v-if="s.buyerEmail" class="buyer-email">{{ s.buyerEmail }}</span>
+                    </div>
+                    <span v-else class="muted">—</span>
+                  </td>
+                  <td><span class="seller-cell">{{ s.sellerName }}</span></td>
+                  <td>{{ s.quantity }}</td>
+                  <td class="price-cell">{{ fmtMoney(s.gross) }}</td>
+                  <td><span class="badge-comm">{{ s.feePercent }} %</span></td>
+                  <td class="price-cell">{{ fmtMoney(s.platformFee) }}</td>
+                  <td>{{ fmtMoney(s.sellerNet) }}</td>
+                  <td><span class="rev-status" :class="s.transferStatus">{{ s.transferStatus }}</span></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="6"><strong>{{ salesTotals.count }} ligne(s)</strong></td>
+                  <td class="price-cell"><strong>{{ fmtMoney(salesTotals.gross) }}</strong></td>
+                  <td></td>
+                  <td class="price-cell"><strong>{{ fmtMoney(salesTotals.platformFee) }}</strong></td>
+                  <td><strong>{{ fmtMoney(salesTotals.sellerNet) }}</strong></td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+            <div v-else class="empty-tab">{{ revSearch ? 'Aucune vente ne correspond à cette recherche.' : 'Aucune vente enregistrée.' }}</div>
+          </div>
+
           <!-- Commandes DB -->
-          <h3 class="rev-section-title">Commandes (base de données)</h3>
-          <div class="table-wrap">
+          <div v-if="revTab === 'orders'" class="table-wrap">
             <table v-if="filteredOrders.length" class="admin-table">
               <thead><tr><th>#</th><th>Date</th><th>Client</th><th>Vendeur(s)</th><th>Total payé</th><th>Part vendeur</th><th>Commission plateforme</th></tr></thead>
               <tbody>
@@ -382,8 +446,7 @@
           </div>
 
           <!-- Paiements Stripe -->
-          <h3 class="rev-section-title">Paiements Stripe (charges)</h3>
-          <div class="table-wrap">
+          <div v-if="revTab === 'charges'" class="table-wrap">
             <table v-if="filteredCharges.length" class="admin-table">
               <thead><tr><th>ID</th><th>Date</th><th>Client</th><th>Vendeur</th><th>Montant</th><th>Statut</th></tr></thead>
               <tbody>
@@ -405,8 +468,7 @@
           </div>
 
           <!-- Transferts vendeurs -->
-          <h3 class="rev-section-title">Transferts vendeurs</h3>
-          <div class="table-wrap">
+          <div v-if="revTab === 'transfers'" class="table-wrap">
             <table v-if="revenue.transfers?.length" class="admin-table">
               <thead><tr><th>ID</th><th>Date</th><th>Destination</th><th>Montant</th><th>Statut</th></tr></thead>
               <tbody>
@@ -1167,6 +1229,25 @@ async function loadUsers() {
 
 // Commission plateforme : portée par le PRODUIT (voir le formulaire produit), plus par le vendeur.
 
+// Révocation du rôle vendeur : le compte redevient client et ses produits sont masqués.
+async function revokeSeller(u: any) {
+  const ok = await confirmRef.value?.ask({
+    title: 'Révoquer le rôle vendeur ?',
+    message: `${u.displayName || u.email} redeviendra un simple client et TOUS ses produits seront masqués du catalogue. Les commandes passées ne sont pas touchées.`,
+    confirmText: 'Révoquer',
+  })
+  if (!ok) return
+  try {
+    const res = await $fetch(api + `/api/admin/users/${u.id}/revoke-seller`, { method: 'POST', credentials: 'include' })
+    u.role = 'customer'
+    toastRef.value?.show('success', `Rôle vendeur révoqué — ${res.hiddenProducts || 0} produit(s) masqué(s)`)
+    loadUsers()
+    loadProducts()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.statusMessage || e?.data?.message || 'Révocation impossible')
+  }
+}
+
 // ─── Seller Requests ────────────────────────────────────
 async function loadSellerRequests() {
   try {
@@ -1209,10 +1290,36 @@ const revenue = ref<any>(null)
 const revenueLoading = ref(false)
 // Filtre vendeur : 'all' ou id du vendeur (dropdown)
 const sellerFilter = ref<number | 'all'>('all')
+// Onglets internes de la page Revenus + recherche transverse
+const revTab = ref<'sales' | 'orders' | 'charges' | 'transfers'>('sales')
+const revSearch = ref('')
+function revMatch(...fields: any[]) {
+  const q = revSearch.value.trim().toLowerCase()
+  if (!q) return true
+  return fields.some((f) => String(f ?? '').toLowerCase().includes(q))
+}
+const filteredSales = computed(() => {
+  const sales = revenue.value?.sales || []
+  return sales.filter((s: any) =>
+    (sellerFilter.value === 'all' || s.sellerId === sellerFilter.value) &&
+    revMatch(s.title, s.buyerName, s.buyerEmail, s.sellerName, s.orderId, s.id, s.transferStatus)
+  )
+})
+const salesTotals = computed(() => {
+  const rows = filteredSales.value
+  return {
+    count: rows.length,
+    gross: rows.reduce((s: number, r: any) => s + r.gross, 0),
+    platformFee: rows.reduce((s: number, r: any) => s + r.platformFee, 0),
+    sellerNet: rows.reduce((s: number, r: any) => s + r.sellerNet, 0),
+  }
+})
 const filteredOrders = computed(() => {
   const orders = revenue.value?.orders || []
-  if (sellerFilter.value === 'all') return orders
-  return orders.filter((o: any) => (o.sellerIds || []).includes(sellerFilter.value))
+  return orders.filter((o: any) =>
+    (sellerFilter.value === 'all' || (o.sellerIds || []).includes(sellerFilter.value)) &&
+    revMatch(o.id, o.buyerName, o.buyerEmail, o.sellers)
+  )
 })
 const filteredCharges = computed(() => {
   const charges = revenue.value?.charges || []
@@ -1677,6 +1784,15 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .rev-card-val.muted { color:var(--text-secondary); }
 .rev-card-sub { font-size:.72rem;color:var(--text-muted); }
 .rev-section-title { font-size:.95rem;font-weight:700;margin:20px 0 10px; }
+.rev-subtabs { display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border); }
+.rev-subtab { display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--text-muted);font-size:.82rem;font-weight:600;cursor:pointer;transition:background .15s ease,color .15s ease; }
+.rev-subtab:hover { background:var(--bg-surface);color:var(--text); }
+.rev-subtab.active { background:rgba(47,125,246,0.1);border-color:rgba(47,125,246,0.25);color:var(--primary); }
+.rev-subtab-count { padding:1px 7px;border-radius:999px;background:var(--bg-surface);font-size:.7rem;font-weight:700; }
+.rev-subtab.active .rev-subtab-count { background:rgba(47,125,246,0.18);color:var(--primary); }
+.rev-search { display:flex;align-items:center;gap:7px;margin-left:auto;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text-muted);min-width:280px; }
+.rev-search input { flex:1;border:0;background:transparent;color:var(--text);font-size:.82rem;outline:none;font-family:inherit; }
+.admin-table tfoot td { border-top:2px solid var(--border);font-size:.84rem;padding-top:10px; }
 .rev-status { display:inline-block;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:capitalize; }
 .rev-status.succeeded, .rev-status.paid { background:rgba(110,231,183,.1);color:#6ee7b7; }
 .rev-status.pending { background:rgba(245,179,66,.1);color:#f5b342; }

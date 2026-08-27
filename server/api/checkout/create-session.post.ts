@@ -90,19 +90,35 @@ export default defineEventHandler(async (event) => {
     })
 
     const transfer = await resolveTransferMode(cart.items)
-    const paidAmount = Math.max(0, Number(cart.total || 0) - Number(promoState?.discountAmount || 0))
-    let cartCommission = PLATFORM_COMMISSION_PERCENT
+    const cartTotal = Number(cart.total || 0)
+    const paidAmount = Math.max(0, cartTotal - Number(promoState?.discountAmount || 0))
+
+    // Commission = SOMME article par article (chaque produit a SON taux).
+    // Avant : on prenait le taux du 1er article et on l'appliquait à tout le panier
+    // → 200 € avec un produit à 75 % donnait 150 € de frais au lieu de 75 € + 25 €.
+    let platformFeeCents = 0
     try {
-      // Commission portée par le PRODUIT (plus par le vendeur) — 1er article du panier
-      const firstProductId = cart.items[0]?.product?.id
-      if (firstProductId) {
-        const cr = await query('SELECT commission_percent FROM products WHERE id = $1', [firstProductId])
-        if (cr.rowCount && cr.rows[0].commission_percent !== null) {
-          cartCommission = Number(cr.rows[0].commission_percent) || PLATFORM_COMMISSION_PERCENT
+      const ids = cart.items.map((it: any) => Number(it.product?.id)).filter(Boolean)
+      const rates = new Map<number, number>()
+      if (ids.length) {
+        const cr = await query('SELECT id, commission_percent FROM products WHERE id = ANY($1)', [ids])
+        for (const row of cr.rows) {
+          rates.set(Number(row.id), row.commission_percent === null ? PLATFORM_COMMISSION_PERCENT : Number(row.commission_percent))
         }
       }
-    } catch { /* fallback commission globale */ }
-    const platformFeeCents = Math.round(paidAmount * cartCommission)
+      let feeEuros = 0
+      for (const it of cart.items) {
+        const pct = rates.get(Number(it.product?.id)) ?? PLATFORM_COMMISSION_PERCENT
+        const lineTotal = Number(it.product?.price || 0) * Number(it.quantity || 1)
+        feeEuros += (lineTotal * pct) / 100
+      }
+      // Remise éventuelle : on réduit la commission au prorata du montant réellement payé
+      const ratio = cartTotal > 0 ? paidAmount / cartTotal : 1
+      platformFeeCents = Math.round(feeEuros * ratio * 100)
+    } catch (e: any) {
+      console.error('[checkout] calcul commission panier:', e?.message || e)
+      platformFeeCents = Math.round(paidAmount * PLATFORM_COMMISSION_PERCENT)
+    }
     const useDestination = transfer.mode === 'destination' && platformFeeCents > 0 && platformFeeCents < Math.round(paidAmount * 100)
 
     const session = await stripe.checkout.sessions.create({
