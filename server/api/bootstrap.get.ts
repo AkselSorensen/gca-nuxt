@@ -149,7 +149,8 @@ export default defineEventHandler(async (event) => {
         SELECT
           (SELECT COUNT(*) FROM products WHERE is_hidden = FALSE)::int AS "totalProducts",
           (SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi JOIN orders o ON o.id = oi.order_id WHERE o.status = 'completed')::int AS "totalSales",
-          (SELECT COALESCE(AVG(rating), 0) FROM products WHERE is_hidden = FALSE)::float AS "avgRating",
+          (SELECT COALESCE(AVG(r.rating), 0) FROM reviews r JOIN products pr ON pr.id = r.product_id WHERE pr.is_hidden = FALSE)::float AS "avgRating",
+          (SELECT COUNT(*) FROM reviews r2 JOIN products pr2 ON pr2.id = r2.product_id WHERE pr2.is_hidden = FALSE)::int AS "totalReviews",
           (SELECT COUNT(DISTINCT seller_id) FROM products WHERE is_hidden = FALSE)::int AS "totalCreators"
       `),
     ])
