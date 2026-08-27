@@ -402,7 +402,7 @@ onMounted(async () => {
 .card-img { position:relative;display:block;aspect-ratio:16/10;overflow:hidden; }
 .card-img img { width:100%;height:100%;object-fit:cover;transition:transform .4s; }
 .mp-card:hover .card-img img { transform:scale(1.05); }
-.badge-sale { position:absolute;bottom:8px;left:8px;padding:4px 8px;border-radius:4px;background:#22c55e;color:#fff;font-size:.7rem;font-weight:700; }
+.badge-sale { position:absolute;bottom:8px;left:8px;padding:4px 8px;border-radius:4px;background:#8b1a1a;color:#fff;font-size:.7rem;font-weight:700; }
 .badge-new { position:absolute;top:8px;right:8px;padding:4px 8px;border-radius:4px;background:var(--primary);color:#fff;font-size:.65rem;font-weight:700;letter-spacing:.03em; }
 
 .card-info { padding:12px 14px 14px;display:grid;gap:4px; }
@@ -415,6 +415,6 @@ onMounted(async () => {
 .card-rating { display:flex;align-items:center;gap:3px;font-weight:600;color:#f5b342; }
 .card-pricing { display:flex;align-items:center;gap:6px;margin-top:4px; }
 .card-pricing strong { font-size:.92rem;font-weight:800;color:var(--text); }
-.price-sale { color:var(--green) !important; }
+.price-sale { color:#8b1a1a !important; }
 .price-old { font-size:.78rem;color:var(--text-muted);text-decoration:line-through; }
 </style>

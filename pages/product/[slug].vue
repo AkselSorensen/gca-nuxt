@@ -430,7 +430,7 @@ onMounted(async () => {
 .video-preview .video-play { position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,0.35);transition:background .2s; }
 .video-preview:hover .video-play { background:rgba(0,0,0,0.2); }
 .video-play svg { color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
-.discount-badge { position:absolute;top:12px;left:12px;padding:5px 12px;border-radius:6px;background:#22c55e;color:#fff;font-size:.8rem;font-weight:800; }
+.discount-badge { position:absolute;top:12px;left:12px;padding:5px 12px;border-radius:6px;background:#8b1a1a;color:#fff;font-size:.8rem;font-weight:800; }
 .gallery-thumbs { display:flex;gap:8px;margin-top:10px;flex-wrap:wrap; }
 .thumb-btn { width:60px;height:60px;border-radius:8px;overflow:hidden;border:2px solid var(--border);cursor:pointer;padding:0;background:var(--bg-surface);transition:border-color .2s; }
 .thumb-btn.active { border-color:var(--primary); }
@@ -456,7 +456,7 @@ onMounted(async () => {
 .price-block { display:flex;align-items:baseline;gap:8px; }
 .price-current { font-size:1.5rem;font-weight:900;color:var(--text); }
 .price-old { font-size:.95rem;color:var(--text-muted);text-decoration:line-through; }
-.price-badge { padding:3px 8px;border-radius:4px;background:rgba(34,197,94,0.12);color:#22c55e;font-size:.72rem;font-weight:700; }
+.price-badge { padding:3px 8px;border-radius:4px;background:rgba(139,26,26,0.12);color:#8b1a1a;font-size:.72rem;font-weight:700; }
 .price-info { font-size:.78rem;color:var(--text-muted);margin-top:4px; }
 
 /* Buttons */

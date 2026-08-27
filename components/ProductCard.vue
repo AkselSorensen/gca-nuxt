@@ -34,7 +34,7 @@ const currency = (v) => Number(v||0).toFixed(2).replace('.',',') + '€'
 .card-media { position:relative; display:block; overflow:hidden; aspect-ratio:16/9; }
 .card-media img { width:100%; height:100%; object-fit:cover; transition:transform .4s; }
 .product-card:hover .card-media img { transform:scale(1.05); }
-.discount-badge { position:absolute; top:10px; left:10px; padding:3px 8px; background:#22c55e; color:#fff; font-size:.72rem; font-weight:700; border-radius:6px; }
+.discount-badge { position:absolute; top:10px; left:10px; padding:3px 8px; background:#8b1a1a; color:#fff; font-size:.72rem; font-weight:700; border-radius:6px; }
 .card-body { padding:14px 16px 16px; display:grid; gap:5px; }
 .card-category { font-size:.7rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
 .card-body h3 { font-size:.92rem; font-weight:700; }

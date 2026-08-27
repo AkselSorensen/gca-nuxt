@@ -365,7 +365,7 @@ onMounted(async () => {
 .sp-pc-discount {
   position: absolute; top: 8px; left: 8px;
   padding: 4px 8px; border-radius: 4px;
-  background: #22c55e; color: #fff; font-size: .7rem; font-weight: 800;
+  background: #8b1a1a; color: #fff; font-size: .7rem; font-weight: 800;
 }
 .sp-pc-trending {
   position: absolute; top: 8px; right: 8px;
