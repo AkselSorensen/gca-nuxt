@@ -2,7 +2,7 @@
 // NB : readRawBody donne la chaîne brute — indispensable pour constructEvent.
 import { defineEventHandler, readRawBody, getHeader, createError } from 'h3'
 import { pool, query } from '../../services/db'
-import { stripe, maybeCreateSellerTransfers, recordStripeFee } from '../../services/stripe'
+import { stripe, PLATFORM_COMMISSION_PERCENT, maybeCreateSellerTransfers, recordStripeFee } from '../../services/stripe'
 import { notifyOrderEmails } from '../../services/notifications'
 
 export default defineEventHandler(async (event) => {
@@ -50,8 +50,8 @@ export default defineEventHandler(async (event) => {
       // Buy-now : pas de cartId → commande directe depuis le productSlug
       if (!cartId && productSlug) {
         const productResult = await query(
-          'SELECT p.*, u.commission_percent AS seller_commission FROM products p JOIN users u ON u.id = p.seller_id WHERE p.slug = $1',
-          [productSlug]
+          'SELECT p.*, COALESCE(p.commission_percent, $2) AS seller_commission FROM products p JOIN users u ON u.id = p.seller_id WHERE p.slug = $1',
+          [productSlug, PLATFORM_COMMISSION_PERCENT]
         )
         if (!productResult.rowCount) {
           console.error('Webhook buy-now: product not found for slug', productSlug)
@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
         }
         const product = productResult.rows[0]
         const price = Number(product.price)
-        const cp = Number(product.seller_commission) || 25
+        const cp = Number(product.seller_commission) || PLATFORM_COMMISSION_PERCENT
         const fee = Math.round(price * cp) / 100
 
         const orderInsert = await query(
@@ -102,15 +102,15 @@ export default defineEventHandler(async (event) => {
 
         const itemsInsert = await client.query(
           `INSERT INTO order_items (order_id, product_id, seller_id, price, quantity, customer_email, platform_fee_percent, platform_fee_amount, seller_net_amount)
-           SELECT $1, p.id, p.seller_id, p.price, ci.quantity, $2, u.commission_percent,
-             ROUND((p.price * ci.quantity * u.commission_percent / 100)::numeric, 2),
-             ROUND((p.price * ci.quantity * (1 - u.commission_percent::numeric / 100))::numeric, 2)
+           SELECT $1, p.id, p.seller_id, p.price, ci.quantity, $2, COALESCE(p.commission_percent, $4),
+             ROUND((p.price * ci.quantity * COALESCE(p.commission_percent, $4) / 100)::numeric, 2),
+             ROUND((p.price * ci.quantity * (1 - COALESCE(p.commission_percent, $4)::numeric / 100))::numeric, 2)
            FROM cart_items ci
            JOIN products p ON p.id = ci.product_id
            JOIN users u ON u.id = p.seller_id
            WHERE ci.cart_id = $3
            RETURNING id`,
-          [orderId, session.customer_details?.email || '', cartId]
+          [orderId, session.customer_details?.email || '', cartId, PLATFORM_COMMISSION_PERCENT]
         )
 
         if (!itemsInsert.rowCount) {

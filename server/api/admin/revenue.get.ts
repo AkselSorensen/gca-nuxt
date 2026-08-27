@@ -116,7 +116,7 @@ export default defineEventHandler(async (event) => {
           COUNT(DISTINCT oi.id) AS items,
           u.email AS buyer_email,
           u.display_name AS buyer_name,
-          COALESCE(string_agg(DISTINCT s.display_name || ' (' || s.commission_percent::text || '%)', ', '), '') AS sellers,
+          COALESCE(string_agg(DISTINCT s.display_name || ' (' || oi.platform_fee_percent::text || '%)', ', '), '') AS sellers,
           COALESCE(array_agg(DISTINCT s.id) FILTER (WHERE s.id IS NOT NULL), '{}') AS seller_ids
         FROM orders o
         LEFT JOIN order_items oi ON oi.order_id = o.id
@@ -169,12 +169,11 @@ export default defineEventHandler(async (event) => {
     // Liste des vendeurs pour le filtre admin
     try {
       const sellersListRes = await query(
-        "SELECT id, display_name, commission_percent FROM users WHERE role IN ('seller','admin') ORDER BY display_name"
+        "SELECT id, display_name FROM users WHERE role IN ('seller','admin') ORDER BY display_name"
       )
       out.sellersList = sellersListRes.rows.map((r: any) => ({
         id: r.id,
         name: r.display_name,
-        commissionPercent: Number(r.commission_percent),
       }))
     } catch { out.sellersList = [] }
 

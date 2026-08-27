@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   const {
     title, price, discountPercent, isFeatured, isTrending, isNew,
     shortDescription, description, installation, categorySlug, sellerSlug, tags, isHidden,
-    thumbnail, platform, videoUrl, categories,
+    thumbnail, platform, videoUrl, categories, commissionPercent,
   } = await readBody(event)
 
   try {
@@ -38,6 +38,13 @@ export default defineEventHandler(async (event) => {
     const values: any[] = []
     let idx = 1
     if (title !== undefined) { updates.push(`title = $${idx++}`); values.push(String(title).trim()) }
+    // Commission plateforme par produit — modifiable à tout moment ('' ou null → taux plateforme par défaut)
+    if (commissionPercent !== undefined) {
+      const raw = commissionPercent === '' || commissionPercent === null ? null : Number(commissionPercent)
+      const value = raw === null || Number.isNaN(raw) ? null : Math.min(100, Math.max(0, raw))
+      updates.push(`commission_percent = $${idx++}`)
+      values.push(value)
+    }
     if (shortDescription !== undefined) { updates.push(`short_description = $${idx++}`); values.push(String(shortDescription).trim()) }
     if (description !== undefined) { updates.push(`description = $${idx++}`); values.push(String(description).trim()) }
     if (installation !== undefined) { updates.push(`installation = $${idx++}`); values.push(String(installation).trim()) }

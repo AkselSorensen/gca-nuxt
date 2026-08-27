@@ -24,13 +24,18 @@
         <div class="tab-header"><h2>Produits</h2><button class="btn-primary" @click="openProductForm">+ Ajouter un produit</button></div>
         <div class="table-wrap">
           <table v-if="products.length" class="admin-table">
-            <thead><tr><th>Image</th><th>Titre</th><th>Catégorie</th><th>Prix</th><th>Ventes</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Image</th><th>Titre</th><th>Catégorie</th><th>Prix</th><th>Comm.</th><th>Ventes</th><th>Actions</th></tr></thead>
             <tbody>
               <tr v-for="p in products" :key="p.id">
                 <td><img :src="p.thumbnail || p.media?.[0]?.thumbnail || p.media?.[0]?.url || ''" class="thumb" /></td>
                 <td><strong>{{ p.title }}</strong></td>
                 <td><span class="badge-cat">{{ p.category || p.categoryName || '—' }}</span></td>
                 <td class="price-cell">{{ Number(p.price).toFixed(2) }}€</td>
+                <td>
+                  <span class="badge-comm" :class="{ 'is-default': p.commission_percent === null || p.commission_percent === undefined }">
+                    {{ p.commission_percent === null || p.commission_percent === undefined ? defaultCommission + ' %' : Number(p.commission_percent) + ' %' }}
+                  </span>
+                </td>
                 <td>{{ p.sales || 0 }}</td>
                 <td class="actions">
                   <button class="btn-action" title="Modifier" @click="editProduct(p)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
@@ -59,25 +64,13 @@
         </div>
         <div class="table-wrap">
           <table v-if="filteredUsers.length" class="admin-table">
-            <thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Commission</th><th>Date</th></tr></thead>
+            <thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Date</th></tr></thead>
             <tbody>
               <tr v-for="u in filteredUsers" :key="u.id">
                 <td>{{ u.id }}</td>
                 <td><strong>{{ u.displayName || u.username }}</strong></td>
                 <td>{{ u.email }}</td>
                 <td><span class="role-badge" :class="u.role">{{ u.role }}</span></td>
-                <td>
-                  <template v-if="u.role === 'seller' || u.role === 'admin'">
-                    <div class="comm-edit">
-                      <input type="number" min="0" max="100" step="0.5" v-model.number="u.commissionPercent" @keyup.enter="saveCommission(u)" />
-                      <span class="comm-pct">%</span>
-                      <button class="btn-action" title="Enregistrer la commission" @click="saveCommission(u)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                      </button>
-                    </div>
-                  </template>
-                  <span v-else class="muted">—</span>
-                </td>
                 <td>{{ u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—' }}</td>
               </tr>
             </tbody>
@@ -315,7 +308,7 @@
             <select v-if="revenue?.sellersList?.length" v-model="sellerFilter" class="rev-filter">
               <option value="all">Tous les vendeurs</option>
               <option v-for="s in revenue.sellersList" :key="s.id" :value="s.id">
-                {{ s.name }} ({{ s.commissionPercent }}%)
+                {{ s.name }}
               </option>
             </select>
             <button class="admin-btn-icon" @click="loadRevenue" title="Rafraîchir">
@@ -399,7 +392,7 @@
                   <td>{{ new Date(c.created).toLocaleDateString('fr-FR') }} {{ new Date(c.created).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
                   <td>{{ c.email || '—' }}</td>
                   <td>
-                    <span v-if="c.sellerName" class="seller-cell">{{ c.sellerName }}<template v-if="c.sellerPercent"> ({{ c.sellerPercent }}%)</template></span>
+                    <span v-if="c.sellerName" class="seller-cell">{{ c.sellerName }}</span>
                     <span v-else-if="c.transferDestination" class="mono muted">{{ c.transferDestination }}</span>
                     <span v-else class="muted">—</span>
                   </td>
@@ -557,6 +550,11 @@
               <div class="price-inner">
                 <div class="field"><label>Prix (€)</label><input v-model="productForm.price" type="number" step="0.01" min="0" placeholder="0.00" /></div>
                 <div class="field"><label>Remise (%)</label><input v-model="productForm.discountPercent" type="number" min="0" max="100" placeholder="0" /></div>
+                <div class="field">
+                  <label>Commission GSA (%)</label>
+                  <input v-model="productForm.commissionPercent" type="number" min="0" max="100" step="0.5" :placeholder="'Défaut plateforme (' + defaultCommission + ' %)'" />
+                  <small class="field-hint">Commission prélevée sur CE produit. Vide = taux plateforme. Modifiable à tout moment : les ventes déjà passées gardent leur taux.</small>
+                </div>
               </div>
             </div>
           </div>
@@ -866,10 +864,14 @@ const sellerRequests = ref<any[]>([])
 const sellerModal = ref<any | null>(null)
 function openSellerModal(r: any) { sellerModal.value = r }
 const showProductForm = ref(false)
+// Taux plateforme par défaut (PLATFORM_COMMISSION_PERCENT côté serveur) : sert de repère
+// quand un produit n'a pas de commission propre.
+const defaultCommission = 25
 const categories = ref<{slug:string;name:string}[]>([])
 const sellers = ref<{slug:string;username:string}[]>([])
 
 const productForm = reactive({
+  commissionPercent: '' as any,
   title:'', shortDescription:'', description:'', installation:'',
   categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'',
   tags:'', thumbnail:'', isHidden:false
@@ -901,7 +903,7 @@ function openProductForm() {
   editingId.value = null
   productMedia.value = []
   pendingMedia.value = []
-  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
+  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, commissionPercent:'', platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
   showProductForm.value = true
@@ -925,7 +927,8 @@ function editProduct(p: any) {
     videoUrl: p.video_url || '',
     tags: (p.tags || []).join(', '),
     thumbnail: '',
-    isHidden: Boolean(p.is_hidden)
+    isHidden: Boolean(p.is_hidden),
+    commissionPercent: p.commission_percent === null || p.commission_percent === undefined ? '' : Number(p.commission_percent)
   })
   selectedTags.value = p.tags || []
   newTag.value = ''
@@ -979,7 +982,7 @@ function closeProductForm() {
   editingId.value = null
   productMedia.value = []
   pendingMedia.value = []
-  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
+  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, commissionPercent:'', platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
 }
@@ -1155,20 +1158,7 @@ async function loadUsers() {
   } catch { users.value = [] }
 }
 
-// Commission propre au vendeur (0-100 %)
-async function saveCommission(u: any) {
-  try {
-    const res = await $fetch(api + `/api/admin/users/${u.id}/commission`, {
-      method: 'PATCH',
-      credentials: 'include',
-      body: { commissionPercent: u.commissionPercent },
-    })
-    u.commissionPercent = res.commissionPercent
-    toastRef.value?.show('success', `Commission de ${u.displayName || u.username} → ${res.commissionPercent}%`)
-  } catch (e: any) {
-    toastRef.value?.show('error', e?.data?.message || 'Erreur lors de la mise à jour de la commission')
-  }
-}
+// Commission plateforme : portée par le PRODUIT (voir le formulaire produit), plus par le vendeur.
 
 // ─── Seller Requests ────────────────────────────────────
 async function loadSellerRequests() {
@@ -1584,6 +1574,9 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .admin-table tr:hover td { background:rgba(255,255,255,0.02); }
 .thumb { width:46px;height:46px;border-radius:8px;object-fit:cover;background:var(--bg-surface); }
 .badge-cat { display:inline-block;padding:3px 10px;border-radius:6px;background:rgba(47,125,246,0.08);color:var(--primary);font-size:.78rem;font-weight:600; }
+.badge-comm { display:inline-block;padding:3px 9px;border-radius:6px;background:rgba(34,197,94,0.1);color:#16a34a;font-size:.78rem;font-weight:700;white-space:nowrap; }
+.badge-comm.is-default { background:var(--bg-surface);color:var(--text-muted);font-weight:600; }
+.field-hint { display:block;margin-top:5px;font-size:.72rem;line-height:1.45;color:var(--text-muted); }
 .price-cell { font-weight:700;color:var(--primary);font-size:.9rem; }
 .actions { display:flex;gap:6px; }
 .role-badge { font-size:.72rem;padding:3px 10px;border-radius:6px;font-weight:600; }

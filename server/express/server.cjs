@@ -2582,6 +2582,9 @@ async function ensureRecentMigrations() {
       ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transferred_at TIMESTAMPTZ;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_fee_amount NUMERIC NOT NULL DEFAULT 0;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS commission_percent NUMERIC(5,2) NOT NULL DEFAULT 25;
+      -- Commission plateforme PAR PRODUIT (NULL = commission plateforme par défaut).
+      -- Remplace la commission par vendeur : c'est l'article qui porte le taux.
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS commission_percent NUMERIC(5,2);
     `);
     recentMigrationsApplied = true;
   } catch (e) {

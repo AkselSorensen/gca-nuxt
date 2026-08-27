@@ -24,7 +24,16 @@ export default defineEventHandler(async (event) => {
     videoUrl,
     categories,
     extraImages,
+    commissionPercent,
   } = await readBody(event)
+
+  // Commission plateforme PAR PRODUIT : 0-100, vide/invalide → NULL = taux plateforme par défaut
+  const rawCommission = commissionPercent === '' || commissionPercent === null || commissionPercent === undefined
+    ? null
+    : Number(commissionPercent)
+  const productCommission = rawCommission === null || Number.isNaN(rawCommission)
+    ? null
+    : Math.min(100, Math.max(0, rawCommission))
 
   if (!title || !shortDescription || !description || !installation || !categorySlug || !sellerSlug) {
     throw createError({ statusCode: 400, statusMessage: 'Missing required product fields' })
@@ -58,10 +67,11 @@ export default defineEventHandler(async (event) => {
           tags,
           is_new,
           is_hidden,
+          commission_percent,
           created_at,
           updated_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW(), NOW())
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, NOW(), NOW())
         RETURNING id, slug
       `,
       [
@@ -82,6 +92,7 @@ export default defineEventHandler(async (event) => {
         Array.isArray(tags) ? tags : [],
         true,
         !!isHidden,
+        productCommission,
       ]
     )
 

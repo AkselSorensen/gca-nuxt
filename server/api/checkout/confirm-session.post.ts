@@ -39,8 +39,8 @@ export default defineEventHandler(async (event) => {
     if (!cartId && session.metadata?.productSlug) {
       // Buy-now : commande directe depuis le productSlug
       const p = await client.query(
-        'SELECT p.*, u.commission_percent AS seller_commission FROM products p JOIN users u ON u.id = p.seller_id WHERE p.slug = $1',
-        [session.metadata.productSlug]
+        'SELECT p.*, COALESCE(p.commission_percent, $2) AS seller_commission FROM products p JOIN users u ON u.id = p.seller_id WHERE p.slug = $1',
+        [session.metadata.productSlug, PLATFORM_COMMISSION_PERCENT]
       )
       if (!p.rowCount) {
         await client.query('ROLLBACK')
@@ -107,16 +107,16 @@ export default defineEventHandler(async (event) => {
           p.price,
           ci.quantity,
           $2,
-          u.commission_percent,
-          ROUND((p.price * ci.quantity * u.commission_percent / 100)::numeric, 2),
-          ROUND((p.price * ci.quantity * (1 - u.commission_percent::numeric / 100))::numeric, 2)
+          COALESCE(p.commission_percent, $4),
+          ROUND((p.price * ci.quantity * COALESCE(p.commission_percent, $4) / 100)::numeric, 2),
+          ROUND((p.price * ci.quantity * (1 - COALESCE(p.commission_percent, $4)::numeric / 100))::numeric, 2)
         FROM cart_items ci
         JOIN products p ON p.id = ci.product_id
         JOIN users u ON u.id = p.seller_id
         WHERE ci.cart_id = $3
         RETURNING id
       `,
-      [orderId, user.email || session.customer_email || null, cartId]
+      [orderId, user.email || session.customer_email || null, cartId, PLATFORM_COMMISSION_PERCENT]
     )
 
     if (!itemsInsert.rowCount) {

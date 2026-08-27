@@ -29,6 +29,7 @@ export default defineEventHandler(async (event) => {
           p.is_trending,
           p.is_new,
           p.is_hidden,
+          p.commission_percent,
           p.created_at,
           COALESCE((SELECT json_agg(json_build_object('name', c3.name, 'slug', c3.slug)) FROM product_categories pc2 JOIN categories c3 ON c3.id = pc2.category_id WHERE pc2.product_id = p.id), '[]') AS categories,
           COALESCE((SELECT pm2.thumbnail_url FROM product_media pm2 WHERE pm2.product_id = p.id ORDER BY pm2.sort_order ASC, pm2.id ASC LIMIT 1), '') AS thumbnail,

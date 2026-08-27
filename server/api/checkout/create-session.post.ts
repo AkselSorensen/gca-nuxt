@@ -93,10 +93,13 @@ export default defineEventHandler(async (event) => {
     const paidAmount = Math.max(0, Number(cart.total || 0) - Number(promoState?.discountAmount || 0))
     let cartCommission = PLATFORM_COMMISSION_PERCENT
     try {
-      const firstSellerId = cart.items[0]?.product?.sellerId
-      if (firstSellerId) {
-        const cr = await query('SELECT commission_percent FROM users WHERE id = $1', [firstSellerId])
-        if (cr.rowCount) cartCommission = Number(cr.rows[0].commission_percent) || PLATFORM_COMMISSION_PERCENT
+      // Commission portée par le PRODUIT (plus par le vendeur) — 1er article du panier
+      const firstProductId = cart.items[0]?.product?.id
+      if (firstProductId) {
+        const cr = await query('SELECT commission_percent FROM products WHERE id = $1', [firstProductId])
+        if (cr.rowCount && cr.rows[0].commission_percent !== null) {
+          cartCommission = Number(cr.rows[0].commission_percent) || PLATFORM_COMMISSION_PERCENT
+        }
       }
     } catch { /* fallback commission globale */ }
     const platformFeeCents = Math.round(paidAmount * cartCommission)

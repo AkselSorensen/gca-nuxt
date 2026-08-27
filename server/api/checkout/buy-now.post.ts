@@ -14,8 +14,8 @@ export default defineEventHandler(async (event) => {
     if (!slug) throw createError({ statusCode: 400, statusMessage: 'Slug du produit requis' })
 
     const prodResult = await query(
-      'SELECT p.*, u.stripe_account_id AS seller_stripe_id, u.commission_percent AS seller_commission FROM products p JOIN users u ON u.id = p.seller_id WHERE p.slug = $1',
-      [slug]
+      'SELECT p.*, u.stripe_account_id AS seller_stripe_id, COALESCE(p.commission_percent, $2) AS seller_commission FROM products p JOIN users u ON u.id = p.seller_id WHERE p.slug = $1',
+      [slug, PLATFORM_COMMISSION_PERCENT]
     )
     if (!prodResult.rowCount) throw createError({ statusCode: 404, statusMessage: 'Produit introuvable' })
     const product = prodResult.rows[0]
