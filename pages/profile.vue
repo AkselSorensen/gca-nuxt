@@ -15,7 +15,7 @@
           </div>
           <div class="pcard-body">
             <div class="avatar-preview">
-              <img v-if="form.avatarUrl" :src="form.avatarUrl" alt="Avatar" class="avatar-img" @error="avatarError = true" />
+              <img v-if="form.avatarUrl" :src="form.avatarUrl" alt="Avatar" class="avatar-img" />
               <div v-else class="avatar-placeholder">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </div>
@@ -23,11 +23,6 @@
                 <strong>{{ form.displayName || '—' }}</strong>
                 <span>{{ form.email || '' }}</span>
               </div>
-            </div>
-            <div class="field">
-              <label>Avatar (URL)</label>
-              <input v-model="form.avatarUrl" type="text" placeholder="https://..." @input="avatarError = false" />
-              <small v-if="avatarError" class="avatar-err">Image introuvable — vérifie l'URL.</small>
             </div>
             <div class="field">
               <label>Nom d'affichage</label>
@@ -273,7 +268,7 @@ async function saveProfile() {
     const res = await $fetch(api + '/api/profile', {
       method: 'PATCH',
       credentials: 'include',
-      body: { displayName: form.displayName, email: form.email, avatarUrl: form.avatarUrl },
+      body: { displayName: form.displayName, email: form.email },
     })
     if (user.value) user.value = res.user
     profileMsg.value = 'Profil mis à jour ✓'
