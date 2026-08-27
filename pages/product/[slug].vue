@@ -20,6 +20,7 @@
               <div class="video-play">
                 <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
               </div>
+              <span class="yt-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>
             </div>
             <img v-else :src="currentImg" :alt="product.title" />
             <div v-if="product.discountPercent > 0" class="discount-badge">-{{ product.discountPercent }}%</div>
@@ -27,6 +28,7 @@
           <div v-if="images.length > 1 || product.videoUrl" class="gallery-thumbs">
             <button v-if="product.videoUrl" class="thumb-btn thumb-video" :class="{ active: showVideo }" @click="showVideo = true; videoPlaying = false">
               <img v-if="videoThumbUrl" :src="videoThumbUrl" :alt="'Vidéo'">
+              <span v-if="videoThumbUrl" class="yt-badge yt-badge-sm"><svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>
               <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
             </button>
             <button v-for="(img, i) in images" :key="i" class="thumb-btn" :class="{ active: !showVideo && currentImg === img }" @click="showVideo = false; videoPlaying = false; currentImg = img">
@@ -144,19 +146,7 @@
           <div v-if="activeTab === 'installation'" class="tab-panel">
             <div class="desc-text" v-html="installationHtml || '<p>Aucune instruction d\'installation fournie.</p>'"></div>
           </div>
-          <!-- Vidéo -->
-          <div v-if="activeTab === 'video'" class="tab-panel">
-            <div class="video-frame">
-              <iframe v-if="videoPlaying && videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-              <div v-else-if="videoThumbUrl" class="video-preview" @click="videoPlaying = true">
-                <img :src="videoThumbUrl" :alt="'Vidéo — ' + product.title" />
-                <div class="video-play">
-                  <svg width="44" height="44" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                </div>
-              </div>
-              <p v-else class="video-error">Lien YouTube invalide.</p>
-            </div>
-          </div>
+          <!-- Vidéo supprimée de l'onglet — le carrousel intègre la vidéo -->
           <!-- Reviews -->
           <div v-if="activeTab === 'reviews'" class="tab-panel reviews-panel">
             <ProductReviews :product="product" :owned="owned" @updated="refresh" />
@@ -290,7 +280,6 @@ const tabs = computed(() => {
     { id: 'description', label: 'Description' },
     { id: 'installation', label: 'Installation' },
   ]
-  if (product.value?.videoUrl) t.push({ id: 'video', label: 'Vidéo' })
   t.push({ id: 'reviews', label: 'Avis' })
   return t
 })
@@ -422,8 +411,10 @@ onMounted(async () => {
 .gallery-main { position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--border);aspect-ratio:16/10;background:var(--bg-surface); }
 .gallery-main img { width:100%;height:100%;object-fit:cover; }
 .gallery-main iframe { width:100%;height:100%;border:0; }
-.thumb-video { display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.8rem; overflow:hidden; }
+.thumb-video { display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.8rem; overflow:hidden; position:relative; }
 .thumb-video img { width:100%;height:100%;object-fit:cover; }
+.yt-badge { position:absolute; bottom:6px; left:6px; background:#FF0000; border-radius:3px; padding:2px 3px; display:grid; place-items:center; box-shadow:0 1px 4px rgba(0,0,0,.4); }
+.yt-badge-sm { bottom:4px; left:4px; padding:1px 2px; }
 .thumb-video svg { flex-shrink:0; }
 .video-preview { position:relative;width:100%;height:100%;cursor:pointer; }
 .video-preview img { width:100%;height:100%;object-fit:cover; }

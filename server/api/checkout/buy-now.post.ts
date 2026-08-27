@@ -61,8 +61,8 @@ export default defineEventHandler(async (event) => {
         transfer_data: { destination: transfer.destination },
         application_fee_amount: platformFeeCents,
       } : undefined,
-      success_url: 'https://gca-nuxt.vercel.app/downloads?confirmed=1&session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: `https://gca-nuxt.vercel.app/product/${slug}`,
+      success_url: `${process.env.APP_BASE_URL || 'https://gsa-store.fr'}/downloads?confirmed=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.APP_BASE_URL || 'https://gsa-store.fr'}/product/${slug}`,
       metadata: { userId: String(user.id), productSlug: product.slug, transferMode: useDestination ? 'destination' : 'manual' },
     })
 
