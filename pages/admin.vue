@@ -1205,8 +1205,13 @@ async function loadProducts() {
 async function deleteProduct(id: number) {
   const ok = await confirmRef.value?.ask({ title:'Supprimer le produit', message:'Cette action est irréversible.', confirmText:'Supprimer', danger:true })
   if (!ok) return
-  try { await $fetch(api + '/api/admin/products/' + id, { credentials: 'include', method: 'DELETE' }); loadProducts(); toastRef.value?.show('success', 'Produit supprimé') }
-  catch { toastRef.value?.show('error', 'Impossible de supprimer le produit') }
+  try {
+    const res: any = await $fetch(api + '/api/admin/products/' + id, { credentials: 'include', method: 'DELETE' })
+    loadProducts()
+    toastRef.value?.show('success', res?.soft ? 'Produit masqué (des ventes existent — historique conservé)' : 'Produit supprimé')
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.statusMessage || e?.data?.message || 'Impossible de supprimer le produit')
+  }
 }
 
 // ─── Users ─────────────────────────────────────────────

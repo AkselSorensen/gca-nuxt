@@ -152,7 +152,7 @@
           <!-- Vidéo supprimée de l'onglet — le carrousel intègre la vidéo -->
           <!-- Reviews -->
           <div v-if="activeTab === 'reviews'" class="tab-panel reviews-panel">
-            <ProductReviews :product="product" :owned="owned" @updated="refresh" />
+            <ProductReviews :product="product" :owned="owned" @updated="reloadProduct" />
           </div>
         </div>
       </div>
@@ -172,7 +172,15 @@ const route = useRoute()
 const pageRef = ref<HTMLElement | null>(null)
 const slug = route.params.slug as string
 
-const { data: prodData, refresh } = await useFetch(api + '/api/products/' + slug, { lazy: true, credentials: 'include' })
+// Cache-busting : le SWR de useFetch sert l'ancienne réponse sur refresh() (avis supprimé
+// ou ajouté qui "restait" visible). Un paramètre unique force une vraie requête réseau.
+const fetchStamp = ref(Date.now())
+async function reloadProduct() {
+  fetchStamp.value = Date.now()
+  await refresh()
+}
+const productUrl = computed(() => api + '/api/products/' + slug + '?_t=' + fetchStamp.value)
+const { data: prodData, refresh } = await useFetch(productUrl, { lazy: true, credentials: 'include' })
 const product = computed(() => prodData.value?.product || prodData.value || null)
 
 // ===== SEO dynamique =====
