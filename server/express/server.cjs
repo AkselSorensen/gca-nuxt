@@ -3776,10 +3776,13 @@ app.delete("/api/reviews/:id", requireAuth, async (req, res) => {
   }
 
   try {
-    // Un utilisateur ne peut supprimer que son propre avis
+    // Un utilisateur ne peut supprimer que son propre avis — l'ADMIN peut supprimer n'importe lequel
+    const isAdmin = req.session.user.role === "admin";
     const deleted = await pool.query(
-      `DELETE FROM reviews WHERE id = $1 AND user_id = $2 RETURNING product_id`,
-      [reviewId, req.session.user.id]
+      isAdmin
+        ? `DELETE FROM reviews WHERE id = $1 RETURNING product_id`
+        : `DELETE FROM reviews WHERE id = $1 AND user_id = $2 RETURNING product_id`,
+      isAdmin ? [reviewId] : [reviewId, req.session.user.id]
     );
     if (!deleted.rowCount) {
       return res.status(404).json({ message: "Avis introuvable" });
@@ -3790,7 +3793,7 @@ app.delete("/api/reviews/:id", requireAuth, async (req, res) => {
       `
         UPDATE products
         SET
-          rating = COALESCE((SELECT AVG(rating) FROM reviews WHERE product_id = $1), 5),
+          rating = (SELECT AVG(rating) FROM reviews WHERE product_id = $1),
           review_count = (SELECT COUNT(*) FROM reviews WHERE product_id = $1),
           updated_at = NOW()
         WHERE id = $1

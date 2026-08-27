@@ -28,7 +28,7 @@
             <tbody>
               <tr v-for="p in products" :key="p.id">
                 <td><img :src="p.thumbnail || p.media?.[0]?.thumbnail || p.media?.[0]?.url || ''" class="thumb" /></td>
-                <td><strong>{{ p.title }}</strong></td>
+                <td><strong>{{ p.title }}</strong> <span v-if="p.is_hidden" class="badge-hidden">Masqué</span></td>
                 <td><span class="badge-cat">{{ p.category || p.categoryName || '—' }}</span></td>
                 <td class="price-cell">{{ Number(p.price).toFixed(2) }}€</td>
                 <td>
@@ -38,6 +38,9 @@
                 </td>
                 <td>{{ p.sales || 0 }}</td>
                 <td class="actions">
+                  <a v-if="!p.is_hidden" class="btn-action" :href="'/product/' + p.slug" target="_blank" rel="noopener" title="Voir dans la marketplace">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </a>
                   <button class="btn-action" title="Modifier" @click="editProduct(p)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                   <button class="btn-action danger" title="Supprimer" @click="deleteProduct(p.id)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                 </td>
@@ -1689,6 +1692,7 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .thumb { width:46px;height:46px;border-radius:8px;object-fit:cover;background:var(--bg-surface); }
 .badge-cat { display:inline-block;padding:3px 10px;border-radius:6px;background:rgba(47,125,246,0.08);color:var(--primary);font-size:.78rem;font-weight:600; }
 .badge-comm { display:inline-block;padding:3px 9px;border-radius:6px;background:rgba(34,197,94,0.1);color:#16a34a;font-size:.78rem;font-weight:700;white-space:nowrap; }
+.badge-hidden { display:inline-block;margin-left:6px;padding:2px 8px;border-radius:5px;background:rgba(245,179,66,.12);color:#f5b342;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.3px;vertical-align:middle; }
 .badge-comm.is-default { background:var(--bg-surface);color:var(--text-muted);font-weight:600; }
 .field-hint { display:block;margin-top:5px;font-size:.72rem;line-height:1.45;color:var(--text-muted); }
 .price-cell { font-weight:700;color:var(--primary);font-size:.9rem; }

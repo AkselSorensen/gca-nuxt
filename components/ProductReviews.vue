@@ -37,6 +37,10 @@
           </div>
         </div>
         <p class="rev-comment">{{ review.comment }}</p>
+        <button v-if="isAdmin && !review.mine" type="button" class="rev-mod-delete" :disabled="deleting" title="Supprimer cet avis (admin)" @click="removeReview(review.id, true)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Supprimer
+        </button>
       </div>
       <p v-if="!reviews.length" class="reviews-empty">{{ t('product.reviews_empty') }}</p>
     </div>
@@ -57,7 +61,14 @@
         </div>
       </template>
       <template v-else>
-        <form class="review-form" @submit.prevent="submit">
+        <!-- Avis déjà laissé : on ne le propose plus, on propose de le modifier -->
+        <div v-if="myReview && !editing" class="review-cta done">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Vous avez déjà laissé un avis sur ce produit.</span>
+          <button type="button" class="cta-link" @click="editing = true">Modifier</button>
+          <button type="button" class="cta-link danger" :disabled="deleting" @click="removeReview()">{{ t('product.reviews_delete') }}</button>
+        </div>
+        <form v-else class="review-form" @submit.prevent="submit">
           <div class="form-head">
             <h4>{{ myReview ? t('product.reviews_update_title') : t('product.reviews_write') }}</h4>
             <div class="star-input">
@@ -105,6 +116,10 @@ const formRating = ref(0)
 const formComment = ref('')
 const submitting = ref(false)
 const deleting = ref(false)
+// Modération : seul l'admin peut supprimer l'avis de quelqu'un d'autre
+const isAdmin = computed(() => user.value?.role === 'admin')
+// Un avis déjà laissé n'est plus "proposé" : on affiche un rappel + bouton Modifier
+const editing = ref(false)
 
 const reviews = computed<any[]>(() => props.product?.reviews || [])
 const myReview = computed<any | null>(() => reviews.value.find((r: any) => r.mine) || null)
@@ -164,22 +179,24 @@ async function submit() {
   }
 }
 
-async function removeReview() {
-  if (!myReview.value || deleting.value) return
+async function removeReview(id?: number, adminMode = false) {
+  const target = id || myReview.value?.id
+  if (!target || deleting.value) return
   const ok = await confirmRef.value?.ask({
-    title: t('product.reviews_delete_confirm_title'),
-    message: t('product.reviews_delete_confirm'),
+    title: adminMode ? 'Supprimer cet avis' : t('product.reviews_delete_confirm_title'),
+    message: adminMode ? "Cet avis sera définitivement supprimé et la note du produit recalculée." : t('product.reviews_delete_confirm'),
     confirmText: t('product.reviews_delete'),
     danger: true,
   })
   if (!ok) return
   deleting.value = true
   try {
-    await $fetch(api + '/api/reviews/' + myReview.value.id, { method: 'DELETE', credentials: 'include' })
+    await $fetch(api + '/api/reviews/' + target, { method: 'DELETE', credentials: 'include' })
     toastRef.value?.show('success', t('product.reviews_deleted'))
+    editing.value = false
     emit('updated')
   } catch (e: any) {
-    toastRef.value?.show('error', e?.data?.message || t('product.reviews_error'))
+    toastRef.value?.show('error', e?.data?.statusMessage || e?.data?.message || t('product.reviews_error'))
   } finally {
     deleting.value = false
   }
@@ -223,8 +240,13 @@ async function removeReview() {
 .review-form-wrap { padding: 18px 20px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-surface); }
 .review-cta { display: flex; align-items: center; gap: 10px; color: var(--text-secondary); font-size: .88rem; flex-wrap: wrap; }
 .review-cta svg { color: var(--primary); flex-shrink: 0; }
-.cta-link { color: var(--primary); font-weight: 700; text-decoration: none; }
+.cta-link { color: var(--primary); font-weight: 700; text-decoration: none; background: none; border: 0; cursor: pointer; font-size: inherit; font-family: inherit; padding: 0; }
 .cta-link:hover { text-decoration: underline; }
+.cta-link.danger { color: var(--red, #dc2626); }
+.review-cta.done svg { color: #22c55e; }
+.rev-mod-delete { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(220,38,38,.3); background: rgba(220,38,38,.06); color: #dc2626; font-size: .74rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+.rev-mod-delete:hover { background: rgba(220,38,38,.14); }
+.rev-mod-delete:disabled { opacity: .5; cursor: default; }
 .review-form { display: grid; gap: 12px; }
 .form-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .form-head h4 { margin: 0; font-size: .95rem; font-weight: 700; color: var(--text); }
