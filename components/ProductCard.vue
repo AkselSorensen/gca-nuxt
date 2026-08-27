@@ -9,9 +9,9 @@
       <h3><NuxtLink :to="'/product/' + product.slug">{{ product.title }}</NuxtLink></h3>
       <p v-if="product.shortDescription || product.short_description" class="card-desc">{{ product.shortDescription || product.short_description }}</p>
       <div class="card-footer">
-        <div class="card-rating">
+        <div v-if="product.rating > 0" class="card-rating">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="#f5b342"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          {{ Number(product.rating||0).toFixed(1) }} <small>({{ product.reviewCount || 0 }})</small>
+          {{ Number(product.rating).toFixed(1) }} <small>({{ product.reviewCount || 0 }})</small>
         </div>
         <div class="card-price">
           <span v-if="product.discountPercent>0" class="old-price">{{ currency(product.oldPrice) }}</span>

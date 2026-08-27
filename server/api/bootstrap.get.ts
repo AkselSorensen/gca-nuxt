@@ -108,7 +108,7 @@ export default defineEventHandler(async (event) => {
                 'price', p.price,
                 'oldPrice', p.old_price,
                 'discountPercent', p.discount_percent,
-                'rating', p.rating,
+                'rating', p.review_count > 0 ? p.rating : null,
                 'reviewCount', p.review_count,
                 'thumbnail', COALESCE(
                   (

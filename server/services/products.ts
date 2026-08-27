@@ -71,7 +71,7 @@ export function mapProduct(row: any) {
     platform: row.platform || "Garry's Mod",
     videoUrl: row.video_url || null,
     discountPercent: row.discount_percent,
-    rating: Number(row.rating),
+    rating: row.review_count > 0 ? Number(row.rating) : null,
     reviewCount: row.review_count,
     views: row.views,
     isTrending: row.is_trending,
