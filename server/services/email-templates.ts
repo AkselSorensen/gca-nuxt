@@ -100,21 +100,17 @@ export function premiumShell(content: string, opts: { heroTitle?: string; heroSu
 </html>`
 }
 
-// Carte produit réutilisable (liste de commandes, à la une…)
-export function productRowHtml(it: { title: string; slug?: string; price: number; quantity?: number; oldPrice?: number; letter?: string }, showQty = true): string {
-  const letter = it.letter || (it.title || '?').charAt(0).toUpperCase()
+// Ligne produit (facture / récap) — sans avatar, titre + quantité | prix
+export function productRowHtml(it: { title: string; slug?: string; price: number; quantity?: number; oldPrice?: number }): string {
   const lineTotal = Number(it.price) * Number(it.quantity || 1)
   return `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="card-line" style="border:1px solid #eef2f9;border-radius:12px;overflow:hidden;margin-bottom:10px;">
     <tr>
-      <td width="58" style="padding:12px 14px;">
-        <div style="width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#2f7df6,#6c5ce7);display:inline-block;text-align:center;line-height:40px;font-size:18px;font-weight:800;color:#fff;">${letter}</div>
-      </td>
-      <td style="padding:12px 0;vertical-align:middle;">
+      <td style="padding:13px 16px;vertical-align:middle;">
         <div class="text-main" style="font-weight:700;font-size:13.5px;color:#111827;">${it.title}</div>
-        ${showQty && it.quantity && it.quantity > 1 ? `<div class="text-sub" style="font-size:11.5px;color:#6b7280;">Quantité : ${it.quantity}</div>` : ''}
+        ${it.quantity && it.quantity > 1 ? `<div class="text-sub" style="font-size:11.5px;color:#6b7280;">Quantité : ${it.quantity}</div>` : ''}
       </td>
-      <td width="120" style="padding:12px 14px;text-align:right;vertical-align:middle;">
+      <td width="110" style="padding:13px 16px;text-align:right;vertical-align:middle;">
         <div class="text-main" style="font-weight:800;font-size:15px;color:#111827;">${currency(lineTotal)}</div>
         ${it.oldPrice && Number(it.oldPrice) > Number(it.price) ? `<div class="text-soft" style="font-size:10.5px;color:#9ca3af;text-decoration:line-through;">${currency(it.oldPrice)}</div>` : ''}
       </td>

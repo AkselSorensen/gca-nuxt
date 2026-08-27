@@ -840,7 +840,15 @@ function addMediaImage() {
   }
   input.click()
 }
-function closeProductForm() { showProductForm.value = false }
+function closeProductForm() {
+  // Fermeture = reset complet : aucune donnée ne persiste entre deux ouvertures
+  showProductForm.value = false
+  editingId.value = null
+  productMedia.value = []
+  Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
+  uploadThumb.value = ''; removeFile()
+  selectedTags.value = []; newTag.value = ''
+}
 
 const uploadThumb = ref('')
 const allTags = ref<string[]>([])

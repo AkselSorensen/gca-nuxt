@@ -8,9 +8,12 @@ const APP_URL = process.env.APP_BASE_URL || 'https://gsa-store.fr'
 
 // ─── Templates ────────────────────────────────────────────────
 
-export function orderInvoiceHtml(items: any[], total: number, discount: number): string {
+export function orderInvoiceHtml(items: any[], total: number, discount: number, orderId?: number): string {
   const rows = items.map((it: any) => productRowHtml({ title: it.title, slug: it.slug, price: Number(it.price), quantity: Number(it.quantity || 1) })).join('')
+  const orderRef = orderId ? `<div style="display:inline-block;padding:5px 12px;border-radius:999px;background:#f1f5f9;font-size:11px;font-weight:700;color:#2f7df6;margin-bottom:14px;">Commande n°${orderId}</div>` : ''
   const summary = `
+    ${orderRef}
+    ${rows}
     <div class="soft-bg" style="background:#f8fafc;border-radius:12px;padding:14px 18px;text-align:right;margin-top:4px;">
       ${discount > 0 ? `<div class="text-sub" style="font-size:12.5px;color:#22c55e;font-weight:700;margin:2px 0;">Remise : −${currency(discount)}</div>` : ''}
       <div class="text-main" style="font-size:17px;font-weight:800;color:#111827;">Total : ${currency(total)}</div>
@@ -100,7 +103,7 @@ export async function notifyOrderEmails(orderId: number, buyerEmail: string): Pr
     const discount = Number(order.discount_amount || 0)
 
     // 1) Facture à l'acheteur
-    await sendEmail(emailTo, `Votre commande GSA Store — ${currency(total)}`, orderInvoiceHtml(items, total, discount))
+    await sendEmail(emailTo, `Votre commande GSA Store n°${orderId} — ${currency(total)}`, orderInvoiceHtml(items, total, discount, orderId))
 
     // 2) Invitation à laisser un avis
     await sendEmail(emailTo, 'Votre avis compte sur GSA Store ⭐', reviewInviteHtml(items))

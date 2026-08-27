@@ -14,11 +14,16 @@
         <!-- Left: Gallery -->
         <div class="product-gallery anim-left">
           <div class="gallery-main">
-            <img :src="currentImg" :alt="product.title" />
+            <iframe v-if="showVideo && videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <img v-else :src="currentImg" :alt="product.title" />
             <div v-if="product.discountPercent > 0" class="discount-badge">-{{ product.discountPercent }}%</div>
           </div>
-          <div v-if="images.length > 1" class="gallery-thumbs">
-            <button v-for="(img, i) in images" :key="i" class="thumb-btn" :class="{ active: currentImg === img }" @click="currentImg = img">
+          <div v-if="images.length > 1 || product.videoUrl" class="gallery-thumbs">
+            <button v-if="product.videoUrl" class="thumb-btn thumb-video" :class="{ active: showVideo }" @click="showVideo = true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              Vidéo
+            </button>
+            <button v-for="(img, i) in images" :key="i" class="thumb-btn" :class="{ active: !showVideo && currentImg === img }" @click="showVideo = false; currentImg = img">
               <img :src="img" :alt="'Vue ' + (i+1)" />
             </button>
           </div>
@@ -172,6 +177,7 @@ const isOwnProduct = computed(() =>
 )
 
 const currentImg = ref('')
+const showVideo = ref(false)
 const activeTab = ref('description')
 // Ouverture directe de l'onglet Avis depuis le popup post-achat (?tab=reviews)
 if (route.query.tab === 'reviews') activeTab.value = 'reviews'
@@ -340,6 +346,9 @@ onMounted(async () => {
 .product-gallery { }
 .gallery-main { position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--border);aspect-ratio:16/10;background:var(--bg-surface); }
 .gallery-main img { width:100%;height:100%;object-fit:cover; }
+.gallery-main iframe { width:100%;height:100%;border:0; }
+.thumb-video { display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.8rem; }
+.thumb-video svg { flex-shrink:0; }
 .discount-badge { position:absolute;top:12px;left:12px;padding:5px 12px;border-radius:6px;background:#22c55e;color:#fff;font-size:.8rem;font-weight:800; }
 .gallery-thumbs { display:flex;gap:8px;margin-top:10px;flex-wrap:wrap; }
 .thumb-btn { width:60px;height:60px;border-radius:8px;overflow:hidden;border:2px solid var(--border);cursor:pointer;padding:0;background:var(--bg-surface);transition:border-color .2s; }
