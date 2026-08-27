@@ -7,10 +7,9 @@
         <span class="sep">/</span>
         <NuxtLink to="/catalogue">Marketplace</NuxtLink>
         <span class="sep">/</span>
-        <span v-if="productCats.length" class="current">
-          <NuxtLink v-for="c in productCats" :key="c.slug" :to="'/catalogue?c=' + c.slug" class="bc-cat">{{ c.name }}</NuxtLink>
-        </span>
-        <span v-else class="current">{{ categoryName }}</span>
+        <NuxtLink :to="'/catalogue?c=' + (productCats[0]?.slug || product.categorySlug || '')" class="bc-cat">{{ productCats[0]?.name || categoryName }}</NuxtLink>
+        <span class="sep">/</span>
+        <span class="current">{{ product.title }}</span>
       </nav>
 
       <div class="product-layout">
@@ -21,9 +20,8 @@
             <div v-else-if="showVideo && videoThumbUrl" class="video-preview" @click="videoPlaying = true">
               <img :src="videoThumbUrl" :alt="'Vidéo — ' + product.title" />
               <div class="video-play">
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <span class="yt-badge"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>
               </div>
-              <span class="yt-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>
             </div>
             <img v-else :src="currentImg" :alt="product.title" />
             <div v-if="product.discountPercent > 0" class="discount-badge">-{{ product.discountPercent }}%</div>
@@ -67,6 +65,7 @@
           <!-- Platform & Tags -->
           <div class="info-meta">
             <span class="platform-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> {{ product?.platform || 'Garry\'s Mod' }}</span>
+            <NuxtLink v-for="c in productCats" :key="'cat-' + c.slug" :to="'/catalogue?c=' + c.slug" class="cat-pill">{{ c.name }}</NuxtLink>
             <span v-for="tag in productTags" :key="tag" class="tag-pill">{{ tag }}</span>
           </div>
 
@@ -425,8 +424,10 @@ onMounted(async () => {
 .gallery-main iframe { width:100%;height:100%;border:0; }
 .thumb-video { display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.8rem; overflow:hidden; position:relative; }
 .thumb-video img { width:100%;height:100%;object-fit:cover; }
-.yt-badge { position:absolute; bottom:6px; left:6px; background:#FF0000; border-radius:3px; padding:2px 3px; display:grid; place-items:center; box-shadow:0 1px 4px rgba(0,0,0,.4); }
-.yt-badge-sm { bottom:4px; left:4px; padding:1px 2px; }
+.yt-badge { background:#FF0000; border-radius:9px; padding:6px 13px; display:grid; place-items:center; opacity:.82; box-shadow:0 6px 18px rgba(0,0,0,.45); transition:opacity .2s ease, transform .2s ease; }
+.video-preview:hover .yt-badge { opacity:1; transform:scale(1.07); }
+.yt-badge-sm { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:4px; padding:2px 6px; opacity:.9; box-shadow:0 2px 6px rgba(0,0,0,.4); }
+.thumb-btn:hover .yt-badge-sm { opacity:1; }
 .thumb-video svg { flex-shrink:0; }
 .video-preview { position:relative;width:100%;height:100%;cursor:pointer; }
 .video-preview img { width:100%;height:100%;object-fit:cover; }
@@ -454,6 +455,9 @@ onMounted(async () => {
 .info-meta { display:flex;flex-wrap:wrap;gap:6px; }
 .platform-badge { display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;background:rgba(47,125,246,0.06);border:1px solid rgba(47,125,246,0.12);font-size:.75rem;font-weight:600;color:var(--primary); }
 .tag-pill { padding:4px 10px;border-radius:6px;background:var(--bg-surface);border:1px solid var(--border);font-size:.75rem;font-weight:500;color:var(--text-secondary); }
+.cat-pill { padding:4px 10px;border-radius:6px;background:rgba(47,125,246,0.05);border:1px solid rgba(47,125,246,0.18);font-size:.75rem;font-weight:600;color:var(--primary);text-decoration:none;transition:background .15s ease; }
+.cat-pill:hover { background:rgba(47,125,246,0.12); }
+.breadcrumb .bc-cat { text-transform:capitalize; }
 
 .info-pricing { padding:16px 20px;border-radius:12px;background:var(--bg-card);border:1px solid var(--border); }
 .price-block { display:flex;align-items:baseline;gap:8px; }

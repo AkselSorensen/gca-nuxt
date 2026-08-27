@@ -222,8 +222,19 @@ const activeFilterCount = computed(() => {
   return n
 })
 
+// Toutes les catégories d'un produit (principale + secondaires product_categories)
+function prodCatSlugs(p: any): string[] {
+  const list = (Array.isArray(p?.categories) ? p.categories : [])
+    .map((c: any) => String(c?.slug || c || '').toLowerCase())
+    .filter(Boolean)
+  const primary = String(p?.categorySlug || p?.category || '').toLowerCase()
+  if (primary && !list.includes(primary)) list.push(primary)
+  return list
+}
+
 function countByCategory(slug: string) {
-  return products.value.filter((p: any) => (p.categorySlug || p.category || '') === slug).length
+  const s = String(slug).toLowerCase()
+  return products.value.filter((p: any) => prodCatSlugs(p).includes(s)).length
 }
 
 function focusSearch() { searchRef.value?.focus() }
@@ -256,7 +267,7 @@ const filteredProducts = computed(() => {
     )
   }
   if (filters.category)
-    result = result.filter((p: any) => (p.categorySlug || p.category || '') === filters.category)
+    result = result.filter((p: any) => prodCatSlugs(p).includes(String(filters.category).toLowerCase()))
   if (filters.priceMax) result = result.filter((p: any) => Number(p.price) <= filters.priceMax!)
   if (filters.onSale) result = result.filter((p: any) => p.discountPercent > 0)
   if (filters.platforms.length) result = result.filter((p: any) => filters.platforms.includes(p.platform || "Garry's Mod"))

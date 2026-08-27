@@ -598,19 +598,20 @@
               <label>Vidéo (lien YouTube)</label>
               <input v-model="productForm.videoUrl" type="url" placeholder="https://www.youtube.com/watch?v=..." />
             </div>
-            <div v-if="editingId" class="field field-full">
-              <label>Images existantes</label>
+            <div class="field field-full">
+              <label>{{ editingId ? 'Images existantes' : 'Images supplémentaires (galerie)' }}</label>
               <div class="media-grid">
                 <div v-for="m in productMedia" :key="m.id" class="media-item">
                   <img :src="m.thumbnail || m.url" alt="" />
-                  <button class="media-remove" @click="removeMedia(m.id)" title="Retirer cette image"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                  <button type="button" class="media-remove" @click="removeMedia(m.id)" title="Retirer cette image"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                 </div>
                 <div v-for="(pm, i) in pendingMedia" :key="'p'+i" class="media-item">
                   <img :src="pm" :alt="'Image à ajouter'">
-                  <button class="media-remove" @click="pendingMedia.splice(i, 1)" title="Retirer">×</button>
+                  <button type="button" class="media-remove" @click="pendingMedia.splice(i, 1)" title="Retirer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                 </div>
-                <button class="media-add" @click="addMediaImage" title="Ajouter une image"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                <button type="button" class="media-add" @click="addMediaImage" title="Ajouter une image"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
               </div>
+              <small v-if="!editingId" class="field-hint">Ajoutez autant d'images que vous voulez — elles sont envoyées sur R2 juste après la création du produit.</small>
             </div>
           </div>
         </div>
@@ -899,6 +900,7 @@ async function animateProdIn() {
 function openProductForm() {
   editingId.value = null
   productMedia.value = []
+  pendingMedia.value = []
   Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
@@ -907,6 +909,7 @@ function openProductForm() {
 }
 function editProduct(p: any) {
   editingId.value = p.id
+  pendingMedia.value = []
   productMedia.value = (p.media || []).map((m: any) => ({ id: m.id, url: m.url, thumbnail: m.thumbnail }))
   Object.assign(productForm, {
     title: p.title || '',
@@ -975,6 +978,7 @@ function closeProductForm() {
   showProductForm.value = false
   editingId.value = null
   productMedia.value = []
+  pendingMedia.value = []
   Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
