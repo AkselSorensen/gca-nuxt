@@ -1815,6 +1815,16 @@ app.get("/api/sellers/:slug", async (req, res) => {
       [seller.id]
     );
 
+    // Note moyenne du vendeur : moyenne pondérée des avis réels (même formule
+    // que la fiche produit → cohérence entre les deux pages)
+    const sellerRatingResult = await pool.query(
+      `SELECT COALESCE(AVG(r.rating), 0)::numeric AS avg_rating
+       FROM reviews r
+       JOIN products p2 ON p2.id = r.product_id
+       WHERE p2.seller_id = $1`,
+      [seller.id]
+    );
+
     // 4. Fetch seller's product reviews
     const reviewsResult = await pool.query(
       `SELECT r.id, r.product_id, r.rating, r.comment, r.created_at,
@@ -1841,7 +1851,8 @@ app.get("/api/sellers/:slug", async (req, res) => {
         joinedAt: seller.created_at,
         totalUnitsSold: parseInt(publicStatsResult.rows[0].units_sold || 0),
         totalRevenue: parseFloat(publicStatsResult.rows[0].total_revenue || 0),
-        sellerNetRevenue: parseFloat(publicStatsResult.rows[0].seller_net_revenue || 0)
+        sellerNetRevenue: parseFloat(publicStatsResult.rows[0].seller_net_revenue || 0),
+        avgRating: Number(sellerRatingResult.rows[0].avg_rating) > 0 ? Number(Number(sellerRatingResult.rows[0].avg_rating).toFixed(2)) : null
       },
       reviews: reviewsResult.rows.map(r => ({
         id: r.id,
@@ -1861,7 +1872,7 @@ app.get("/api/sellers/:slug", async (req, res) => {
         price: Number(row.price),
         oldPrice: Number(row.old_price),
         discountPercent: row.discount_percent,
-        rating: Number(row.rating),
+        rating: row.review_count > 0 ? Number(row.rating) : null,
         reviewCount: row.review_count,
         tags: row.tags || [],
         categoryName: row.category_name,

@@ -187,6 +187,10 @@ const errorMessage = computed(() => {
 })
 
 const avgRating = computed(() => {
+  // Même source que la fiche produit (moyenne pondérée des avis, API) → cohérent
+  const apiRating = seller.value?.avgRating
+  if (apiRating) return Number(apiRating).toFixed(1)
+  // Fallback : moyenne des produits notés (si l'API ne fournit pas la valeur)
   const p = products.value
   const rated = p.filter((x: any) => Number(x.rating) > 0)
   if (!rated.length) return '—'
@@ -338,8 +342,8 @@ onMounted(async () => {
 .sp-pc-img img { width: 100%; height: 100%; object-fit: cover; }
 .sp-pc-discount {
   position: absolute; top: 8px; left: 8px;
-  padding: 3px 8px; border-radius: 4px;
-  background: #dc2626; color: #fff; font-size: .7rem; font-weight: 800;
+  padding: 4px 8px; border-radius: 4px;
+  background: #22c55e; color: #fff; font-size: .7rem; font-weight: 800;
 }
 .sp-pc-trending {
   position: absolute; top: 8px; right: 8px;

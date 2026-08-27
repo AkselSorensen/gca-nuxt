@@ -394,7 +394,7 @@ onMounted(async () => {
 .card-img { position:relative;display:block;aspect-ratio:16/10;overflow:hidden; }
 .card-img img { width:100%;height:100%;object-fit:cover;transition:transform .4s; }
 .mp-card:hover .card-img img { transform:scale(1.05); }
-.badge-sale { position:absolute;bottom:8px;left:8px;padding:4px 8px;border-radius:4px;background:#dc2626;color:#fff;font-size:.7rem;font-weight:700; }
+.badge-sale { position:absolute;bottom:8px;left:8px;padding:4px 8px;border-radius:4px;background:#22c55e;color:#fff;font-size:.7rem;font-weight:700; }
 .badge-new { position:absolute;top:8px;right:8px;padding:4px 8px;border-radius:4px;background:var(--primary);color:#fff;font-size:.65rem;font-weight:700;letter-spacing:.03em; }
 
 .card-info { padding:12px 14px 14px;display:grid;gap:4px; }
