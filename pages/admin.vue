@@ -21,12 +21,21 @@
 
       <!-- ==================== PRODUITS ==================== -->
       <div v-if="activeTab === 'products'" class="tab-content">
-        <div class="tab-header"><h2>Produits</h2><button class="btn-primary" @click="openProductForm">+ Ajouter un produit</button></div>
+        <div class="tab-header">
+          <h2>Produits</h2>
+          <div class="tab-header-actions">
+            <label class="prod-filter-toggle">
+              <input type="checkbox" v-model="showHiddenProducts" />
+              <span>Voir les masqués ({{ hiddenProductsCount }})</span>
+            </label>
+            <button class="btn-primary" @click="openProductForm">+ Ajouter un produit</button>
+          </div>
+        </div>
         <div class="table-wrap">
-          <table v-if="products.length" class="admin-table">
+          <table v-if="visibleProducts.length" class="admin-table">
             <thead><tr><th>Image</th><th>Titre</th><th>Catégorie</th><th>Prix</th><th>Comm.</th><th>Ventes</th><th>Actions</th></tr></thead>
             <tbody>
-              <tr v-for="p in products" :key="p.id">
+              <tr v-for="p in visibleProducts" :key="p.id">
                 <td><img :src="p.thumbnail || p.media?.[0]?.thumbnail || p.media?.[0]?.url || ''" class="thumb" /></td>
                 <td><strong>{{ p.title }}</strong> <span v-if="p.is_hidden" class="badge-hidden">Masqué</span></td>
                 <td><span class="badge-cat">{{ p.category || p.categoryName || '—' }}</span></td>
@@ -47,7 +56,7 @@
               </tr>
             </tbody>
           </table>
-          <div v-else class="empty-tab">Aucun produit.</div>
+          <div v-else class="empty-tab">{{ showHiddenProducts ? 'Aucun produit masqué.' : 'Aucun produit. Cliquez sur « + Ajouter un produit ».' }}</div>
         </div>
       </div>
 
@@ -925,6 +934,13 @@ async function saveAmbCode() {
 
 // ─── Products ──────────────────────────────────────────
 const products = ref<any[]>([])
+// Liste active = produits non masqués ; la case « Voir les masqués » les fait réapparaître
+const showHiddenProducts = ref(false)
+const visibleProducts = computed(() => {
+  if (showHiddenProducts.value) return products.value
+  return products.value.filter((p: any) => !p.is_hidden)
+})
+const hiddenProductsCount = computed(() => products.value.filter((p: any) => p.is_hidden).length)
 const sellerRequests = ref<any[]>([])
 const sellerModal = ref<any | null>(null)
 function openSellerModal(r: any) { sellerModal.value = r }
@@ -1511,6 +1527,9 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .admin-main { flex:1; padding:24px 28px; min-width:0; }
 .tab-content { max-width:1100px; }
 .tab-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:20px; }
+.tab-header-actions { display:flex;align-items:center;gap:12px; }
+.prod-filter-toggle { display:flex;align-items:center;gap:7px;font-size:.8rem;font-weight:600;color:var(--text-muted);cursor:pointer;user-select:none; }
+.prod-filter-toggle input { accent-color:var(--primary);cursor:pointer; }
 .tab-header h2 { font-size:1.3rem;font-weight:800; }
 .tab-desc { color:var(--text-secondary);font-size:.9rem;margin-bottom:20px; }
 

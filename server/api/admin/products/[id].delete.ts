@@ -12,12 +12,11 @@ export default defineEventHandler(async (event) => {
   try {
     // Suppression DOUCE : un produit avec des ventes ne peut pas être détruit
     // (FK order_items.product_id → historique des commandes + factures).
-    // On le masque du catalogue et on marque son titre pour libérer le slug.
+    // On le masque du catalogue ; son titre n'est PAS modifié (il disparaît de
+    // la liste active et l'historique des commandes garde le vrai nom).
     const result = await query(
       `UPDATE products
-       SET is_hidden = TRUE,
-           title = title || ' [supprimé]',
-           name = name || ' [supprimé]'
+       SET is_hidden = TRUE
        WHERE id = $1
        RETURNING id, title, is_hidden`,
       [productId]
