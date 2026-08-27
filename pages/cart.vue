@@ -199,6 +199,11 @@ function addToCart(slug: string, title: string, price: number, img?: string) {
 }
 
 onMounted(async () => {
+  // Connexion requise pour accéder au panier (comme pour l'ajout et l'achat)
+  const { user, checkAuth } = useAuth()
+  await checkAuth()
+  if (!user.value?.id) return navigateTo('/login?redirect=' + encodeURIComponent(useRoute().fullPath))
+
   // Nettoyage du panier : les anciens paniers stockaient les images base64
   // (media/thumbnail) → quota localStorage saturé → panier inutilisable.
   // On retire les images lourdes et on re-sauvegarde.

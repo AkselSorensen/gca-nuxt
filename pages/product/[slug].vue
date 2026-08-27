@@ -262,7 +262,10 @@ async function buyNow() {
     buyError.value = e?.data?.message || e?.message || 'Erreur de paiement'
   } finally { buying.value = false }
 }
-function addToCart() {
+async function addToCart() {
+  // Connexion requise pour ajouter au panier (comme pour l'achat)
+  const { user } = useAuth()
+  if (!user.value?.id) return navigateTo('/login?redirect=' + encodeURIComponent(route.fullPath))
   try {
     // localStorage corrompu (JSON invalide) ou saturé → on repart d'un panier vide
     let saved: any[] = []
