@@ -38,9 +38,9 @@ export default defineNuxtConfig({
   // Cache CDN (ISR) : les pages publiques sont servies depuis le CDN et
   // régénérées en arrière-plan — plus de cold start Vercel pour les visiteurs.
   routeRules: {
-    '/': { swr: 3600 },
-    '/catalogue': { swr: 3600 },
-    '/product/**': { swr: 3600 },
+    '/': { swr: 60 },
+    '/catalogue': { swr: 300 },
+    '/product/**': { swr: 300 },
     '/about': { swr: 3600 },
     '/prestation': { swr: 3600 }
   }

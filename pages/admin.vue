@@ -600,6 +600,10 @@
                   <img :src="m.thumbnail || m.url" alt="" />
                   <button class="media-remove" @click="removeMedia(m.id)" title="Retirer cette image"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                 </div>
+                <div v-for="(pm, i) in pendingMedia" :key="'p'+i" class="media-item">
+                  <img :src="pm" :alt="'Image à ajouter'">
+                  <button class="media-remove" @click="pendingMedia.splice(i, 1)" title="Retirer">×</button>
+                </div>
                 <button class="media-add" @click="addMediaImage" title="Ajouter une image"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
               </div>
             </div>
@@ -871,6 +875,7 @@ watch(() => productForm.platform, (v) => {
   if (v === '__custom') { platformCustom.value = true; productForm.platform = '' }
 })
 const productMedia = ref<any[]>([])
+const pendingMedia = ref<string[]>([])
 
 const toastRef = ref<InstanceType<typeof ToastNotif> | null>(null)
 const confirmRef = ref<InstanceType<typeof ConfirmModal> | null>(null)
@@ -932,7 +937,6 @@ async function removeMedia(mediaId: number) {
   }
 }
 function addMediaImage() {
-  if (!editingId.value) return
   const input = document.createElement('input')
   input.type = 'file'; input.accept = 'image/png,image/jpeg,image/webp'
   input.onchange = async (e: any) => {
@@ -941,13 +945,19 @@ function addMediaImage() {
     if (file.size > 8*1024*1024) return toastRef.value?.show('error', 'Max 8 Mo')
     try {
       const compressed = await compressImage(file, 1600, 0.82)
-      // Upload vers R2 (plus de base64 en DB)
-      const b64 = String(compressed).split(',')[1] || ''
-      const mime = String(compressed).match(/^data:([^;,]+)/)?.[1] || 'image/jpeg'
-      const res = await $fetch(api + '/api/admin/products/' + editingId.value + '/upload-image', { credentials: 'include', method: 'POST', body: { data_base64: b64, mime } })
-      productMedia.value.push({ id: res.id, url: res.url, thumbnail: res.url })
-      toastRef.value?.show('success', 'Image ajoutée (R2)')
-      loadProducts()
+      if (editingId.value) {
+        // Mode édition : upload direct vers R2
+        const b64 = String(compressed).split(',')[1] || ''
+        const mime = String(compressed).match(/^data:([^;,]+)/)?.[1] || 'image/jpeg'
+        const res = await $fetch(api + '/api/admin/products/' + editingId.value + '/upload-image', { credentials: 'include', method: 'POST', body: { data_base64: b64, mime } })
+        productMedia.value.push({ id: res.id, url: res.url, thumbnail: res.url })
+        toastRef.value?.show('success', 'Image ajoutée (R2)')
+        loadProducts()
+      } else {
+        // Mode création : mise en attente, upload après la création du produit
+        pendingMedia.value.push(String(compressed))
+        toastRef.value?.show('success', 'Image ajoutée (upload après création)')
+      }
     } catch (err: any) {
       toastRef.value?.show('error', err?.data?.message || 'Erreur')
     }
@@ -1041,7 +1051,8 @@ async function saveProduct() {
   try {
     const payload = {
       ...productForm,
-      tags: productForm.tags.split(',').map((t:string) => t.trim()).filter(Boolean)
+      tags: productForm.tags.split(',').map((t:string) => t.trim()).filter(Boolean),
+      extraImages: pendingMedia.value,
     }
     const res = isEdit
       ? await $fetch(api + '/api/admin/products/' + editingId.value, { credentials: 'include', method:'PATCH', body: payload })
