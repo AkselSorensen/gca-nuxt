@@ -4,6 +4,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { requireUser } from '../../utils/auth'
 import { pool, query } from '../../services/db'
 import { stripe, PLATFORM_COMMISSION_PERCENT, maybeCreateSellerTransfers, recordStripeFee } from '../../services/stripe'
+import { notifyOrderEmails } from '../../services/notifications'
 
 export default defineEventHandler(async (event) => {
   if (!stripe) {
@@ -60,6 +61,9 @@ export default defineEventHandler(async (event) => {
       await client.query('COMMIT')
       await maybeCreateSellerTransfers(ord.rows[0].id, session)
       await recordStripeFee(ord.rows[0].id, session)
+      // Emails : facture + invitation avis (acheteur) + notification de vente (vendeur).
+      // Idempotent (orders.notified_at) — le webhook Stripe appelle la même fonction.
+      await notifyOrderEmails(ord.rows[0].id, user.email || session.customer_details?.email || '')
       return { ok: true, orderId: ord.rows[0].id }
     }
     if (!cartId) {
@@ -146,6 +150,9 @@ export default defineEventHandler(async (event) => {
 
     await maybeCreateSellerTransfers(orderId, session)
     await recordStripeFee(orderId, session)
+    // Emails : facture + invitation avis (acheteur) + notification de vente (vendeur).
+    // Idempotent (orders.notified_at) — le webhook Stripe appelle la même fonction.
+    await notifyOrderEmails(orderId, user.email || session.customer_details?.email || '')
 
     return { ok: true, orderId, alreadyConfirmed: false }
   } catch (error: any) {

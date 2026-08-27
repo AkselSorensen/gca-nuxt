@@ -74,6 +74,24 @@ export function soldNotificationHtml(productTitle: string, quantity: number, pri
 // Ne lève jamais : les erreurs d'email ne doivent pas casser le webhook.
 export async function notifyOrderEmails(orderId: number, buyerEmail: string): Promise<void> {
   try {
+    // Verrou d'idempotence : la 1re requête qui "réclame" la commande envoie les emails.
+    // Le webhook Stripe ET /api/checkout/confirm-session appellent cette fonction —
+    // un seul des deux doit réellement envoyer (colonne orders.notified_at).
+    try {
+      const claim = await query(
+        `UPDATE orders SET notified_at = NOW() WHERE id = $1 AND notified_at IS NULL RETURNING id`,
+        [orderId]
+      )
+      if (!claim.rowCount) {
+        console.log('[email] commande', orderId, '— emails déjà envoyés, on saute')
+        return
+      }
+    } catch (e: any) {
+      // Colonne absente (base pas encore migrée) → on continue quand même : mieux vaut
+      // un éventuel doublon qu'aucune facture.
+      console.warn('[email] verrou notified_at indisponible:', e?.message || e)
+    }
+
     const orderResult = await query(
       `SELECT o.total_amount, o.discount_amount,
               u.email AS buyer_email, u.display_name AS buyer_name
@@ -98,6 +116,7 @@ export async function notifyOrderEmails(orderId: number, buyerEmail: string): Pr
     )
     const items = itemsResult.rows
     if (!items.length) return
+    console.log('[email] commande', orderId, '→ facture à', emailTo, '|', items.length, 'article(s)')
 
     const total = Number(order.total_amount || 0)
     const discount = Number(order.discount_amount || 0)

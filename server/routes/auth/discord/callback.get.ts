@@ -6,7 +6,7 @@ import { hashPassword, slugify, sanitizeUser } from '../../../services/users'
 import { createSession, updateSessionUser } from '../../../services/session'
 import { getSessionUser } from '../../../utils/auth'
 
-const BASE_URL = process.env.APP_BASE_URL || 'https://gca-nuxt.vercel.app'
+const BASE_URL = process.env.APP_BASE_URL || 'https://gsa-store.fr'
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET
 const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI

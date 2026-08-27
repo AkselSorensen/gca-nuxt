@@ -37,7 +37,7 @@ const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI;
 const STEAM_API_KEY = process.env.STEAM_API_KEY || "";
 const VERCEL_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
-const APP_BASE_URL = process.env.APP_BASE_URL || (VERCEL_URL ? `https://${VERCEL_URL}` : (process.env.NODE_ENV === "production" ? "https://gca-nuxt.vercel.app" : `http://localhost:${port}`));
+const APP_BASE_URL = process.env.APP_BASE_URL || (VERCEL_URL ? `https://${VERCEL_URL}` : (process.env.NODE_ENV === "production" ? "https://gsa-store.fr" : `http://localhost:${port}`));
 const BASE_URL_COMPUTED = APP_BASE_URL;
 
 const STEAM_REALM = process.env.STEAM_REALM || BASE_URL_COMPUTED;
@@ -864,6 +864,8 @@ async function initializeDatabase() {
     ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transfer_error TEXT;
     ALTER TABLE order_items ADD COLUMN IF NOT EXISTS transferred_at TIMESTAMPTZ;
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_fee_amount NUMERIC NOT NULL DEFAULT 0;
+    -- Verrou d'idempotence des emails de commande (facture/avis/vente) : webhook OU confirm-session
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS notified_at TIMESTAMPTZ;
 
     -- Réparation : la division entière SQL (1 - pct / 100 = 1) avait stocké seller_net_amount = prix plein
     UPDATE order_items
@@ -2693,8 +2695,8 @@ app.post("/api/checkout/buy-now", requireAuth, async (req, res) => {
         transfer_data: { destination: transfer.destination },
         application_fee_amount: platformFeeCents,
       } : undefined,
-      success_url: `https://gca-nuxt.vercel.app/downloads?confirmed=1&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `https://gca-nuxt.vercel.app/product/${slug}`,
+      success_url: `${APP_BASE_URL}/downloads?confirmed=1&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${APP_BASE_URL}/product/${slug}`,
       metadata: { userId: String(req.session.user.id), productSlug: product.slug, transferMode: useDestination ? "destination" : "manual" },
     });
 
@@ -2803,8 +2805,8 @@ app.post("/api/checkout/create-session", requireAuth, async (req, res) => {
         transfer_data: { destination: transfer.destination },
         application_fee_amount: platformFeeCents,
       } : undefined,
-      success_url: `https://gca-nuxt.vercel.app/downloads?confirmed=1&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://gca-nuxt.vercel.app/cart?checkout=cancel`,
+      success_url: `${APP_BASE_URL}/downloads?confirmed=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${APP_BASE_URL}/cart?checkout=cancel`,
       metadata: {
         userId: String(req.session.user.id),
         cartId: String(cart.id),
@@ -3215,8 +3217,8 @@ app.post("/api/stripe/connect", requireAuth, requireSeller, async (req, res) => 
 
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `https://gca-nuxt.vercel.app/seller/account?refresh=true&account=${accountId}`,
-      return_url: `https://gca-nuxt.vercel.app/seller/account?success=true&account=${accountId}`,
+      refresh_url: `${APP_BASE_URL}/seller/account?refresh=true&account=${accountId}`,
+      return_url: `${APP_BASE_URL}/seller/account?success=true&account=${accountId}`,
       type: "account_onboarding",
     });
 

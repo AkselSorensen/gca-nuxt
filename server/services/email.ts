@@ -3,9 +3,23 @@
 import nodemailer from 'nodemailer'
 import { premiumShell } from './email-templates'
 
-export async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+export type SendEmailOptions = {
+  /** Adresse de réponse (ex. l'email du visiteur pour le formulaire de contact). */
+  replyTo?: string
+}
+
+export async function sendEmail(to: string, subject: string, html: string, opts: SendEmailOptions = {}): Promise<boolean> {
   const smtpUser = process.env.SMTP_USER
   const smtpPass = process.env.SMTP_PASS
+  // Plusieurs destinataires possibles : "a@x.fr, b@y.com"
+  const recipients = String(to || '')
+    .split(',')
+    .map((r) => r.trim())
+    .filter(Boolean)
+  if (!recipients.length) {
+    console.warn('[email] aucun destinataire — envoi ignoré')
+    return false
+  }
 
   // 1) SMTP (OVH Zimbra / ssl0.ovh.net) — transport principal
   if (smtpUser && smtpPass) {
@@ -18,11 +32,12 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
     try {
       await transporter.sendMail({
         from: process.env.MAIL_FROM || `GSA Store <${smtpUser}>`,
-        to,
+        to: recipients.join(', '),
         subject,
         html,
+        ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
       })
-      console.log('[email] SMTP envoyé à', to)
+      console.log('[email] SMTP envoyé à', recipients.join(', '), '—', subject)
       return true
     } catch (error) {
       console.error('[email] SMTP error:', error)
@@ -42,9 +57,10 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
         },
         body: JSON.stringify({
           from: process.env.RESEND_FROM || 'GSA Store <onboarding@resend.dev>',
-          to,
+          to: recipients,
           subject,
           html,
+          ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
         }),
       })
       if (!res.ok) {
@@ -58,7 +74,7 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
     }
   }
 
-  console.warn('[email] aucun transport configuré (SMTP_USER/SMTP_PASS ou RESEND_API_KEY) — email non envoyé à', to)
+  console.warn('[email] aucun transport configuré (SMTP_USER/SMTP_PASS ou RESEND_API_KEY) — email non envoyé à', recipients.join(', '))
   return false
 }
 
