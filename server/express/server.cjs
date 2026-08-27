@@ -496,6 +496,30 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+// Accès réservé aux vendeurs approuvés (ou admin) — ex. endpoints Stripe Connect
+function requireSeller(req, res, next) {
+  if (!req.session.user) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  const { role, sellerStatus } = req.session.user;
+  if (role === "seller" || role === "admin" || sellerStatus === "approved") {
+    return next();
+  }
+  // Session possiblement périmée (approbation récente) : vérifier l'état réel en base
+  return pool
+    .query(`SELECT role, seller_status FROM users WHERE id = $1`, [req.session.user.id])
+    .then(({ rows }) => {
+      const u = rows[0];
+      if (u && (u.role === "seller" || u.role === "admin" || u.seller_status === "approved")) {
+        req.session.user.role = u.role;
+        req.session.user.sellerStatus = u.seller_status;
+        return next();
+      }
+      return res.status(403).json({ message: "Accès réservé aux vendeurs" });
+    })
+    .catch(() => res.status(403).json({ message: "Accès réservé aux vendeurs" }));
+}
+
 async function maintenanceMiddleware(req, res, next) {
   // Always allow API routes for login, bootstrap (to check session), and admin bypass
   const bypassRoutes = [
@@ -3093,7 +3117,7 @@ app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async
 
 // ─── Stripe Connect (onboarding vendeur) ──────────────────
 // Créer un lien d'onboarding Stripe Connect pour le vendeur
-app.post("/api/stripe/connect", requireAuth, async (req, res) => {
+app.post("/api/stripe/connect", requireAuth, requireSeller, async (req, res) => {
   if (!stripe) return res.status(503).json({ message: "Stripe non configuré" });
 
   try {
@@ -3187,7 +3211,7 @@ app.post("/api/stripe/connect", requireAuth, async (req, res) => {
 
 // Associer un compte Stripe Connect précis à l'utilisateur (appelé au retour
 // d'onboarding avec ?account=acct_xxx — indépendant de l'email).
-app.post("/api/stripe/connect/link", requireAuth, async (req, res) => {
+app.post("/api/stripe/connect/link", requireAuth, requireSeller, async (req, res) => {
   if (!stripe) return res.status(503).json({ message: "Stripe non configuré" });
   const accountId = req.body?.accountId;
   if (!accountId || typeof accountId !== "string" || !accountId.startsWith("acct_")) {
@@ -3215,7 +3239,7 @@ app.post("/api/stripe/connect/link", requireAuth, async (req, res) => {
 });
 
 // Vérifier le statut du compte Stripe Connect
-app.get("/api/stripe/connect/status", requireAuth, async (req, res) => {
+app.get("/api/stripe/connect/status", requireAuth, requireSeller, async (req, res) => {
   if (!stripe) return res.json({ connected: false });
 
   try {
@@ -3302,7 +3326,7 @@ app.get("/api/stripe/connect/status", requireAuth, async (req, res) => {
 });
 
 // Lien vers le dashboard Stripe Express du vendeur
-app.post("/api/stripe/dashboard", requireAuth, async (req, res) => {
+app.post("/api/stripe/dashboard", requireAuth, requireSeller, async (req, res) => {
   if (!stripe) return res.status(503).json({ message: "Stripe non configuré" });
   try {
     const accountId = req.session.user.stripeAccountId;
