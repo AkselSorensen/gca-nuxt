@@ -12,6 +12,8 @@ const pageRef = ref<HTMLElement | null>(null)
 
 // ?discord=required → l'utilisateur n'est pas membre du serveur Discord
 const discordRequired = computed(() => route.query.discord === 'required')
+// ?attempted=1 → il a tenté l'OAuth mais n'est toujours pas membre
+const discordAttempted = computed(() => route.query.attempted === '1')
 
 function discordLogin() {
   const isSeller = tab.value === 'seller'
@@ -20,6 +22,20 @@ function discordLogin() {
     account_type: isSeller ? 'seller' : 'buyer',
   })
   window.location.href = '/auth/discord?' + params.toString()
+}
+
+// "Rejoindre le serveur" : ouvre l'invite Discord, puis relance automatiquement
+// l'OAuth au retour sur l'onglet (si l'utilisateur a rejoint → connexion directe)
+function joinDiscord() {
+  window.open('https://discord.gg/KDsEzGRnKs', '_blank')
+  let rechecked = false
+  const onFocus = () => {
+    if (rechecked) return
+    rechecked = true
+    window.removeEventListener('focus', onFocus)
+    discordLogin()
+  }
+  window.addEventListener('focus', onFocus)
 }
 
 async function handleLogin() {
@@ -68,7 +84,11 @@ onMounted(async () => {
         </div>
         <h2>Rejoignez le serveur Discord GSA</h2>
         <p>Pour vous connecter ou vous inscrire, vous devez être membre du serveur Discord officiel GSA.</p>
-        <a href="https://discord.gg/KDsEzGRnKs" target="_blank" rel="noopener" class="btn-join">
+        <div v-if="discordAttempted" class="join-error">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Vous n'avez pas encore rejoint le serveur Discord. Cliquez sur « Rejoindre le serveur Discord » ci-dessous, acceptez l'invitation, puis revenez ici.
+        </div>
+        <a href="https://discord.gg/KDsEzGRnKs" target="_blank" rel="noopener" class="btn-join" @click="joinDiscord">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
           Rejoindre le serveur Discord
         </a>
@@ -134,6 +154,8 @@ onMounted(async () => {
 .btn-join:hover { filter:brightness(1.1); transform:translateY(-1px); }
 .btn-retry { padding:12px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-weight:600; font-size:.85rem; cursor:pointer; transition:all .2s; font-family:inherit; }
 .btn-retry:hover { background:rgba(255,255,255,0.04); }
+.join-error { display:flex; align-items:flex-start; gap:8px; padding:12px 14px; border-radius:10px; background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.25); color:var(--red); font-size:.82rem; line-height:1.5; text-align:left; }
+.join-error svg { flex-shrink:0; margin-top:2px; }
 
 .field { display:grid;gap:5px; }
 .field label { font-size:.8rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em; }

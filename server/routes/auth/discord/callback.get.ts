@@ -79,7 +79,9 @@ export default defineEventHandler(async (event) => {
         returnUrl = decoded?.r || ''
       } catch { /* ignore */ }
       const sep = returnUrl ? '&return_url=' + encodeURIComponent(returnUrl) : ''
-      return sendRedirect(event, `${BASE_URL}/login?discord=required${sep}`)
+      // attempted=1 : l'utilisateur vient de tenter l'OAuth → le front affiche
+      // un message clair ("vous n'avez pas encore rejoint le serveur")
+      return sendRedirect(event, `${BASE_URL}/login?discord=required&attempted=1${sep}`)
     }
 
     // 3) Décodage du state : return_url + type de compte + données vendeur
