@@ -966,7 +966,7 @@ async function approveSeller(id: number) {
 }
 
 async function rejectSeller(id: number) {
-  const confirmed = await confirmRef.value?.confirm('Refuser ce vendeur ?', 'Cette action est irréversible.')
+  const confirmed = await confirmRef.value?.ask({ title: 'Refuser ce vendeur ?', message: 'Cette action est irréversible. Il pourra refaire une demande.', confirmText: 'Refuser', danger: true })
   if (!confirmed) return
   try {
     await $fetch(api + '/api/admin/seller-requests/' + id + '/reject', { credentials: 'include', method: 'POST' })
