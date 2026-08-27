@@ -14,16 +14,22 @@
         <!-- Left: Gallery -->
         <div class="product-gallery anim-left">
           <div class="gallery-main">
-            <iframe v-if="showVideo && videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe v-if="showVideo && videoPlaying && videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <div v-else-if="showVideo && videoThumbUrl" class="video-preview" @click="videoPlaying = true">
+              <img :src="videoThumbUrl" :alt="'Vidéo — ' + product.title" />
+              <div class="video-play">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
             <img v-else :src="currentImg" :alt="product.title" />
             <div v-if="product.discountPercent > 0" class="discount-badge">-{{ product.discountPercent }}%</div>
           </div>
           <div v-if="images.length > 1 || product.videoUrl" class="gallery-thumbs">
-            <button v-if="product.videoUrl" class="thumb-btn thumb-video" :class="{ active: showVideo }" @click="showVideo = true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-              Vidéo
+            <button v-if="product.videoUrl" class="thumb-btn thumb-video" :class="{ active: showVideo }" @click="showVideo = true; videoPlaying = false">
+              <img v-if="videoThumbUrl" :src="videoThumbUrl" :alt="'Vidéo'">
+              <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
             </button>
-            <button v-for="(img, i) in images" :key="i" class="thumb-btn" :class="{ active: !showVideo && currentImg === img }" @click="showVideo = false; currentImg = img">
+            <button v-for="(img, i) in images" :key="i" class="thumb-btn" :class="{ active: !showVideo && currentImg === img }" @click="showVideo = false; videoPlaying = false; currentImg = img">
               <img :src="img" :alt="'Vue ' + (i+1)" />
             </button>
           </div>
@@ -141,7 +147,13 @@
           <!-- Vidéo -->
           <div v-if="activeTab === 'video'" class="tab-panel">
             <div class="video-frame">
-              <iframe v-if="videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              <iframe v-if="videoPlaying && videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              <div v-else-if="videoThumbUrl" class="video-preview" @click="videoPlaying = true">
+                <img :src="videoThumbUrl" :alt="'Vidéo — ' + product.title" />
+                <div class="video-play">
+                  <svg width="44" height="44" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+              </div>
               <p v-else class="video-error">Lien YouTube invalide.</p>
             </div>
           </div>
@@ -291,6 +303,16 @@ const videoEmbedUrl = computed(() => {
   return m ? `https://www.youtube.com/embed/${m[1]}` : ''
 })
 
+// Miniature YouTube (preview de la vidéo sans la jouer)
+const videoThumbUrl = computed(() => {
+  const v = product.value?.videoUrl
+  if (!v) return ''
+  const m = String(v).match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/)
+  return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : ''
+})
+// Le lecteur ne se charge qu'au clic sur l'aperçu
+const videoPlaying = ref(false)
+
 const buying = ref(false)
 const buyError = ref('')
 // Popup de renonciation à la rétractation
@@ -400,8 +422,14 @@ onMounted(async () => {
 .gallery-main { position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--border);aspect-ratio:16/10;background:var(--bg-surface); }
 .gallery-main img { width:100%;height:100%;object-fit:cover; }
 .gallery-main iframe { width:100%;height:100%;border:0; }
-.thumb-video { display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.8rem; }
+.thumb-video { display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.8rem; overflow:hidden; }
+.thumb-video img { width:100%;height:100%;object-fit:cover; }
 .thumb-video svg { flex-shrink:0; }
+.video-preview { position:relative;width:100%;height:100%;cursor:pointer; }
+.video-preview img { width:100%;height:100%;object-fit:cover; }
+.video-preview .video-play { position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,0.35);transition:background .2s; }
+.video-preview:hover .video-play { background:rgba(0,0,0,0.2); }
+.video-play svg { color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
 .discount-badge { position:absolute;top:12px;left:12px;padding:5px 12px;border-radius:6px;background:#22c55e;color:#fff;font-size:.8rem;font-weight:800; }
 .gallery-thumbs { display:flex;gap:8px;margin-top:10px;flex-wrap:wrap; }
 .thumb-btn { width:60px;height:60px;border-radius:8px;overflow:hidden;border:2px solid var(--border);cursor:pointer;padding:0;background:var(--bg-surface);transition:border-color .2s; }
