@@ -104,7 +104,7 @@
               <span class="seller-label">{{ t('product.verified') }}</span>
             </div>
             <div class="seller-stats">
-              <span>{{ sellerProductCount }} produits</span>
+              <span>{{ sellerProductCount }} {{ sellerProductCount > 1 ? 'produits' : 'produit' }}</span>
               <span>{{ product.rating ? Number(product.rating).toFixed(1) + ' ★' : '' }}</span>
             </div>
             <svg class="seller-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>

@@ -44,7 +44,7 @@
               <span class="cart-item-seller">{{ item.sellerName || item.seller || 'Vendeur' }}</span>
             </div>
             <div class="cart-item-price">
-              <strong>{{ Number(item.price).toFixed(2) }}€</strong>
+              <strong>{{ Number(item.price).toFixed(2) }}€<span v-if="item.quantity > 1" class="qty-mark"> ×{{ item.quantity }}</span></strong>
               <span v-if="item.discountPercent > 0" class="price-old">{{ Number(item.oldPrice).toFixed(2) }}€</span>
             </div>
             <button class="cart-remove" @click="askRemove(i)">
@@ -318,8 +318,9 @@ watch(items, (val) => {
 .cart-item-title { font-size:.85rem;font-weight:700;color:var(--text);text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .cart-item-title:hover { color:var(--primary); }
 .cart-item-seller { font-size:.74rem;color:var(--text-muted); }
-.cart-item-price { text-align:right; }
+.cart-item-price { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
 .cart-item-price strong { font-size:.92rem;font-weight:800; }
+.qty-mark { color:var(--text-muted);font-size:.75rem;font-weight:600; }
 .price-old { display:block;font-size:.72rem;color:var(--text-muted);text-decoration:line-through; }
 .cart-remove { width:32px;height:32px;border-radius:6px;border:none;background:rgba(248,113,113,0.06);color:var(--red);cursor:pointer;display:grid;place-items:center;flex-shrink:0;transition:background .15s; }
 .cart-remove:hover { background:rgba(248,113,113,0.15); }
