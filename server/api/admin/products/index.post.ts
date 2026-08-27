@@ -119,7 +119,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Images supplémentaires (création) → R2
-    const extraImgs = Array.isArray(body.extraImages) ? body.extraImages.filter((x: any) => typeof x === 'string' && x.startsWith('data:')) : []
+    const extraImgs = Array.isArray(extraImages) ? extraImages.filter((x: any) => typeof x === 'string' && x.startsWith('data:')) : []
     for (const img of extraImgs) {
       try {
         const mime = String(img).match(/^data:([^;,]+)/)?.[1] || 'image/jpeg'
