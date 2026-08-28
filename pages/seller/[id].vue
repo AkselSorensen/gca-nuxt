@@ -218,7 +218,23 @@ async function saveBio() {
   }
 }
 
-const { data: raw, error: fetchError } = await useFetch(() => api + '/api/sellers/' + sellerSlug, { lazy: true })
+const raw = ref<any>(null)
+const fetchError = ref<any>(null)
+// Fetch manuel dans onMounted : plus fiable que useFetch(lazy) qui restait vide côté client
+async function loadSeller() {
+  try {
+    const res = await $fetch(api + '/api/sellers/' + sellerSlug, { credentials: 'include' })
+    raw.value = res
+  } catch (e: any) {
+    fetchError.value = e
+  }
+}
+onMounted(async () => {
+  loadSeller()
+  const { load, pageEntrance } = await import('~/composables/useAnimation')
+  const { gsap } = await load()
+  if (gsap) pageEntrance(gsap, pageRef.value)
+})
 
 const seller = computed(() => raw.value?.seller || {})
 
@@ -288,12 +304,6 @@ function shareProfile() {
   navigator.clipboard.writeText(window.location.href)
   toastRef.value?.show('success', t('seller.link_copied'))
 }
-
-onMounted(async () => {
-  const { load, pageEntrance } = await import('~/composables/useAnimation')
-  const { gsap } = await load()
-  if (gsap) pageEntrance(gsap, pageRef.value)
-})
 </script>
 
 <style scoped>
