@@ -450,13 +450,13 @@ onMounted(async () => {
 .thumb-btn:hover .yt-badge-sm { opacity:1; }
 /* Icône (image envoyée par le client) — centrage ABSOLU au milieu exact de la vidéo */
 .yt-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:24px; height:24px; object-fit:contain !important; opacity:.9; filter:drop-shadow(0 4px 12px rgba(0,0,0,.5)); cursor:pointer; z-index:3; }
-/* Bounce SUR LUI-MÊME (scale depuis le centre — aucun décalage) */
-.video-preview:hover .yt-overlay { animation: yt-bounce .5s ease; }
+/* Bounce LÉGER sur lui-même (scale discret depuis le centre) */
+.video-preview:hover .yt-overlay { animation: yt-bounce .45s ease; }
 @keyframes yt-bounce {
   0%   { transform:translate(-50%,-50%) scale(1); }
-  35%  { transform:translate(-50%,-50%) scale(1.25); }
-  60%  { transform:translate(-50%,-50%) scale(.95); }
-  100% { transform:translate(-50%,-50%) scale(1.1); }
+  40%  { transform:translate(-50%,-50%) scale(1.12); }
+  70%  { transform:translate(-50%,-50%) scale(.98); }
+  100% { transform:translate(-50%,-50%) scale(1.04); }
 }
 .video-preview:hover .yt-overlay { opacity:1; }
 .thumb-video svg { flex-shrink:0; }
