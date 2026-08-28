@@ -392,11 +392,9 @@ onBeforeUnmount(() => {
 /* Categories strip */
 .categories-strip {
   display: flex;
+  flex-wrap: wrap; /* toutes les catégories visibles, pas de scroll caché */
   gap: 10px;
-  overflow-x: auto;
   padding: 4px 0 8px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
 }
 .categories-strip::-webkit-scrollbar { display: none; }
 
