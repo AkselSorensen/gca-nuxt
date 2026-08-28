@@ -16,7 +16,7 @@
         <!-- Left: Gallery -->
         <div class="product-gallery anim-left">
           <div class="gallery-main">
-            <div v-if="showVideo && videoPlaying && videoEmbedUrl" ref="ytPlayerRef" class="yt-player-box"></div>
+            <iframe v-if="showVideo && videoPlaying && videoEmbedUrl" :src="videoEmbedUrl + '?autoplay=1&rel=0&playsinline=1'" class="yt-iframe" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             <div v-if="videoPlaying && videoEmbedUrl" class="video-fallback">
               <span v-if="videoError">Lecture intégrée impossible (vidéo non embarquable ou bloquée) —</span>
               <a :href="'https://www.youtube.com/watch?v=' + videoWatchId" target="_blank" rel="noopener">
@@ -259,7 +259,6 @@ const isOwnProduct = computed(() =>
 
 const currentImg = ref('')
 const showVideo = ref(false)
-const ytPlayerRef = ref<HTMLElement | null>(null)
 const videoPlaying = ref(false)
 // Détection d'échec du lecteur : si aucune requête vers googlevideo (le CDN du flux)
 // après quelques secondes, YouTube n'a pas pu démarrer la lecture → fallback visible.
@@ -269,47 +268,16 @@ const videoWatchId = computed(() => {
   const m = String(v).match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/)
   return m ? m[1] : ''
 })
-watch(videoPlaying, async (playing) => {
+watch(videoPlaying, (playing) => {
   if (!playing) return
   videoError.value = false
-  await nextTick()
-  try {
-    await loadYouTubeApi()
-    if (!ytPlayer && ytPlayerRef.value && videoWatchId.value) {
-      ytPlayer = new (window as any).YT.Player(ytPlayerRef.value, {
-        videoId: videoWatchId.value,
-        // Dimensions passées au constructeur : l'iframe injectée par l'API n'a pas les
-        // attributs scoped de Vue, donc le CSS .yt-player-box iframe ne s'applique pas.
-        // width/height 100% en attributs inline garantissent le remplissage.
-        width: '100%',
-        height: '100%',
-        playerVars: { rel: 0, playsinline: 1 },
-        events: {
-          onReady: () => { try { ytPlayer?.playVideo() } catch {} },
-          // 101/150 = embedding désactivé → fallback immédiat (fini le spinner infini)
-          onError: (e: any) => { videoError.value = true },
-        },
-      })
-    }
-  } catch (e) {
-    videoError.value = true
-  }
+  // Détection d'échec : si aucun flux vidéo (googlevideo) après 4 s → fallback visible
+  setTimeout(() => {
+    if (!videoPlaying.value) return
+    const hasStream = performance.getEntriesByType('resource').some((r: any) => /googlevideo\.com/.test(r.name))
+    if (!hasStream) videoError.value = true
+  }, 4000)
 })
-// Charge l'API officielle YouTube IFrame (injectée au 1er clic, jamais en SSR)
-let ytPlayer: any = null
-function loadYouTubeApi(): Promise<boolean> {
-  return new Promise((resolve) => {
-    const w = window as any
-    if (w.YT?.Player) return resolve(true)
-    const prev = w.onYouTubeIframeAPIReady
-    w.onYouTubeIframeAPIReady = () => { prev?.(); resolve(true) }
-    const tag = document.createElement('script')
-    tag.src = 'https://www.youtube.com/iframe_api'
-    tag.onerror = () => resolve(false)
-    document.head.appendChild(tag)
-    setTimeout(() => resolve(!!w.YT?.Player), 8000)
-  })
-}
 const activeTab = ref('description')
 // Ouverture directe de l'onglet Avis depuis le popup post-achat (?tab=reviews)
 if (route.query.tab === 'reviews') activeTab.value = 'reviews'
@@ -510,10 +478,8 @@ onMounted(async () => {
 .video-cta { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:4; display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:999px; background:rgba(15,15,15,.8); color:#fff; font-size:.8rem; font-weight:700; cursor:pointer; transition:background .15s ease, transform .15s ease; }
 .video-cta svg { color:#fff; flex-shrink:0; }
 .video-cta:hover { background:rgba(255,0,0,.95); transform:translateX(-50%) scale(1.04); }
-/* Conteneur du lecteur : hauteur garantie par aspect-ratio, iframe pleine taille
-   (:deep requis — l'iframe est injectée par l'API YouTube, sans attribut scoped Vue) */
-.yt-player-box { position:relative; width:100%; aspect-ratio:16/10; z-index:1; }
-.yt-player-box :deep(iframe) { position:absolute; inset:0; width:100% !important; height:100% !important; border:0; }
+/* Lecteur vidéo : iframe DIRECTE dans le template (styles scoped appliqués normalement) */
+.yt-iframe { position:absolute; inset:0; width:100% !important; height:100% !important; border:0; z-index:1; }
 .video-fallback { display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 10px; font-size:.8rem; color:var(--text-muted); flex-wrap:wrap; }
 .video-fallback a { display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:8px; background:rgba(255,0,0,.12); color:#ff4d4d; font-weight:700; text-decoration:none; transition:background .15s ease; }
 .video-fallback a:hover { background:rgba(255,0,0,.22); }
