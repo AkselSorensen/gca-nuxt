@@ -449,7 +449,7 @@ onMounted(async () => {
 .yt-badge-sm { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; width:26px; height:26px; opacity:.9; box-shadow:0 2px 6px rgba(0,0,0,.4); }
 .thumb-btn:hover .yt-badge-sm { opacity:1; }
 /* Icône (image envoyée par le client) — centrage ABSOLU au milieu exact de la vidéo */
-.yt-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:30px; height:30px; object-fit:contain !important; opacity:.9; filter:drop-shadow(0 4px 12px rgba(0,0,0,.5)); cursor:pointer; z-index:3; }
+.yt-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:24px; height:24px; object-fit:contain !important; opacity:.9; filter:drop-shadow(0 4px 12px rgba(0,0,0,.5)); cursor:pointer; z-index:3; }
 /* Bounce SUR LUI-MÊME (scale depuis le centre — aucun décalage) */
 .video-preview:hover .yt-overlay { animation: yt-bounce .5s ease; }
 @keyframes yt-bounce {
