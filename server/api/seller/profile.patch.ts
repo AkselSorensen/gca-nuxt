@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
   if (!updates.length) throw createError({ statusCode: 400, statusMessage: 'Aucun champ à mettre à jour' })
 
   params.push(user.id)
-  await query(`UPDATE users SET ${updates.join(', ')}, updated_at = NOW() WHERE id = $${params.length}`, params)
+  await query(`UPDATE users SET ${updates.join(', ')} WHERE id = $${params.length}`, params)
 
   const fresh = await query(
     'SELECT id, display_name, slug, seller_description, shop_name, discord_tag FROM users WHERE id = $1',
