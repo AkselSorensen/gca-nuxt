@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
       const buffer = Buffer.from(await obj.Body!.transformToByteArray())
       const mime = row.media_type === 'video' ? 'video/mp4' : (row.media_type || 'image/jpeg')
       setResponseHeader(event, 'Content-Type', mime)
-      setResponseHeader(event, 'Cache-Control', 'public, max-age=604800, immutable')
+      setResponseHeader(event, 'Cache-Control', 'public, max-age=300')
       setResponseHeader(event, 'Content-Length', String(buffer.length))
       return buffer
     } catch (error: any) {
@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
   const buffer = Buffer.from(match[2], 'base64')
 
   setResponseHeader(event, 'Content-Type', mime)
-  setResponseHeader(event, 'Cache-Control', 'public, max-age=604800, immutable')
+  setResponseHeader(event, 'Cache-Control', 'public, max-age=300')
   setResponseHeader(event, 'Content-Length', String(buffer.length))
 
   return buffer
