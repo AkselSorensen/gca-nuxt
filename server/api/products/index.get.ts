@@ -4,7 +4,9 @@ import { defineEventHandler, getQuery, createError, setResponseHeader } from 'h3
 import { query } from '../../services/db'
 import { buildWhereClause, mapProduct } from '../../services/products'
 
-const CACHE_PUBLIC = 'public, max-age=60, s-maxage=300, stale-while-revalidate=300'
+// Pas de cache navigateur (max-age=0) : les prix/catégories changent côté admin et
+// l'utilisateur ne doit JAMAIS avoir à refresh. Seul le CDN garde 5 min (purgé au PATCH admin).
+const CACHE_PUBLIC = 'public, max-age=0, s-maxage=300, stale-while-revalidate=300'
 
 const allowedSorts: Record<string, string> = {
   popular: 'p.popularity_score DESC, p.views DESC',

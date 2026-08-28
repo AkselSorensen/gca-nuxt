@@ -8,7 +8,7 @@ import { getSessionUser, getSessionLocale } from '../utils/auth'
 const DISCORD_INVITE = 'https://discord.gg/KDsEzGRnKs'
 
 export default defineEventHandler(async (event) => {
-  setResponseHeader(event, 'Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=300')
+  setResponseHeader(event, 'Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=300')
   try {
     const [sessionUser, locale] = await Promise.all([getSessionUser(event), getSessionLocale(event)])
 
