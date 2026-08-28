@@ -173,8 +173,12 @@ function goReview(slug: string) {
 
 async function fetchPurchases() {
   loading.value = true; error.value = ''
+  // Timeout 12s : l'endpoint peut rame (cold start serveur) mais ne doit JAMAIS
+  // laisser la page "charger" indéfiniment.
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 12000)
   try {
-    const data = await $fetch(api + '/api/user/purchases', { credentials: 'include' })
+    const data = await $fetch(api + '/api/user/purchases', { credentials: 'include', signal: controller.signal })
     purchases.value = data.items || []
   } catch (e: any) {
     const code = e?.statusCode || e?.status || 'NETWORK'
@@ -187,6 +191,7 @@ async function fetchPurchases() {
       error.value = t('downloads.srv_error') + ' (' + code + ')'
     }
   } finally {
+    clearTimeout(timer)
     loading.value = false
   }
 }

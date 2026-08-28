@@ -17,7 +17,7 @@
         <div class="product-gallery anim-left">
           <div class="gallery-main">
             <iframe v-if="showVideo && videoPlaying && videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            <div v-else-if="showVideo && videoThumbUrl" class="video-preview" @click="videoPlaying = true">
+            <div v-else-if="showVideo && videoThumbUrl" class="video-preview" @click="showVideo = true; videoPlaying = true">
               <img :src="videoThumbUrl" :alt="'Vidéo — ' + product.title" />
               <div class="video-play">
                 <!-- Bouton lecture style YouTube : rectangle arrondi rouge + triangle blanc -->

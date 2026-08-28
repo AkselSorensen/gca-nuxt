@@ -133,7 +133,7 @@ export async function getProductBySlug(slug: string, userId: number | null = nul
       JOIN categories c ON c.id = p.category_id
       JOIN users s ON s.id = p.seller_id
       LEFT JOIN product_media pm ON pm.product_id = p.id
-      WHERE p.slug = $1
+      WHERE p.slug = $1 AND p.is_hidden = FALSE
       GROUP BY p.id, c.name, c.slug, s.id, s.display_name, s.slug, s.avatar_url
       LIMIT 1
     `,

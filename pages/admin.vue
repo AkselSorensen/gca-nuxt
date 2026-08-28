@@ -653,18 +653,27 @@
             </div>
             <div class="field">
               <label>Fichier du produit (zip)</label>
-              <div v-if="!uploadFile" class="file-zone" @click="fileInput?.click()" @dragover.prevent @drop.prevent="handleFileUpload">
+              <div v-if="!uploadFile && !existingFile" class="file-zone" @click="fileInput?.click()" @dragover.prevent @drop.prevent="handleFileUpload">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
                 <span>Glissez votre fichier zip ici</span>
-                <small v-if="uploadFileName">{{ uploadFileName }}</small>
-                <small v-else>Max 2 Go</small>
+                <small>Max 2 Go — un seul fichier par produit</small>
               </div>
-              <div v-else class="file-preview">
+              <div v-else-if="uploadFile" class="file-preview">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
-                <span class="file-name">{{ uploadFileName }}</span>
+                <span class="file-name">{{ uploadFileName }} <small class="file-size">{{ formatSize(uploadFileSize) }}</small></span>
                 <button type="button" class="file-remove" @click="removeFile">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  Retirer le fichier
+                  Annuler
+                </button>
+              </div>
+              <div v-else class="file-preview current">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+                <span class="file-name">{{ existingFile.filename }} <small class="file-size">{{ formatSize(existingFile.file_size) }}</small></span>
+                <span class="file-current-label">Fichier actuel</span>
+                <button type="button" class="file-replace" @click="fileInput?.click()">Remplacer</button>
+                <button type="button" class="file-remove" @click="deleteExistingFile" title="Supprimer le fichier">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  Supprimer
                 </button>
               </div>
               <input ref="fileInput" type="file" accept=".zip,.rar,.7z" style="display:none" @change="handleFileUpload" />
@@ -987,6 +996,7 @@ function openProductForm() {
   editingId.value = null
   productMedia.value = []
   pendingMedia.value = []
+  existingFile.value = null
   Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, commissionPercent:'', platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
@@ -996,6 +1006,9 @@ function openProductForm() {
 function editProduct(p: any) {
   editingId.value = p.id
   pendingMedia.value = []
+  existingFile.value = null
+  uploadFile.value = null; uploadFileName.value = ''; uploadFileSize.value = 0
+  loadExistingFile(p.id)
   productMedia.value = (p.media || []).map((m: any) => ({ id: m.id, url: m.url, thumbnail: m.thumbnail }))
   Object.assign(productForm, {
     title: p.title || '',
@@ -1073,6 +1086,7 @@ function closeProductForm() {
   editingId.value = null
   productMedia.value = []
   pendingMedia.value = []
+  existingFile.value = null
   Object.assign(productForm, { title:'', shortDescription:'', description:'', installation:'', categorySlug:'', categories: [] as string[], sellerSlug:'', price:0, discountPercent:0, commissionPercent:'', platform:"Garry's Mod", videoUrl:'', tags:'', thumbnail:'', isHidden:false })
   uploadThumb.value = ''; removeFile()
   selectedTags.value = []; newTag.value = ''
@@ -1134,6 +1148,8 @@ const uploadFile = ref<File | null>(null)
 const uploadFileName = ref('')
 const uploadFileSize = ref(0)
 const fileInput = ref<HTMLInputElement | null>(null)
+// Fichier ACTUELLEMENT lié au produit (édition) — un seul fichier par produit
+const existingFile = ref<any | null>(null)
 function handleFileUpload(e: any) {
   const file = e.target?.files?.[0] || e.dataTransfer?.files?.[0]
   if (!file) return
@@ -1145,6 +1161,23 @@ function removeFile() {
   uploadFile.value = null
   uploadFileName.value = ''
   uploadFileSize.value = 0
+}
+async function loadExistingFile(productId: number) {
+  existingFile.value = null
+  try {
+    const res = await $fetch(api + '/api/admin/products/' + productId + '/files', { credentials: 'include' })
+    existingFile.value = res.items?.[0] || null
+  } catch { existingFile.value = null }
+}
+async function deleteExistingFile() {
+  if (!existingFile.value) return
+  try {
+    await $fetch(api + '/api/admin/products/' + editingId.value + '/files/' + existingFile.value.id, { credentials: 'include', method: 'DELETE' })
+    existingFile.value = null
+    toastRef.value?.show('success', 'Fichier supprimé')
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.statusMessage || e?.data?.message || 'Suppression impossible')
+  }
 }
 function formatSize(bytes: number) {
   if (!bytes) return ''
@@ -1194,6 +1227,7 @@ async function saveProduct() {
 
     editingId.value = null
     showProductForm.value = false; loadProducts()
+    existingFile.value = null
     toastRef.value?.show('success', isEdit ? 'Produit modifié' : ('Produit créé' + (uploadFile.value ? ' + fichier uploadé' : '')))
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.message || e?.message || 'Erreur')
@@ -1650,6 +1684,9 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 }
 .file-remove { display:inline-flex;align-items:center;gap:6px;margin-left:auto;padding:6px 12px;border-radius:8px;border:1px solid rgba(220,38,38,.35);background:rgba(220,38,38,.07);color:#dc2626;font-size:.76rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s ease; }
 .file-remove:hover { background:rgba(220,38,38,.15); }
+.file-replace { display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid rgba(47,125,246,.35);background:rgba(47,125,246,.08);color:var(--primary);font-size:.76rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s ease; }
+.file-replace:hover { background:rgba(47,125,246,.16); }
+.file-current-label { padding:3px 8px;border-radius:6px;background:rgba(110,231,183,.12);color:#22c55e;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.3px; }
 .file-preview .file-name { flex:1;font-weight:600;font-size:.85rem;color:var(--text); }
 .file-preview .file-size { color:var(--text-muted);font-size:.78rem; }
 .thumb-zone svg { opacity:.4; }

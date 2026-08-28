@@ -13,10 +13,12 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    // Remplacement : un seul fichier par produit (le nouveau prend le dessus)
+    await query('DELETE FROM product_files WHERE product_id = $1', [productId])
     const result = await query(
       `INSERT INTO product_files (product_id, filename, file_size, storage_path, is_main, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-      [productId, filename, file_size || 0, storage_path, !!is_main, sort_order || 0]
+       VALUES ($1, $2, $3, $4, TRUE, 0) RETURNING id`,
+      [productId, filename, file_size || 0, storage_path]
     )
     return { ok: true, id: result.rows[0].id }
   } catch (error: any) {

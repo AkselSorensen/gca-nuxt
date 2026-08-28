@@ -147,7 +147,9 @@ const categoryIcons: Record<string, { icon: string; color: string; bg: string }>
 const categoryFallback = { icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f7df6" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>', color: '#2f7df6', bg: 'rgba(47,125,246,0.08)' }
 
 const categories = computed(() => {
-  return (state.value.categories || []).map((c: any) => ({
+  return (state.value.categories || [])
+    .filter((c: any) => c.slug !== '3d-import') // retirée de la home (décision user)
+    .map((c: any) => ({
     slug: c.slug,
     name: c.name,
     count: Number(c.productCount ?? c.product_count ?? c._count?.products ?? 0),

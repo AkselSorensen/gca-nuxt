@@ -287,6 +287,7 @@ const filteredProducts = computed(() => {
   switch (filters.sort) {
     case 'popular': result.sort((a: any, b: any) => (b.popularityScore || b.sales || 0) - (a.popularityScore || a.sales || 0)); break
     case 'newest': result.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break
+    case 'discount': result.sort((a: any, b: any) => (b.discountPercent || 0) - (a.discountPercent || 0)); break
     case 'price-asc': result.sort((a: any, b: any) => Number(a.price) - Number(b.price)); break
     case 'price-desc': result.sort((a: any, b: any) => Number(b.price) - Number(a.price)); break
     case 'rating': result.sort((a: any, b: any) => Number(b.rating || 0) - Number(a.rating || 0)); break

@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
               LIMIT 1
             ) AS thumbnail_id
           FROM products p
-          WHERE (p.is_trending = TRUE OR EXISTS (SELECT 1 FROM unnest(p.tags) AS t WHERE LOWER(t) = 'tendance'))
+          WHERE p.is_hidden = FALSE AND (p.is_trending = TRUE OR EXISTS (SELECT 1 FROM unnest(p.tags) AS t WHERE LOWER(t) = 'tendance'))
           ORDER BY p.popularity_score DESC, p.views DESC
           LIMIT 8
         `
@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
               LIMIT 1
             ) AS thumbnail_id
           FROM products p
-          WHERE p.discount_percent > 0
+          WHERE p.is_hidden = FALSE AND p.discount_percent > 0
           ORDER BY p.discount_percent DESC, p.views DESC
           LIMIT 6
         `
