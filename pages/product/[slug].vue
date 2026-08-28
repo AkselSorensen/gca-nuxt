@@ -16,7 +16,7 @@
         <!-- Left: Gallery -->
         <div class="product-gallery anim-left">
           <div class="gallery-main">
-            <iframe v-if="showVideo && videoPlaying && videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe v-if="showVideo && videoPlaying && videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             <div v-else-if="showVideo && videoThumbUrl" class="video-preview" @click="showVideo = true; videoPlaying = true">
               <img :src="videoThumbUrl" :alt="'Vidéo — ' + product.title" />
               <div class="video-play">
@@ -323,7 +323,9 @@ const videoEmbedUrl = computed(() => {
   const v = product.value?.videoUrl
   if (!v) return ''
   const m = String(v).match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/)
-  return m ? `https://www.youtube.com/embed/${m[1]}` : ''
+  // youtube-nocookie.com : mode confidentialité renforcée — se charge aussi avec les
+  // bloqueurs de traqueurs (uBlock/Brave) qui font "charger à l'infini" sur youtube.com/embed
+  return m ? `https://www.youtube-nocookie.com/embed/${m[1]}` : ''
 })
 
 // Miniature YouTube (preview de la vidéo sans la jouer)
