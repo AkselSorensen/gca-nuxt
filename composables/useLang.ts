@@ -513,6 +513,13 @@ const messages: Record<Locale, Record<string, string>> = {
     'about.outro_1': 'Des ressources sélectionnées.',
     'about.outro_2': 'Des services pour créer.',
     'about.outro_3': 'Un accompagnement humain.',
+    'cart.subtotal': 'Sous-total',
+    'cart.browse': 'Parcourir le catalogue',
+    'footer.foundations': 'Fondations juridiques',
+    'footer.cgu': 'CGU',
+    'footer.cookies': 'Politique des cookies',
+    'footer.withdrawal': 'Politique de rétractation',
+    'footer.contract': 'Contrat vendeur',
   },
   en: {
     'nav.home': 'Home',
@@ -1006,6 +1013,13 @@ const messages: Record<Locale, Record<string, string>> = {
     'about.outro_1': 'Curated resources.',
     'about.outro_2': 'Services to create.',
     'about.outro_3': 'Human support.',
+    'cart.subtotal': 'Subtotal',
+    'cart.browse': 'Browse the catalog',
+    'footer.foundations': 'Legal foundations',
+    'footer.cgu': 'ToU',
+    'footer.cookies': 'Cookie policy',
+    'footer.withdrawal': 'Withdrawal policy',
+    'footer.contract': 'Seller contract',
   },
 
 }

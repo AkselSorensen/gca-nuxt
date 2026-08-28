@@ -54,7 +54,7 @@
         </div>
         <div class="cart-summary anim-right">
           <h3>{{ t('cart.summary') }}</h3>
-          <div class="summary-row"><span>Sous-total</span><span>{{ subtotal.toFixed(2) }}€</span></div>
+          <div class="summary-row"><span>{{ t('cart.subtotal') }}</span><span>{{ subtotal.toFixed(2) }}€</span></div>
           <div v-if="promoDiscount > 0" class="summary-row promo-valid"><span>{{ t('cart.discount') }}</span><span>-{{ promoDiscount.toFixed(2) }}€</span></div>
           <div class="summary-total"><span>{{ t('cart.total') }}</span><strong>{{ total.toFixed(2) }}€</strong></div>
           <div class="promo-row">
@@ -75,7 +75,7 @@
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         {{ t('cart.empty') }}
         <p>{{ t('cart.empty_sub') }}</p>
-        <NuxtLink to="/catalogue" class="btn-browse">Parcourir le catalogue</NuxtLink>
+        <NuxtLink to="/catalogue" class="btn-browse">{{ t('cart.browse') }}</NuxtLink>
       </div>
     </div>
   </div>
