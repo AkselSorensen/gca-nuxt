@@ -6,17 +6,17 @@
           <div class="wa-icon">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
           </div>
-          <h3>Livraison immédiate — renonciation au droit de rétractation</h3>
-          <p class="wa-text">Vous êtes sur le point d'acheter un <strong>contenu numérique téléchargé immédiatement</strong> après le paiement.</p>
-          <p class="wa-text">Conformément à l'article <strong>L221-28 du Code de la consommation</strong>, en acceptant la livraison immédiate du contenu, vous <strong>renoncez expressément à votre droit de rétractation</strong>. Aucun remboursement ne sera possible après le téléchargement, sauf produit non conforme.</p>
+          <h3>{{ t('wa.title') }}</h3>
+          <p class="wa-text" v-html="t('wa.desc1')"></p>
+          <p class="wa-text" v-html="t('wa.desc2')"></p>
           <label class="wa-check" :class="{ checked: ack }">
             <input type="checkbox" v-model="ack" />
             <span class="wa-box"><svg v-if="ack" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
-            Je comprends que la livraison est immédiate et je renonce à mon droit de rétractation.
+            {{ t('wa.ack') }}
           </label>
           <div class="wa-actions">
-            <button class="btn-cancel" @click="cancel">Annuler</button>
-            <button class="btn-confirm" :disabled="!ack" @click="confirm">Continuer vers le paiement</button>
+            <button class="btn-cancel" @click="cancel">{{ t('wa.cancel') }}</button>
+            <button class="btn-confirm" :disabled="!ack" @click="confirm">{{ t('wa.confirm') }}</button>
           </div>
         </div>
       </div>
@@ -28,6 +28,7 @@
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ (e: 'confirm'): void; (e: 'cancel'): void }>()
 const ack = ref(false)
+const { t } = useLang()
 
 watch(() => props.open, (v) => { if (v) ack.value = false })
 

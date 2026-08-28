@@ -26,7 +26,7 @@
       <!-- Retry state -->
       <div v-if="checkoutSessionId && !checkoutSuccess" class="retry-banner anim-scale">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <h2>Paiement en attente de confirmation</h2>
+        <h2>{{ t('cart.pending') }}</h2>
         <p>{{ t('cart.pending') }}</p>
         <button class="btn-retry" @click="confirmCheckout(checkoutSessionId)">{{ t('cart.retry') }}</button>
         <NuxtLink to="/downloads" class="link-dl">{{ t('cart.see_downloads') }}</NuxtLink>
@@ -88,11 +88,11 @@
           <div class="confirm-icon">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           </div>
-          <h3>Supprimer cet article ?</h3>
+          <h3>{{ t('cart.delete_title') }}</h3>
           <p class="confirm-item">{{ items[confirmRemoveIndex]?.title }}</p>
           <div class="confirm-actions">
-            <button class="btn-cancel" @click="cancelRemove">Annuler</button>
-            <button class="btn-delete" @click="confirmRemove">Supprimer</button>
+            <button class="btn-cancel" @click="cancelRemove">{{ t('cart.cancel') }}</button>
+            <button class="btn-delete" @click="confirmRemove">{{ t('cart.delete') }}</button>
           </div>
         </div>
       </div>

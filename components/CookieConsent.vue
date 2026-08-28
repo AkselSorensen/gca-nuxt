@@ -8,13 +8,13 @@
             <div class="cookie-icon">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M21 15.9v.1a3 3 0 0 1-3 3h-1a2 2 0 0 0-2 2 2 2 0 0 1-2 2H7a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4h1a2 2 0 0 1 2 2v.1"/><circle cx="17" cy="8" r="1"/><circle cx="13" cy="7" r="1"/><circle cx="16" cy="12" r="1"/><circle cx="8" cy="12" r="1"/><circle cx="6" cy="7" r="1"/></svg>
             </div>
-            <h3>Nous respectons votre vie privée</h3>
-            <p class="cookie-text">GSA utilise des cookies pour garantir le fonctionnement de la plateforme (connexion, panier, langue), et uniquement ceux-là. Aucun cookie publicitaire n'est utilisé.</p>
+            <h3>{{ t('cookie.title') }}</h3>
+            <p class="cookie-text">{{ t('cookie.text') }}</p>
             <div class="cookie-actions">
-              <button class="btn-accept" @click="acceptAll">Tout accepter</button>
-              <button class="btn-refuse" @click="refuseAll">Tout refuser</button>
+              <button class="btn-accept" @click="acceptAll">{{ t('cookie.accept') }}</button>
+              <button class="btn-refuse" @click="refuseAll">{{ t('cookie.refuse') }}</button>
               <button class="btn-more" @click="showDetails = true">
-                Voir plus
+                {{ t('cookie.more') }}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
             </div>
@@ -24,12 +24,12 @@
           <template v-else>
             <div class="cookie-head">
               <div>
-                <h3>Gestion des cookies</h3>
-                <p class="cookie-sub">Activez ou désactivez chaque catégorie de cookies.</p>
+                <h3>{{ t('cookie.manage') }}</h3>
+                <p class="cookie-sub">{{ t('cookie.manage_sub') }}</p>
               </div>
               <button class="cookie-back" @click="showDetails = false">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                Retour
+                {{ t('cookie.back') }}
               </button>
             </div>
 
@@ -38,10 +38,10 @@
               <div class="cookie-group">
                 <div class="cookie-group-head">
                   <div>
-                    <strong>Cookies essentiels</strong>
-                    <p>Indispensables au fonctionnement du site. Toujours actifs.</p>
+                    <strong>{{ t('cookie.essential') }}</strong>
+                    <p>{{ t('cookie.essential_desc') }}</p>
                   </div>
-                  <span class="badge-always">Toujours actifs</span>
+                  <span class="badge-always">{{ t('cookie.always') }}</span>
                 </div>
                 <div class="cookie-list">
                   <div v-for="c in essentialCookies" :key="c.name" class="cookie-row">
@@ -49,7 +49,7 @@
                       <code>{{ c.name }}</code>
                       <span>{{ c.desc }}</span>
                     </div>
-                    <span class="switch on" aria-label="Actif"><span class="knob"></span></span>
+                    <span class="switch on" :aria-label="t('cookie.active')"><span class="knob"></span></span>
                   </div>
                 </div>
               </div>
@@ -58,8 +58,8 @@
               <div class="cookie-group">
                 <div class="cookie-group-head">
                   <div>
-                    <strong>Cookies de préférences</strong>
-                    <p>Mémorisent vos choix pour améliorer votre expérience.</p>
+                    <strong>{{ t('cookie.prefs') }}</strong>
+                    <p>{{ t('cookie.prefs_desc') }}</p>
                   </div>
                   <label class="switch" :class="{ on: prefsCookies }"><input type="checkbox" v-model="prefsCookies" /><span class="knob"></span></label>
                 </div>
@@ -78,10 +78,10 @@
               <div class="cookie-group">
                 <div class="cookie-group-head">
                   <div>
-                    <strong>Cookies d'analyse</strong>
-                    <p>Aucun cookie de ce type n'est utilisé actuellement.</p>
+                    <strong>{{ t('cookie.analytics') }}</strong>
+                    <p>{{ t('cookie.analytics_desc') }}</p>
                   </div>
-                  <span class="badge-none">Aucun</span>
+                  <span class="badge-none">{{ t('cookie.none') }}</span>
                 </div>
               </div>
             </div>
@@ -89,7 +89,7 @@
             <div class="cookie-actions">
               <button class="btn-accept" @click="acceptAll">Tout accepter</button>
               <button class="btn-refuse" @click="refuseAll">Tout refuser</button>
-              <button class="btn-save" @click="savePrefs">Enregistrer mes choix</button>
+              <button class="btn-save" @click="savePrefs">{{ t('cookie.save') }}</button>
             </div>
           </template>
         </div>
@@ -102,15 +102,16 @@
 const visible = ref(false)
 const showDetails = ref(false)
 const prefsCookies = ref(true)
+const { t } = useLang()
 
 const essentialCookies = [
-  { name: 'connect.sid', desc: 'Session de connexion (authentification)' },
-  { name: 'gsa-cart', desc: 'Panier d\'achat' },
-  { name: 'gsa-locale', desc: 'Langue préférée' },
+  { name: 'connect.sid', desc: t('cookie.desc_session') },
+  { name: 'gsa-cart', desc: t('cookie.desc_cart') },
+  { name: 'gsa-locale', desc: t('cookie.desc_locale') },
 ]
 const preferenceCookies = [
-  { name: 'gsa-cookie-consent', desc: 'Mémorisation de votre choix de cookies' },
-  { name: 'gsa-return', desc: 'Retour après paiement (confirmation de session)' },
+  { name: 'gsa-cookie-consent', desc: t('cookie.desc_consent') },
+  { name: 'gsa-return', desc: t('cookie.desc_return') },
 ]
 
 function loadConsent() {

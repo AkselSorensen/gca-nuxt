@@ -61,7 +61,7 @@ async function handleLogin() {
     const role = res?.user?.role || user?.value?.role
     const slug = res?.user?.slug || user?.value?.slug
     if (tab.value === 'admin' && role !== 'admin') {
-      error.value = 'Ces identifiants ne sont pas ceux d\'un administrateur.'
+      error.value = t('login.not_admin')
       submitting.value = false
       return
     }
@@ -70,7 +70,7 @@ async function handleLogin() {
     else if (role === 'seller' && slug) navigateTo('/seller/' + slug)
     else navigateTo('/')
   } catch (e: any) {
-    error.value = e.data?.message || e.message || 'Erreur de connexion'
+    error.value = e.data?.message || e.message || t('login.error')
   } finally { submitting.value = false }
 }
 
@@ -89,9 +89,9 @@ onMounted(async () => {
         <h1>{{ t('login.title') }}</h1>
       </div>
       <div class="auth-tabs">
-        <button class="tab-btn" :class="{ active: tab === 'user' }" @click="tab = 'user'">Utilisateur</button>
-        <button class="tab-btn" :class="{ active: tab === 'seller' }" @click="tab = 'seller'">Vendeur</button>
-        <button class="tab-btn" :class="{ active: tab === 'admin' }" @click="tab = 'admin'">Administrateur</button>
+        <button class="tab-btn" :class="{ active: tab === 'user' }" @click="tab = 'user'">{{ t('login.tab_user') }}</button>
+        <button class="tab-btn" :class="{ active: tab === 'seller' }" @click="tab = 'seller'">{{ t('login.tab_seller') }}</button>
+        <button class="tab-btn" :class="{ active: tab === 'admin' }" @click="tab = 'admin'">{{ t('login.tab_admin') }}</button>
       </div>
 
       <!-- Panneau : pas membre du serveur Discord -->
@@ -99,27 +99,27 @@ onMounted(async () => {
         <div class="join-icon">
           <IconDiscord :size="30" />
         </div>
-        <h2>Rejoignez le serveur Discord GSA</h2>
-        <p>Pour vous connecter ou vous inscrire, vous devez être membre du serveur Discord officiel GSA.</p>
+        <h2>{{ t('login.join_title') }}</h2>
+        <p>{{ t('login.join_desc') }}</p>
         <div v-if="discordAttempted" class="join-error">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Vous n'avez pas encore rejoint le serveur Discord. Cliquez sur « Rejoindre le serveur Discord » ci-dessous, acceptez l'invitation, puis revenez ici.
+          {{ t('login.join_error') }}
         </div>
         <a href="https://discord.gg/KDsEzGRnKs" target="_blank" rel="noopener" class="btn-join" @click="joinDiscord">
           <IconDiscord :size="18" />
-          Rejoindre le serveur Discord
+          {{ t('login.join_btn') }}
         </a>
-        <button class="btn-retry" @click="discordLogin">Je suis membre, me connecter</button>
+        <button class="btn-retry" @click="discordLogin">{{ t('login.join_retry') }}</button>
       </div>
 
       <!-- Connexion Discord -->
       <div v-else-if="tab !== 'admin'" class="auth-form">
         <button class="btn-discord-main" @click="discordLogin">
           <IconDiscord :size="20" />
-          {{ submitting ? 'Redirection…' : (tab === 'seller' ? 'Se connecter en tant que vendeur avec Discord' : 'Se connecter avec Discord') }}
+          {{ submitting ? t('login.redirecting') : (tab === 'seller' ? t('login.with_discord_seller') : t('login.with_discord')) }}
         </button>
-        <p class="discord-note anim-fade">Vous devez être membre du serveur Discord GSA pour accéder à la plateforme.</p>
-        <p class="auth-footer anim-fade">Pas encore de compte ? <NuxtLink :to="route.query.redirect ? '/register?redirect=' + encodeURIComponent(String(route.query.redirect)) : '/register'">S'inscrire</NuxtLink></p>
+        <p class="discord-note anim-fade">{{ t('login.discord_note') }}</p>
+        <p class="auth-footer anim-fade">{{ t('login.no_account') }} <NuxtLink :to="route.query.redirect ? '/register?redirect=' + encodeURIComponent(String(route.query.redirect)) : '/register'">{{ t('nav.register') }}</NuxtLink></p>
       </div>
 
       <!-- Admin Login -->
@@ -128,10 +128,10 @@ onMounted(async () => {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <span>{{ t('login.admin_sub') }}</span>
         </div>
-        <div class="field anim-up"><label>Email</label><input v-model="email" type="email" placeholder="GSA" required /></div>
-        <div class="field anim-up"><label>Mot de passe</label><input v-model="password" type="password" placeholder="••••••••" required /></div>
+        <div class="field anim-up"><label>{{ t('login.email') }}</label><input v-model="email" type="email" placeholder="GSA" required /></div>
+        <div class="field anim-up"><label>{{ t('login.password') }}</label><input v-model="password" type="password" placeholder="••••••••" required /></div>
         <p v-if="error" class="auth-error anim-fade">{{ error }}</p>
-        <button type="submit" class="btn-submit btn-admin anim-up" :disabled="submitting">{{ submitting ? 'Connexion…' : 'Accéder au panneau' }}</button>
+        <button type="submit" class="btn-submit btn-admin anim-up" :disabled="submitting">{{ submitting ? t('login.submitting') : t('login.access_admin') }}</button>
       </form>
     </div>
   </div>
