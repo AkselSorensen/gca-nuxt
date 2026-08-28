@@ -17,8 +17,8 @@
         <div class="product-gallery anim-left">
           <div class="gallery-main">
             <iframe v-if="showVideo && videoPlaying && videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-            <div v-if="videoPlaying && videoEmbedUrl" class="video-fallback" :class="{ visible: videoError }">
-              <span v-if="videoError">Le lecteur ne se charge pas (bloqueur ou vidéo non embarquable).</span>
+            <div v-if="videoPlaying && videoEmbedUrl" class="video-fallback">
+              <span v-if="videoError">Le lecteur ne se charge pas (bloqueur ou vidéo non embarquable) —</span>
               <a :href="'https://www.youtube.com/watch?v=' + videoWatchId" target="_blank" rel="noopener">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 Ouvrir sur YouTube
@@ -275,7 +275,7 @@ watch(videoPlaying, (playing) => {
     if (!videoPlaying.value) return
     const hasStream = performance.getEntriesByType('resource').some((r: any) => /googlevideo\.com/.test(r.name))
     if (!hasStream) videoError.value = true
-  }, 6000)
+  }, 4000)
 })
 const activeTab = ref('description')
 // Ouverture directe de l'onglet Avis depuis le popup post-achat (?tab=reviews)
@@ -477,9 +477,8 @@ onMounted(async () => {
 .video-cta { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:4; display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:999px; background:rgba(15,15,15,.8); color:#fff; font-size:.8rem; font-weight:700; cursor:pointer; transition:background .15s ease, transform .15s ease; }
 .video-cta svg { color:#fff; flex-shrink:0; }
 .video-cta:hover { background:rgba(255,0,0,.95); transform:translateX(-50%) scale(1.04); }
-.video-fallback { display:none; align-items:center; justify-content:center; gap:10px; padding:10px; font-size:.82rem; color:var(--text-muted); }
-.video-fallback.visible { display:flex; }
-.video-fallback a { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; background:rgba(255,0,0,.12); color:#ff4d4d; font-weight:700; text-decoration:none; transition:background .15s ease; }
+.video-fallback { display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 10px; font-size:.8rem; color:var(--text-muted); flex-wrap:wrap; }
+.video-fallback a { display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:8px; background:rgba(255,0,0,.12); color:#ff4d4d; font-weight:700; text-decoration:none; transition:background .15s ease; }
 .video-fallback a:hover { background:rgba(255,0,0,.22); }
 .gallery-main iframe { width:100%;height:100%;border:0; }
 .thumb-video { display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.8rem; overflow:hidden; position:relative; }
