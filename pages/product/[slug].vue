@@ -16,9 +16,9 @@
         <!-- Left: Gallery -->
         <div class="product-gallery anim-left">
           <div class="gallery-main">
-            <iframe v-if="showVideo && videoPlaying && videoEmbedUrl" :src="videoEmbedUrl" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <div v-if="showVideo && videoPlaying && videoEmbedUrl" ref="ytPlayerRef" class="yt-player-box"></div>
             <div v-if="videoPlaying && videoEmbedUrl" class="video-fallback">
-              <span v-if="videoError">Le lecteur ne se charge pas (bloqueur ou vidéo non embarquable) —</span>
+              <span v-if="videoError">Lecture intégrée impossible (vidéo non embarquable ou bloquée) —</span>
               <a :href="'https://www.youtube.com/watch?v=' + videoWatchId" target="_blank" rel="noopener">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 Ouvrir sur YouTube
@@ -259,6 +259,7 @@ const isOwnProduct = computed(() =>
 
 const currentImg = ref('')
 const showVideo = ref(false)
+const ytPlayerRef = ref<HTMLElement | null>(null)
 const videoPlaying = ref(false)
 // Détection d'échec du lecteur : si aucune requête vers googlevideo (le CDN du flux)
 // après quelques secondes, YouTube n'a pas pu démarrer la lecture → fallback visible.
@@ -268,15 +269,42 @@ const videoWatchId = computed(() => {
   const m = String(v).match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/)
   return m ? m[1] : ''
 })
-watch(videoPlaying, (playing) => {
+watch(videoPlaying, async (playing) => {
   if (!playing) return
   videoError.value = false
-  setTimeout(() => {
-    if (!videoPlaying.value) return
-    const hasStream = performance.getEntriesByType('resource').some((r: any) => /googlevideo\.com/.test(r.name))
-    if (!hasStream) videoError.value = true
-  }, 4000)
+  await nextTick()
+  try {
+    await loadYouTubeApi()
+    if (!ytPlayer && ytPlayerRef.value && videoWatchId.value) {
+      ytPlayer = new (window as any).YT.Player(ytPlayerRef.value, {
+        videoId: videoWatchId.value,
+        playerVars: { rel: 0, playsinline: 1 },
+        events: {
+          onReady: () => { try { ytPlayer?.playVideo() } catch {} },
+          // 101/150 = embedding désactivé → fallback immédiat (fini le spinner infini)
+          onError: (e: any) => { videoError.value = true },
+        },
+      })
+    }
+  } catch (e) {
+    videoError.value = true
+  }
 })
+// Charge l'API officielle YouTube IFrame (injectée au 1er clic, jamais en SSR)
+let ytPlayer: any = null
+function loadYouTubeApi(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const w = window as any
+    if (w.YT?.Player) return resolve(true)
+    const prev = w.onYouTubeIframeAPIReady
+    w.onYouTubeIframeAPIReady = () => { prev?.(); resolve(true) }
+    const tag = document.createElement('script')
+    tag.src = 'https://www.youtube.com/iframe_api'
+    tag.onerror = () => resolve(false)
+    document.head.appendChild(tag)
+    setTimeout(() => resolve(!!w.YT?.Player), 8000)
+  })
+}
 const activeTab = ref('description')
 // Ouverture directe de l'onglet Avis depuis le popup post-achat (?tab=reviews)
 if (route.query.tab === 'reviews') activeTab.value = 'reviews'
@@ -477,6 +505,8 @@ onMounted(async () => {
 .video-cta { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:4; display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:999px; background:rgba(15,15,15,.8); color:#fff; font-size:.8rem; font-weight:700; cursor:pointer; transition:background .15s ease, transform .15s ease; }
 .video-cta svg { color:#fff; flex-shrink:0; }
 .video-cta:hover { background:rgba(255,0,0,.95); transform:translateX(-50%) scale(1.04); }
+.yt-player-box { width:100%; height:100%; position:relative; z-index:1; }
+.yt-player-box iframe { width:100%; height:100%; border:0; }
 .video-fallback { display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 10px; font-size:.8rem; color:var(--text-muted); flex-wrap:wrap; }
 .video-fallback a { display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:8px; background:rgba(255,0,0,.12); color:#ff4d4d; font-weight:700; text-decoration:none; transition:background .15s ease; }
 .video-fallback a:hover { background:rgba(255,0,0,.22); }
