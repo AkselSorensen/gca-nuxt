@@ -14,6 +14,10 @@
               <h1>{{ seller.displayName }}</h1>
             </div>
             <p v-if="seller.bio" class="sp-bio">{{ seller.bio }}</p>
+            <button v-if="isOwner && !editingBio" class="sp-btn sp-btn-ghost sp-bio-edit" @click="startEditBio">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Modifier la description
+            </button>
             <div class="sp-actions">
               <a v-if="seller.discordId" :href="'https://discord.com/users/' + seller.discordId" target="_blank" rel="noopener" class="sp-btn sp-btn-primary">
                 <IconDiscord :size="16" />
@@ -56,7 +60,15 @@
       <aside class="sp-sidebar anim-left">
         <div class="sp-card">
           <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> À propos</h3>
-          <p>{{ seller.bio || 'Aucune description fournie.' }}</p>
+          <template v-if="isOwner && editingBio">
+            <textarea v-model="bioDraft" rows="5" class="bio-edit-area" placeholder="Décrivez votre boutique..."></textarea>
+            <div class="bio-edit-actions">
+              <button class="sp-btn sp-btn-primary" :disabled="bioSaving" @click="saveBio">{{ bioSaving ? 'Enregistrement…' : 'Enregistrer' }}</button>
+              <button class="sp-btn sp-btn-ghost" @click="cancelEditBio">Annuler</button>
+            </div>
+          </template>
+          <p v-else>{{ seller.bio || 'Aucune description fournie.' }}</p>
+          <span v-if="bioMsg" class="bio-edit-msg">{{ bioMsg }}</span>
         </div>
 
         <div class="sp-card">
@@ -168,6 +180,44 @@ const toastRef = ref<InstanceType<typeof ToastNotif> | null>(null)
 
 const sellerSlug = route.params.id as string
 
+const { user } = useAuth()
+// Seul le vendeur propriétaire de la boutique peut éditer sa description
+const isOwner = computed(() => !!user.value?.slug && user.value.slug === sellerSlug)
+const editingBio = ref(false)
+const bioDraft = ref('')
+const bioSaving = ref(false)
+const bioMsg = ref('')
+
+function startEditBio() {
+  bioDraft.value = seller.value?.bio || ''
+  editingBio.value = true
+  bioMsg.value = ''
+}
+function cancelEditBio() {
+  editingBio.value = false
+  bioMsg.value = ''
+}
+async function saveBio() {
+  bioSaving.value = true
+  bioMsg.value = ''
+  try {
+    const res = await $fetch(api + '/api/seller/profile', {
+      credentials: 'include',
+      method: 'PATCH',
+      body: { bio: bioDraft.value },
+    })
+    // Met à jour l'affichage local immédiatement
+    if (raw.value?.seller) raw.value.seller.bio = res.sellerDescription || ''
+    editingBio.value = false
+    bioMsg.value = t('seller.saved')
+    setTimeout(() => bioMsg.value = '', 3000)
+  } catch (e: any) {
+    bioMsg.value = e?.data?.statusMessage || e?.data?.message || 'Erreur lors de la sauvegarde'
+  } finally {
+    bioSaving.value = false
+  }
+}
+
 const { data: raw, error: fetchError } = await useFetch(() => api + '/api/sellers/' + sellerSlug, { lazy: true })
 
 const seller = computed(() => raw.value?.seller || {})
@@ -276,6 +326,10 @@ onMounted(async () => {
 }
 .sp-badge.verified svg { width: 12px; height: 12px; }
 .sp-bio { color: var(--text-secondary); font-size: .9rem; margin: 0; max-width: 500px; }
+.sp-bio-edit { margin-top: 10px; font-size: .8rem; display: inline-flex; align-items: center; gap: 6px; }
+.bio-edit-area { width: 100%; resize: vertical; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-surface); color: var(--text); font-size: .88rem; line-height: 1.6; font-family: inherit; }
+.bio-edit-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.bio-edit-msg { font-size: .82rem; color: var(--green); }
 .sp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .sp-btn {
   display: inline-flex; align-items: center; gap: 6px;
