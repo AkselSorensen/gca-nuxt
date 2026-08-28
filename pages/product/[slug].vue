@@ -26,8 +26,12 @@
                 </span>
               </div>
             </div>
-            <img v-if="currentImg" :src="currentImg" :alt="product.title" />
-            <img v-if="currentImg" :src="currentImg" alt="" class="gallery-blur" aria-hidden="true" />
+            <img v-if="currentImg && !(showVideo && videoThumbUrl)" :src="currentImg" :alt="product.title" :class="{ 'has-video': product.videoUrl }" @click="product.videoUrl && videoEmbedUrl ? (showVideo = true, videoPlaying = true) : null" />
+            <span v-if="currentImg && product.videoUrl && !(showVideo && videoThumbUrl)" class="video-cta" @click="showVideo = true; videoPlaying = true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Voir la vidéo
+            </span>
+            <img v-if="currentImg && !(showVideo && videoThumbUrl)" :src="currentImg" alt="" class="gallery-blur" aria-hidden="true" />
             <div v-else class="gallery-empty"><div class="loader"></div></div>
             <div v-if="product.discountPercent > 0" class="discount-badge">-{{ product.discountPercent }}%</div>
           </div>
@@ -444,6 +448,10 @@ onMounted(async () => {
 .gallery-main img { width:100%;height:100%;object-fit:contain;position:relative;z-index:1; }
 .gallery-main .gallery-blur { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(22px) saturate(1.2);opacity:.4;transform:scale(1.12);z-index:0; }
 .gallery-empty { position:absolute;inset:0;display:grid;place-items:center;background:var(--bg-surface);z-index:0; }
+.gallery-main img.has-video { cursor:pointer; }
+.video-cta { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:4; display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:999px; background:rgba(15,15,15,.8); color:#fff; font-size:.8rem; font-weight:700; cursor:pointer; transition:background .15s ease, transform .15s ease; }
+.video-cta svg { color:#fff; flex-shrink:0; }
+.video-cta:hover { background:rgba(255,0,0,.95); transform:translateX(-50%) scale(1.04); }
 .gallery-main iframe { width:100%;height:100%;border:0; }
 .thumb-video { display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.8rem; overflow:hidden; position:relative; }
 .thumb-video img { width:100%;height:100%;object-fit:cover; }
