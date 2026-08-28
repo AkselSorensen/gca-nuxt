@@ -12,11 +12,11 @@
             <div class="sc-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
             <h2>Game Design</h2>
           </div>
-          <p>Nous concevons des mécaniques de jeu pensées pour votre projet, quelle que soit sa plateforme. De l'idée initiale à l'équilibrage final, nous transformons vos concepts en expériences cohérentes, engageantes et adaptées à vos joueurs.</p>
+          <p>{{ t('prestation.gd_desc') }}</p>
           <ul>
-            <li>Conception de mécaniques sur mesure</li>
-            <li>Équilibrage et progression</li>
-            <li>Game Design Document (GDD)</li>
+            <li>{{ t('prestation.gd_l1') }}</li>
+            <li>{{ t('prestation.gd_l2') }}</li>
+            <li>{{ t('prestation.gd_l3') }}</li>
           </ul>
         </div>
 
@@ -24,13 +24,13 @@
         <div class="service-card">
           <div class="sc-head">
             <div class="sc-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
-            <h2>Modélisation 3D architecturale &amp; props</h2>
+            <h2>{{ t('prestation.m3d_title') }}</h2>
           </div>
-          <p>Création de bâtiments, environnements et props sur mesure pour vos projets sous Unreal Engine. Des modèles pensés pour s'intégrer efficacement à votre projet, avec une attention particulière portée aux détails, aux textures et à l'optimisation.</p>
+          <p>{{ t('prestation.m3d_desc') }}</p>
           <ul>
-            <li>Bâtiments et structures architecturales</li>
-            <li>Environnements et éléments de décor</li>
-            <li>Props et objets sur mesure</li>
+            <li>{{ t('prestation.m3d_l1') }}</li>
+            <li>{{ t('prestation.m3d_l2') }}</li>
+            <li>{{ t('prestation.m3d_l3') }}</li>
           </ul>
         </div>
       </div>
@@ -39,7 +39,7 @@
       <div class="cta-discord anim-card">
         <a href="https://discord.gg/KDsEzGRnKs" target="_blank" rel="noopener" class="btn-discord-cta">
           <IconDiscord :size="20" />
-          Pour toute commande ou question, rendez-vous sur le discord
+          {{ t('prestation.discord_cta') }}
         </a>
       </div>
     </div>

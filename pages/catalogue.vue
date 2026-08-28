@@ -15,7 +15,7 @@
 
       <!-- Category pills -->
       <div class="cat-pills anim-up">
-        <button class="pill" :class="{ active: !filters.category }" @click="filters.category = ''">Tout <span class="pill-count">{{ products.length }}</span></button>
+        <button class="pill" :class="{ active: !filters.category }" @click="filters.category = ''">{{ t('catalogue.all') }} <span class="pill-count">{{ products.length }}</span></button>
         <button v-for="c in categories" :key="c.slug" class="pill" :class="{ active: filters.category === c.slug }" @click="filters.category = filters.category === c.slug ? '' : c.slug">{{ c.name }} <span class="pill-count">{{ countByCategory(c.slug) }}</span></button>
       </div>
 
@@ -29,7 +29,7 @@
           </div>
 
           <div class="filter-group">
-            <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Trier par</h4>
+            <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> {{ t('catalogue.sort_by') }}</h4>
             <label v-for="opt in sortOptions" :key="opt.value" class="radio-row" :class="{ active: filters.sort === opt.value }">
               <input type="radio" v-model="filters.sort" :value="opt.value" />
               <span class="radio-icon" v-html="opt.icon"></span>
@@ -38,14 +38,14 @@
           </div>
 
           <div class="filter-group">
-            <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Plateforme</h4>
+            <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> {{ t('catalogue.platform') }}</h4>
             <label v-for="pf in platformOptions" :key="pf" class="toggle-row" :class="{ active: filters.platforms.includes(pf) }">
               <input type="checkbox" :checked="filters.platforms.includes(pf)" @change="togglePlatform(pf)" /><span class="check-box"></span> {{ pf }}
             </label>
           </div>
 
           <div class="filter-group">
-            <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg> Prix max.</h4>
+            <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg> {{ t('catalogue.max_price') }}</h4>
             <div class="price-slider-wrap">
               <input type="range" min="0" max="1000" step="5" v-model.number="filters.priceMax" class="single-range" />
               <div class="price-labels">
@@ -56,20 +56,20 @@
           </div>
 
           <div class="filter-group">
-            <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg> Options</h4>
+            <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg> {{ t('catalogue.options') }}</h4>
             <label class="toggle-row"><input type="checkbox" v-model="filters.onSale" /><span class="check-box"></span> {{ t('cat.on_sale') }}</label>
             <label class="toggle-row"><input type="checkbox" v-model="filters.trending" /><span class="check-box"></span> {{ t('cat.trending_only') }}</label>
           </div>
 
           <div class="filter-group">
-            <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Note minimale</h4>
+            <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> {{ t('catalogue.min_rating') }}</h4>
             <label v-for="r in ratingOptions" :key="r" class="radio-row" :class="{ active: filters.minRating === r }">
               <input type="radio" v-model="filters.minRating" :value="r" />
               <span class="stars">{{ '★'.repeat(r === 0 ? 0 : Math.round(r)) }}{{ r === 0 ? 'Toutes' : '' }}</span>
             </label>
           </div>
 
-          <button class="btn-reset" @click="clearFilters">Réinitialiser</button>
+          <button class="btn-reset" @click="clearFilters">{{ t('catalogue.reset') }}</button>
         </aside>
 
         <!-- Mobile filter toggle -->
@@ -187,16 +187,15 @@ const products = computed(() => prodData.value?.items || prodData.value?.product
 const categories = computed(() => catData.value || [])
 const loading = computed(() => !prodData.value)
 
-const sortOptions = [
-  { value: 'popular', label: 'Les plus populaires', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>' },
-  { value: 'newest', label: 'Plus récents', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
-  { value: 'price-asc', label: 'Prix croissant', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 3 21 3 21 7"/><line x1="3" y1="21" x2="21" y2="3"/><line x1="21" y1="17" x2="21" y2="21"/><line x1="17" y1="21" x2="21" y2="21"/></svg>' },
-  { value: 'price-desc', label: 'Prix décroissant', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 7 7 3 11 7"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="21" y1="17" x2="21" y2="21"/><line x1="17" y1="21" x2="21" y2="21"/></svg>' },
-  { value: 'rating', label: 'Mieux notés', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' },
-  { value: 'discount', label: 'Promotions', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
-  { value: 'trending', label: 'Tendances', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>' },
-]
-
+const sortOptions = computed(() => [
+  { value: 'popular', label: t('catalogue.sort_popular'), icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>' },
+  { value: 'newest', label: t('catalogue.sort_newest'), icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
+  { value: 'price-asc', label: t('catalogue.sort_price_asc'), icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 3 21 3 21 7"/><line x1="3" y1="21" x2="21" y2="3"/><line x1="21" y1="17" x2="21" y2="21"/><line x1="17" y1="21" x2="21" y2="21"/></svg>' },
+  { value: 'price-desc', label: t('catalogue.sort_price_desc'), icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 7 7 3 11 7"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="21" y1="17" x2="21" y2="21"/><line x1="17" y1="21" x2="21" y2="21"/></svg>' },
+  { value: 'rating', label: t('catalogue.sort_rating'), icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' },
+  { value: 'discount', label: t('catalogue.sort_discount'), icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
+  { value: 'trending', label: t('catalogue.sort_trending'), icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>' },
+])
 const ratingOptions = [0, 3, 4, 5]
 
 const filters = reactive({
@@ -204,7 +203,7 @@ const filters = reactive({
   priceMax: 1000 as number | null,
   onSale: false, platforms: [] as string[], trending: false, minRating: 0
 })
-const platformOptions = ["Garry's Mod", 'Unreal Engine']
+const platformOptions = [t('catalogue.platform_gmod'), t('catalogue.platform_ue')]
 function togglePlatform(pf: string) {
   const i = filters.platforms.indexOf(pf)
   if (i >= 0) filters.platforms.splice(i, 1)
