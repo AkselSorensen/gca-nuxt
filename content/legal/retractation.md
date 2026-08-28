@@ -28,7 +28,7 @@ GSA peut proposer des prestations de services, notamment dans les domaines du Ga
 
 ### Article 7 — Modalités d'exercice du droit de rétractation
 
-Lorsque le droit de rétractation est applicable, l'acheteur peut exercer ce droit en contactant GSA à l'adresse suivante : Email : Gsa.storee@yahoo.com La demande doit permettre à GSA d'identifier : ●​ l'acheteur ; ●​ la commande concernée ; ●​ le contenu ou service concerné ; ●​ la volonté claire d'exercer le droit de rétractation. L'acheteur peut également utiliser le formulaire de rétractation mis à disposition par GSA lorsqu'un tel formulaire est proposé.
+Lorsque le droit de rétractation est applicable, l'acheteur peut exercer ce droit en contactant GSA à l'adresse suivante : Email : support-gsa@gsa-store.fr La demande doit permettre à GSA d'identifier : ●​ l'acheteur ; ●​ la commande concernée ; ●​ le contenu ou service concerné ; ●​ la volonté claire d'exercer le droit de rétractation. L'acheteur peut également utiliser le formulaire de rétractation mis à disposition par GSA lorsqu'un tel formulaire est proposé.
 
 ### Article 8 — Remboursement en cas de rétractation
 
@@ -84,7 +84,7 @@ GSA peut modifier la présente politique afin de tenir compte : ●​ de l'évo
 
 ### Article 21 — Contact
 
-Pour toute demande concernant une rétractation, un remboursement ou un problème lié à un achat : GSA​ Email : Gsa.storee@yahoo.com L'acheteur est invité à indiquer : ●​ son adresse électronique utilisée lors de l'achat ; ●​ le numéro de commande ; ●​ le contenu concerné ; ●​ la nature du problème ; ●​ les éventuelles pièces justificatives utiles.
+Pour toute demande concernant une rétractation, un remboursement ou un problème lié à un achat : GSA​ Email : support-gsa@gsa-store.fr L'acheteur est invité à indiquer : ●​ son adresse électronique utilisée lors de l'achat ; ●​ le numéro de commande ; ●​ le contenu concerné ; ●​ la nature du problème ; ●​ les éventuelles pièces justificatives utiles.
 
 ### Article 22 — Entrée en vigueur
 

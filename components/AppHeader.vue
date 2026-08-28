@@ -47,7 +47,7 @@
           <button class="lang-btn">{{ flagEmoji[locale] }}</button>
           <Transition name="drop">
             <div v-if="langOpen" class="lang-dropdown">
-              <button v-for="l in (['fr','en','tr'] as const)" :key="l" class="lang-item" :class="{ active: locale === l }" @click.stop="setLocale(l); langOpen = false">{{ flagEmoji[l] }} {{ { fr: 'Français', en: 'English', tr: 'Türkçe' }[l] }}</button>
+              <button v-for="l in (['fr','en'] as const)" :key="l" class="lang-item" :class="{ active: locale === l }" @click.stop="setLocale(l); langOpen = false">{{ flagEmoji[l] }} {{ { fr: 'Français', en: 'English' }[l] }}</button>
             </div>
           </Transition>
         </div>

@@ -418,4 +418,4 @@ En cas de difficulté relative à l'utilisation des services GSA, les parties s'
 
 ### Article 100 — Contact et informations légales
 
-Pour toute question relative aux présentes CGU, aux services proposés ou aux traitements de données personnelles, l'utilisateur peut contacter GSA via les coordonnées indiquées sur la plateforme. Informations légales : GSA​ Éditeur : Briche Bastien​ Email de contact : Gsa.storee@yahoo.com​ Numéro d'immatriculation : 10598200300011 Fin des Conditions Générales d'Utilisation GSA — Conditions Générales d'Utilisation v1.0.0
+Pour toute question relative aux présentes CGU, aux services proposés ou aux traitements de données personnelles, l'utilisateur peut contacter GSA via les coordonnées indiquées sur la plateforme. Informations légales : GSA​ Éditeur : Briche Bastien​ Email de contact : support-gsa@gsa-store.fr​ Numéro d'immatriculation : 10598200300011 Fin des Conditions Générales d'Utilisation GSA — Conditions Générales d'Utilisation v1.0.0

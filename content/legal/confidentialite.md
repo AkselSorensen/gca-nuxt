@@ -8,7 +8,7 @@ La présente Politique de confidentialité a pour objectif d'informer les utilis
 
 ### Article 2 — Responsable du traitement
 
-Le responsable des traitements de données personnelles réalisés dans le cadre de la plateforme est : Nom / Prénom : Briche Bastien​ Nom commercial : GSA Store​ Forme juridique : Entrepreneur individuel​ SIREN : 105982003 ​ SIRET : 10598200300011 ​ Adresse électronique : Gsa.storee@yahoo.com Ci-après désigné « GSA ». Pour toute question relative à la protection des données personnelles, l'utilisateur peut contacter GSA à l'adresse suivante : Email : Gsa.storee@yahoo.com
+Le responsable des traitements de données personnelles réalisés dans le cadre de la plateforme est : Nom / Prénom : Briche Bastien​ Nom commercial : GSA Store​ Forme juridique : Entrepreneur individuel​ SIREN : 105982003 ​ SIRET : 10598200300011 ​ Adresse électronique : support-gsa@gsa-store.fr Ci-après désigné « GSA ». Pour toute question relative à la protection des données personnelles, l'utilisateur peut contacter GSA à l'adresse suivante : Email : support-gsa@gsa-store.fr
 
 ### Article 3 — Données susceptibles d'être collectées
 
@@ -48,7 +48,7 @@ Conformément à la réglementation applicable, les personnes concernées dispos
 
 ### Article 12 — Exercice des droits
 
-Toute demande relative aux données personnelles peut être adressée à : GSA — Protection des données​ Email : Gsa.storee@yahoo.com Afin d'éviter toute divulgation de données à une personne non autorisée, GSA peut demander les informations nécessaires permettant de vérifier l'identité du demandeur lorsque cela est justifié. GSA répond aux demandes dans les délais prévus par la réglementation applicable.
+Toute demande relative aux données personnelles peut être adressée à : GSA — Protection des données​ Email : support-gsa@gsa-store.fr Afin d'éviter toute divulgation de données à une personne non autorisée, GSA peut demander les informations nécessaires permettant de vérifier l'identité du demandeur lorsque cela est justifié. GSA répond aux demandes dans les délais prévus par la réglementation applicable.
 
 ### Article 13 — Droit de réclamation auprès de la CNIL
 
@@ -76,7 +76,7 @@ GSA peut modifier la présente Politique de confidentialité afin de tenir compt
 
 ### Article 19 — Contact
 
-Pour toute question relative à la présente Politique de confidentialité ou au traitement des données personnelles : Email : Gsa.storee@yahoo.com
+Pour toute question relative à la présente Politique de confidentialité ou au traitement des données personnelles : Email : support-gsa@gsa-store.fr
 
 ### Article 20 — Entrée en vigueur
 

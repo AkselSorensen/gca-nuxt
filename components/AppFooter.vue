@@ -7,7 +7,7 @@
           <p>{{ t('footer.tagline') }}</p>
         </div>
         <div class="footer-links"><h4>{{ t('footer.platform') }}</h4><NuxtLink to="/catalogue">{{ t('nav.marketplace') }}</NuxtLink><NuxtLink to="/prestation">{{ t('nav.services') }}</NuxtLink><NuxtLink to="/about">{{ t('nav.about') }}</NuxtLink></div>
-        <div class="footer-links"><h4>{{ t('footer.legal') }}</h4><NuxtLink to="/mentions-legales">Mentions légales</NuxtLink><NuxtLink to="/cgu">CGU</NuxtLink><NuxtLink to="/cgv">CGV</NuxtLink><NuxtLink to="/confidentialite">Confidentialité</NuxtLink><NuxtLink to="/cookies">Politique des cookies</NuxtLink><NuxtLink to="/retractation">Politique de rétractation</NuxtLink><NuxtLink to="/contrat-vendeur">Contrat vendeur</NuxtLink></div>
+        <div class="footer-links"><h4>{{ t('footer.legal') }}</h4><NuxtLink to="/fondations">Fondations juridiques</NuxtLink><NuxtLink to="/mentions-legales">Mentions légales</NuxtLink><NuxtLink to="/cgu">CGU</NuxtLink><NuxtLink to="/cgv">CGV</NuxtLink><NuxtLink to="/confidentialite">Confidentialité</NuxtLink><NuxtLink to="/cookies">Politique des cookies</NuxtLink><NuxtLink to="/retractation">Politique de rétractation</NuxtLink><NuxtLink to="/contrat-vendeur">Contrat vendeur</NuxtLink></div>
         <div class="footer-links"><h4>{{ t('footer.support') }}</h4><a href="https://discord.gg/KDsEzGRnKs" target="_blank" rel="noopener">{{ t('footer.discord') }}</a><NuxtLink to="/contact">{{ t('footer.contact') }}</NuxtLink></div>
       </div>
       <div class="footer-bottom">

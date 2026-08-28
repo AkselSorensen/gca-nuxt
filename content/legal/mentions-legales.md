@@ -2,7 +2,7 @@
 
 # 1. Informations relatives à l'éditeur du site
 
-Conformément aux dispositions de l'article 6 de la Loi n°2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN), les présentes mentions légales ont pour objet d'identifier l'éditeur du site internet GSA et de présenter les informations relatives à l'exploitation de la plateforme. Le présent site internet est édité par : Dénomination sociale : GSA Store Nom commercial : GSA Store Forme juridique : Entrepreneur individuel Capital social : Non applicable Numéro d'immatriculation au Registre National des Entreprises : 05/06/2026 Numéro SIREN : 105982003 Numéro SIRET : 10598200300011 Numéro de TVA intracommunautaire : Non applicable, art. 293 B du CGI Code APE / NAF : 7410Z Adresse électronique de contact : gsa.storee@yahoo.com
+Conformément aux dispositions de l'article 6 de la Loi n°2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN), les présentes mentions légales ont pour objet d'identifier l'éditeur du site internet GSA et de présenter les informations relatives à l'exploitation de la plateforme. Le présent site internet est édité par : Dénomination sociale : GSA Store Nom commercial : GSA Store Forme juridique : Entrepreneur individuel Capital social : Non applicable Numéro d'immatriculation au Registre National des Entreprises : 05/06/2026 Numéro SIREN : 105982003 Numéro SIRET : 10598200300011 Numéro de TVA intracommunautaire : Non applicable, art. 293 B du CGI Code APE / NAF : 7410Z Adresse électronique de contact : support-gsa@gsa-store.fr
 
 # 2. Directeur de publication
 
@@ -60,4 +60,4 @@ Les présentes mentions légales sont régies par le droit français. Lorsque le
 
 # 15. Contact
 
-Pour toute question relative aux présentes mentions légales : Adresse électronique : gsa.storee@yahoo.com
+Pour toute question relative aux présentes mentions légales : Adresse électronique : support-gsa@gsa-store.fr

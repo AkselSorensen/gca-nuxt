@@ -24,7 +24,19 @@ Lorsqu'un consentement est nécessaire, l'utilisateur peut choisir les catégori
 
 ### Article 6 — Liste des cookies utilisés
 
-La liste ci-dessous doit être adaptée aux cookies et traceurs réellement utilisés par GSA. Cookie / traceur Fournisseur Finalité Durée Consentemen t [À compléter] GSA Fonctionnement / authentification [À compléter] Non [À compléter] GSA Sécurité [À compléter] Non [À compléter] [Prestataire ] [Finalité] [Durée] Oui / Non [À compléter] [Prestataire ] [Finalité] [Durée] Oui / Non
+La liste ci-dessous reflète les cookies et traceurs réellement utilisés par GSA au moment de la publication de la présente politique :
+
+| Cookie / traceur | Fournisseur | Finalité | Durée | Consentement |
+|---|---|---|---|---|
+| `connect.sid` | GSA | Session de connexion et authentification de l'utilisateur | 30 jours | Non (strictement nécessaire) |
+| `gsa-locale` | GSA | Mémorisation de la langue préférée | Persistant (localStorage) | Non (préférence utilisateur) |
+| `gsa-cart` | GSA | Contenu du panier d'achat | Persistant (localStorage) | Non (strictement nécessaire) |
+| `gsa-cookie-consent` | GSA | Mémorisation du choix de l'utilisateur relatif aux cookies | 12 mois | Non (strictement nécessaire) |
+| `gsa-pending-session` | GSA | Confirmation d'une session de paiement en attente | Session (localStorage) | Non (strictement nécessaire) |
+| `gsa-return` | GSA | Retour après paiement (confirmation de session) | Session (localStorage) | Non (strictement nécessaire) |
+| Cookies Stripe | Stripe | Traitement des paiements et sécurisation des transactions | Variable | Non (strictement nécessaire à l'exécution du paiement) |
+
+GSA n'utilise **aucun cookie publicitaire ni cookie de suivi tiers** (pas de mesure d'audience publicitaire, pas de re-ciblage). Les seuls cookies déposés sont ceux nécessaires au fonctionnement de la plateforme.
 
 ### Article 7 — Cookies liés aux services tiers
 
@@ -48,7 +60,7 @@ GSA peut modifier la présente Politique Cookies afin de tenir compte : ●​ d
 
 ### Article 12 — Contact
 
-Pour toute question relative à l'utilisation des cookies et autres traceurs : GSA​ Email : Gsa.storee@yahoo.com
+Pour toute question relative à l'utilisation des cookies et autres traceurs : GSA​ Email : support-gsa@gsa-store.fr
 
 ### Article 13 — Entrée en vigueur
 
