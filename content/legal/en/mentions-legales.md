@@ -10,7 +10,12 @@ The publication director of the website is: Briche Bastien The publication direc
 
 # 3. Website hosting
 
-The GSA website is hosted by: Hosting provider: [To be completed] Address: [To be completed] Phone: [To be completed] Website: [To be completed] In accordance with Article 6 of the LCEN, the hosting provider only ensures the technical storage of content under the conditions provided by applicable regulations.
+The GSA website is hosted by:
+Hosting provider: OVH
+Address: 2 rue Kellermann, 59100 Roubaix, France
+Phone: 1007
+Website: https://www.ovhcloud.com/fr/
+In accordance with Article 6 of the LCEN, the hosting provider only ensures the technical storage of content under the conditions provided by applicable regulations.
 
 # 4. About GSA
 

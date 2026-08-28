@@ -12,7 +12,7 @@ Les présentes Conditions Générales de Vente ont pour objet de définir les co
 
 ### Article 2 — Identification de l'entreprise
 
-Les services GSA sont proposés par : GSA​ Éditeur : Briche Bastien​ Statut juridique : Micro-Entreprise​ Numéro d'immatriculation : 10598200300011 ​ Email : Gsa.store@yahoo.com Les informations légales complètes sont disponibles dans les mentions légales de la plateforme.
+Les services GSA sont proposés par : GSA​ Éditeur : Briche Bastien​ Statut juridique : Micro-Entreprise​ Numéro d'immatriculation : 10598200300011 ​ Email : support-gsa@gsa-store.fr Les informations légales complètes sont disponibles dans les mentions légales de la plateforme.
 
 ### Article 3 — Nature des services proposés par GSA
 

@@ -10,7 +10,12 @@ Le directeur de la publication du site est : Briche Bastien Le directeur de publ
 
 # 3. Hébergement du site
 
-Le site internet GSA est hébergé par : Nom de l'hébergeur : [À compléter] Adresse : [À compléter] Téléphone : [À compléter] Site internet : [À compléter] Conformément à l'article 6 de la LCEN, l'hébergeur assure uniquement la conservation technique des contenus selon les conditions prévues par la réglementation applicable.
+Le site internet GSA est hébergé par :
+Nom de l'hébergeur : OVH
+Adresse : 2 rue Kellermann, 59100 Roubaix, France
+Téléphone : 1007
+Site internet : https://www.ovhcloud.com/fr/
+Conformément à l'article 6 de la LCEN, l'hébergeur assure uniquement la conservation technique des contenus selon les conditions prévues par la réglementation applicable.
 
 # 4. Présentation de GSA
 
