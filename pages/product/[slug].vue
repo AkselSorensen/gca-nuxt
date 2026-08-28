@@ -278,6 +278,11 @@ watch(videoPlaying, async (playing) => {
     if (!ytPlayer && ytPlayerRef.value && videoWatchId.value) {
       ytPlayer = new (window as any).YT.Player(ytPlayerRef.value, {
         videoId: videoWatchId.value,
+        // Dimensions passées au constructeur : l'iframe injectée par l'API n'a pas les
+        // attributs scoped de Vue, donc le CSS .yt-player-box iframe ne s'applique pas.
+        // width/height 100% en attributs inline garantissent le remplissage.
+        width: '100%',
+        height: '100%',
         playerVars: { rel: 0, playsinline: 1 },
         events: {
           onReady: () => { try { ytPlayer?.playVideo() } catch {} },
@@ -505,9 +510,10 @@ onMounted(async () => {
 .video-cta { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:4; display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:999px; background:rgba(15,15,15,.8); color:#fff; font-size:.8rem; font-weight:700; cursor:pointer; transition:background .15s ease, transform .15s ease; }
 .video-cta svg { color:#fff; flex-shrink:0; }
 .video-cta:hover { background:rgba(255,0,0,.95); transform:translateX(-50%) scale(1.04); }
-/* Conteneur du lecteur : hauteur garantie par aspect-ratio, iframe en absolute pleine taille */
+/* Conteneur du lecteur : hauteur garantie par aspect-ratio, iframe pleine taille
+   (:deep requis — l'iframe est injectée par l'API YouTube, sans attribut scoped Vue) */
 .yt-player-box { position:relative; width:100%; aspect-ratio:16/10; z-index:1; }
-.yt-player-box iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+.yt-player-box :deep(iframe) { position:absolute; inset:0; width:100% !important; height:100% !important; border:0; }
 .video-fallback { display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 10px; font-size:.8rem; color:var(--text-muted); flex-wrap:wrap; }
 .video-fallback a { display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:8px; background:rgba(255,0,0,.12); color:#ff4d4d; font-weight:700; text-decoration:none; transition:background .15s ease; }
 .video-fallback a:hover { background:rgba(255,0,0,.22); }
