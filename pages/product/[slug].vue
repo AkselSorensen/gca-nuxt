@@ -448,8 +448,8 @@ onMounted(async () => {
 .video-preview:hover .yt-badge { opacity:1; transform:scale(1.08); }
 .yt-badge-sm { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; width:26px; height:26px; opacity:.9; box-shadow:0 2px 6px rgba(0,0,0,.4); }
 .thumb-btn:hover .yt-badge-sm { opacity:1; }
-/* Icône (image envoyée par le client) posée PAR-DESSUS la vignette vidéo */
-.yt-overlay { width:72px; height:72px; object-fit:contain !important; opacity:.85; filter:drop-shadow(0 6px 18px rgba(0,0,0,.45)); transition:opacity .2s ease, transform .2s ease; cursor:pointer; position:relative; z-index:2; }
+/* Icône (image envoyée par le client) posée PAR-DESSUS la vignette vidéo — taille YouTube */
+.yt-overlay { width:48px; height:48px; object-fit:contain !important; opacity:.9; filter:drop-shadow(0 4px 12px rgba(0,0,0,.45)); transition:opacity .2s ease, transform .2s ease; cursor:pointer; position:relative; z-index:2; }
 .video-preview:hover .yt-overlay { opacity:1; transform:scale(1.08); }
 .thumb-video svg { flex-shrink:0; }
 .video-preview { position:relative;width:100%;height:100%;cursor:pointer; }
