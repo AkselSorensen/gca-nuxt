@@ -20,7 +20,10 @@
             <div v-else-if="showVideo && videoThumbUrl" class="video-preview" @click="videoPlaying = true">
               <img :src="videoThumbUrl" :alt="'Vidéo — ' + product.title" />
               <div class="video-play">
-                <img src="/img/yt-play.png" alt="Lire la vidéo" class="yt-overlay" />
+                <!-- Bouton lecture style YouTube : rectangle arrondi rouge + triangle blanc -->
+                <span class="yt-play-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+                </span>
               </div>
             </div>
             <img v-if="currentImg" :src="currentImg" :alt="product.title" />
@@ -448,17 +451,16 @@ onMounted(async () => {
 .video-preview:hover .yt-badge { opacity:1; transform:scale(1.08); }
 .yt-badge-sm { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; width:26px; height:26px; opacity:.9; box-shadow:0 2px 6px rgba(0,0,0,.4); }
 .thumb-btn:hover .yt-badge-sm { opacity:1; }
-/* Icône (image envoyée par le client) — centrage ABSOLU au milieu exact de la vidéo */
-.yt-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:24px; height:24px; object-fit:contain !important; opacity:.9; filter:drop-shadow(0 4px 12px rgba(0,0,0,.5)); cursor:pointer; z-index:3; }
-/* Bounce LÉGER sur lui-même (scale discret depuis le centre) */
-.video-preview:hover .yt-overlay { animation: yt-bounce .45s ease; }
+/* Bouton lecture style YouTube par défaut */
+.yt-play-btn { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:grid; place-items:center; width:34px; height:24px; padding-left:3px; border-radius:5px; background:rgba(15,15,15,.75); transition:background .15s ease; cursor:pointer; z-index:3; }
+.video-preview:hover .yt-play-btn { background:rgba(255,0,0,.95); }
+.video-preview:hover .yt-play-btn svg { animation: yt-bounce .4s ease; }
 @keyframes yt-bounce {
-  0%   { transform:translate(-50%,-50%) scale(1); }
-  40%  { transform:translate(-50%,-50%) scale(1.12); }
-  70%  { transform:translate(-50%,-50%) scale(.98); }
-  100% { transform:translate(-50%,-50%) scale(1.04); }
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.15); }
+  70%  { transform: scale(.97); }
+  100% { transform: scale(1.05); }
 }
-.video-preview:hover .yt-overlay { opacity:1; }
 .thumb-video svg { flex-shrink:0; }
 .video-preview { position:relative;width:100%;height:100%;cursor:pointer; }
 .video-preview img { width:100%;height:100%;object-fit:cover; }
