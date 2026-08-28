@@ -22,7 +22,7 @@
               <div class="video-play">
                 <!-- Bouton lecture style YouTube : rectangle arrondi rouge + triangle blanc -->
                 <span class="yt-play-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
                 </span>
               </div>
             </div>
@@ -452,7 +452,7 @@ onMounted(async () => {
 .yt-badge-sm { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; width:26px; height:26px; opacity:.9; box-shadow:0 2px 6px rgba(0,0,0,.4); }
 .thumb-btn:hover .yt-badge-sm { opacity:1; }
 /* Bouton lecture style YouTube par défaut */
-.yt-play-btn { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:grid; place-items:center; width:34px; height:24px; padding-left:3px; border-radius:5px; background:rgba(15,15,15,.75); transition:background .15s ease; cursor:pointer; z-index:3; }
+.yt-play-btn { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:grid; place-items:center; width:42px; height:30px; padding-left:4px; border-radius:6px; background:rgba(15,15,15,.75); transition:background .15s ease; cursor:pointer; z-index:3; }
 .video-preview:hover .yt-play-btn { background:rgba(255,0,0,.95); }
 .video-preview:hover .yt-play-btn svg { animation: yt-bounce .4s ease; }
 @keyframes yt-bounce {
