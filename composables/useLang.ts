@@ -1105,17 +1105,19 @@ const messages: Record<Locale, Record<string, string>> = {
 const locale = ref<Locale>('fr')
 
 function initLocale() {
+  // Langue anglaise masquée (décision user) : le site s'affiche toujours en FR
+  locale.value = 'fr'
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem(LOCALE_KEY) as Locale | null
-    if (saved && ['fr', 'en'].includes(saved)) {
-      locale.value = saved
+    const saved = localStorage.getItem(LOCALE_KEY)
+    if (saved === 'fr') {
+      locale.value = 'fr'
     }
   }
 }
 
 function setLocale(l: Locale) {
-  locale.value = l
-  localStorage.setItem(LOCALE_KEY, l)
+  locale.value = 'fr'
+  localStorage.setItem(LOCALE_KEY, 'fr')
 }
 
 function t(key: string, fallback?: string): string {
