@@ -149,6 +149,7 @@ const categoryFallback = { icon: '<svg width="22" height="22" viewBox="0 0 24 24
 const categories = computed(() => {
   return (state.value.categories || [])
     .filter((c: any) => c.slug !== '3d-import') // retirée de la home (décision user)
+    .slice(0, 7) // 7 catégories max affichées en home
     .map((c: any) => ({
     slug: c.slug,
     name: c.name,
