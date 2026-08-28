@@ -427,5 +427,5 @@ onMounted(async () => {
 .card-pricing { display:flex;align-items:center;gap:6px;margin-top:4px; }
 .card-pricing strong { font-size:.92rem;font-weight:800;color:var(--text); }
 .price-sale { color:#8b1a1a !important; }
-.price-old { font-size:.78rem;color:var(--text-muted);text-decoration:line-through; }
+.price-old { font-size:.82rem;font-weight:700;color:var(--text-muted);text-decoration:line-through; }
 </style>

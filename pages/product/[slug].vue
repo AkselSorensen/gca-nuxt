@@ -20,7 +20,9 @@
             <div v-else-if="showVideo && videoThumbUrl" class="video-preview" @click="videoPlaying = true">
               <img :src="videoThumbUrl" :alt="'Vidéo — ' + product.title" />
               <div class="video-play">
-                <span class="yt-badge"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>
+                <span class="yt-badge">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+                </span>
               </div>
             </div>
             <img v-if="currentImg" :src="currentImg" :alt="product.title" />
@@ -31,7 +33,7 @@
           <div v-if="images.length > 1 || product.videoUrl" class="gallery-thumbs">
             <button v-if="product.videoUrl" class="thumb-btn thumb-video" :class="{ active: showVideo }" @click="showVideo = true; videoPlaying = false">
               <img v-if="videoThumbUrl" :src="videoThumbUrl" :alt="'Vidéo'">
-              <span v-if="videoThumbUrl" class="yt-badge yt-badge-sm"><svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>
+              <span v-if="videoThumbUrl" class="yt-badge yt-badge-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span>
               <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
             </button>
             <button v-for="(img, i) in images" :key="i" class="thumb-btn" :class="{ active: !showVideo && currentImg === img }" @click="showVideo = false; videoPlaying = false; currentImg = img">
@@ -444,9 +446,9 @@ onMounted(async () => {
 .gallery-main iframe { width:100%;height:100%;border:0; }
 .thumb-video { display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.8rem; overflow:hidden; position:relative; }
 .thumb-video img { width:100%;height:100%;object-fit:cover; }
-.yt-badge { background:#FF0000; border-radius:9px; padding:6px 13px; display:grid; place-items:center; opacity:.82; box-shadow:0 6px 18px rgba(0,0,0,.45); transition:opacity .2s ease, transform .2s ease; }
-.video-preview:hover .yt-badge { opacity:1; transform:scale(1.07); }
-.yt-badge-sm { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:4px; padding:2px 6px; opacity:.9; box-shadow:0 2px 6px rgba(0,0,0,.4); }
+.yt-badge { background:#FF0000; border-radius:50%; width:62px; height:62px; display:grid; place-items:center; opacity:.88; box-shadow:0 8px 24px rgba(0,0,0,.5); transition:opacity .2s ease, transform .2s ease; }
+.video-preview:hover .yt-badge { opacity:1; transform:scale(1.08); }
+.yt-badge-sm { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; width:26px; height:26px; opacity:.9; box-shadow:0 2px 6px rgba(0,0,0,.4); }
 .thumb-btn:hover .yt-badge-sm { opacity:1; }
 .thumb-video svg { flex-shrink:0; }
 .video-preview { position:relative;width:100%;height:100%;cursor:pointer; }
@@ -481,9 +483,9 @@ onMounted(async () => {
 
 .info-pricing { padding:16px 20px;border-radius:12px;background:var(--bg-card);border:1px solid var(--border); }
 .price-block { display:flex;align-items:baseline;gap:8px; }
-.price-current { font-size:1.5rem;font-weight:900;color:var(--text); }
-.price-old { font-size:.95rem;color:var(--text-muted);text-decoration:line-through; }
-.price-badge { padding:3px 8px;border-radius:4px;background:rgba(139,26,26,0.12);color:#8b1a1a;font-size:.72rem;font-weight:700; }
+.price-current { font-size:1.6rem;font-weight:900;color:var(--text); }
+.price-old { font-size:1rem;font-weight:700;color:var(--text-muted);text-decoration:line-through; }
+.price-badge { padding:4px 10px;border-radius:4px;background:rgba(139,26,26,0.12);color:#8b1a1a;font-size:.75rem;font-weight:800; }
 .price-info { font-size:.78rem;color:var(--text-muted);margin-top:4px; }
 
 /* Buttons */

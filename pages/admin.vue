@@ -662,7 +662,10 @@
               <div v-else class="file-preview">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
                 <span class="file-name">{{ uploadFileName }}</span>
-                <button class="thumb-remove" @click="removeFile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                <button type="button" class="file-remove" @click="removeFile">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  Retirer le fichier
+                </button>
               </div>
               <input ref="fileInput" type="file" accept=".zip,.rar,.7z" style="display:none" @change="handleFileUpload" />
             </div>
@@ -1643,16 +1646,12 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .file-zone small { font-size:.75rem;color:var(--text-muted); }
 .file-preview {
   display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;
-  border:1px solid var(--border);background:var(--bg-surface);
+  border:1px solid var(--border);background:var(--bg-surface);flex-wrap:wrap;
 }
+.file-remove { display:inline-flex;align-items:center;gap:6px;margin-left:auto;padding:6px 12px;border-radius:8px;border:1px solid rgba(220,38,38,.35);background:rgba(220,38,38,.07);color:#dc2626;font-size:.76rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s ease; }
+.file-remove:hover { background:rgba(220,38,38,.15); }
 .file-preview .file-name { flex:1;font-weight:600;font-size:.85rem;color:var(--text); }
 .file-preview .file-size { color:var(--text-muted);font-size:.78rem; }
-.file-remove {
-  width:28px;height:28px;border-radius:6px;border:1px solid transparent;
-  background:rgba(248,113,113,0.06);color:var(--red);cursor:pointer;
-  display:grid;place-items:center;transition:all .15s;flex-shrink:0;
-}
-.file-remove:hover { border-color:rgba(248,113,113,0.2);background:rgba(248,113,113,0.12); }
 .thumb-zone svg { opacity:.4; }
 .thumb-zone span { font-size:.85rem;color:var(--text-secondary);font-weight:600; }
 .thumb-zone small { font-size:.75rem;color:var(--text-muted); }

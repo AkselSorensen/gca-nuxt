@@ -45,6 +45,6 @@ const currency = (v) => Number(v||0).toFixed(2).replace('.',',') + '€'
 .card-rating { display:flex; align-items:center; gap:4px; font-size:.82rem; color:var(--text-secondary); }
 .card-rating small { color:var(--text-muted); }
 .card-price { display:flex; align-items:center; gap:6px; }
-.card-price strong { font-size:.95rem; font-weight:800; color:var(--primary); }
-.old-price { font-size:.75rem; color:var(--text-muted); text-decoration:line-through; }
+.card-price strong { font-size:1rem; font-weight:800; color:var(--primary); }
+.old-price { font-size:.8rem; font-weight:700; color:var(--text-muted); text-decoration:line-through; }
 </style>
