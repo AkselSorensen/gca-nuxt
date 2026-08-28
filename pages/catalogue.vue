@@ -424,8 +424,8 @@ onMounted(async () => {
 .card-meta { display:flex;align-items:center;gap:10px;font-size:.75rem;color:var(--text-secondary);margin-top:2px; }
 .card-seller { flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .card-rating { display:flex;align-items:center;gap:3px;font-weight:600;color:#f5b342; }
-.card-pricing { display:flex;align-items:center;gap:6px;margin-top:4px; }
-.card-pricing strong { font-size:.92rem;font-weight:800;color:var(--text); }
+.card-pricing { display:flex;align-items:baseline;gap:6px;margin-top:6px; }
+.card-pricing strong { font-size:1.15rem;font-weight:900;color:var(--text); }
 .price-sale { color:#8b1a1a !important; }
-.price-old { font-size:.82rem;font-weight:700;color:var(--text-muted);text-decoration:line-through; }
+.price-old { font-size:.88rem;font-weight:700;color:var(--text-muted);text-decoration:line-through; }
 </style>
