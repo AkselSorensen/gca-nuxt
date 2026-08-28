@@ -152,6 +152,9 @@ function sanitizeUser(row) {
     discordId: row.discord_id || null,
     steamId: row.steam_id || null,
     stripeAccountId: row.stripe_account_id || null,
+    sellerDescription: row.seller_description || '',
+    shopName: row.shop_name || '',
+    discordTag: row.discord_tag || '',
     createdAt: row.created_at,
   };
 }

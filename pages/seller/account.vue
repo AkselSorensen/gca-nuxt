@@ -280,8 +280,24 @@ const stats = reactive({
 })
 
 function saveProfile() {
-  profileMsg.value = t('seller.saved')
-  setTimeout(() => profileMsg.value = '', 3000)
+  profileMsg.value = ''
+  $fetch(api + '/api/seller/profile', {
+    credentials: 'include',
+    method: 'PATCH',
+    body: { bio: profile.bio, shopName: profile.shopName, discord: profile.discord },
+  }).then((res: any) => {
+    profile.bio = res.sellerDescription || ''
+    profile.shopName = res.shopName || ''
+    profile.discord = res.discord || ''
+    profileMsg.value = t('seller.saved')
+    // La boutique publique reflète la nouvelle description immédiatement
+    const { user } = useAuth()
+    if (user.value) user.value.sellerDescription = profile.bio
+    setTimeout(() => profileMsg.value = '', 3000)
+  }).catch((e: any) => {
+    console.error('[seller] saveProfile échoué:', e)
+    profileMsg.value = e?.data?.statusMessage || e?.data?.message || 'Erreur lors de la sauvegarde'
+  })
 }
 
 async function checkStripeConnect() {
@@ -455,6 +471,16 @@ onMounted(async () => {
   const { user } = useAuth()
   if (user.value?.discordId) { discordLinked.value = true; userDiscordId.value = user.value.discordId }
   if (user.value?.steamId) { steamLinked.value = true; userSteamId.value = user.value.steamId }
+
+  // Pré-remplir le profil boutique avec les valeurs actuelles
+  try {
+    const me = await $fetch(api + '/api/me', { credentials: 'include' })
+    if (me?.user) {
+      profile.shopName = me.user.shopName || profile.shopName
+      profile.bio = me.user.sellerDescription || ''
+      profile.discord = me.user.discordTag || ''
+    }
+  } catch { /* silencieux */ }
 })
 </script>
 
