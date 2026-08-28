@@ -3,9 +3,9 @@
     <div class="container">
       <!-- Breadcrumb -->
       <nav class="breadcrumb anim-up">
-        <NuxtLink to="/">Accueil</NuxtLink>
+        <NuxtLink to="/">{{ t('product.home') }}</NuxtLink>
         <span class="sep">/</span>
-        <NuxtLink to="/catalogue">Marketplace</NuxtLink>
+        <NuxtLink to="/catalogue">{{ t('product.marketplace') }}</NuxtLink>
         <span class="sep">/</span>
         <NuxtLink :to="'/catalogue?c=' + (productCats[0]?.slug || product.categorySlug || '')" class="bc-cat">{{ productCats[0]?.name || categoryName }}</NuxtLink>
         <span class="sep">/</span>
@@ -18,7 +18,7 @@
           <div class="gallery-main">
             <iframe v-if="showVideo && videoPlaying && videoEmbedUrl" :src="videoEmbedUrl + '?autoplay=1&rel=0&playsinline=1'" class="yt-iframe" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             <div v-if="videoPlaying && videoEmbedUrl" class="video-fallback">
-              <span v-if="videoError">Lecture intégrée impossible (vidéo non embarquable ou bloquée) —</span>
+              <span v-if="videoError">{{ t('product.video_error') }}</span>
               <a :href="'https://www.youtube.com/watch?v=' + videoWatchId" target="_blank" rel="noopener">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 Ouvrir sur YouTube
@@ -81,7 +81,7 @@
           <!-- Platform & Tags -->
           <div class="info-meta">
             <span class="platform-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> {{ product?.platform || 'Garry\'s Mod' }}</span>
-            <NuxtLink v-for="c in productCats" :key="'cat-' + c.slug" :to="'/catalogue?c=' + c.slug" class="cat-pill">{{ c.name }}</NuxtLink>
+            <NuxtLink v-for="c in productCats" :key="'cat-' + c.slug" :to="'/catalogue?c=' + c.slug" class="cat-pill">{{ t('category.' + c.slug) }}</NuxtLink>
             <span v-for="tag in productTags" :key="tag" class="tag-pill">{{ tag }}</span>
           </div>
 
@@ -332,7 +332,7 @@ const productTags = computed(() => {
   return []
 })
 
-const descriptionHtml = computed(() => product.value?.description || product.value?.shortDescription || '<p>Aucune description disponible.</p>')
+const descriptionHtml = computed(() => product.value?.description || product.value?.shortDescription || t('product.no_description'))
 const installationHtml = computed(() => product.value?.installation || '')
 
 const tabs = computed(() => {

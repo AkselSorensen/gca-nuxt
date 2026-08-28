@@ -122,6 +122,7 @@ useSeoMeta({
 })
 
 const pageRef = ref<HTMLElement | null>(null)
+const { t } = useLang()
 onMounted(async () => {
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()

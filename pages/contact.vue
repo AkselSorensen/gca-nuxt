@@ -2,8 +2,8 @@
   <div ref="pageRef" class="page-static">
     <div class="container contact-wrap">
       <div class="page-header anim-up">
-        <h1>Contact</h1>
-        <p>Une question, une commande, un problème après-achat ? Écrivez-nous.</p>
+        <h1>{{ t('contact.title') }}</h1>
+        <p>{{ t('contact.subtitle') }}</p>
       </div>
 
       <div class="contact-grid anim-card">
@@ -11,21 +11,21 @@
         <div class="contact-form-card">
           <form @submit.prevent="submit">
             <div class="form-row">
-              <div class="field"><label>Nom *</label><input v-model="form.name" type="text" placeholder="Votre nom" required /></div>
-              <div class="field"><label>Email *</label><input v-model="form.email" type="email" placeholder="vous@exemple.com" required /></div>
+              <div class="field"><label>{{ t('contact.name') }}</label><input v-model="form.name" type="text" :placeholder="t('contact.name_ph')" required /></div>
+              <div class="field"><label>{{ t('contact.email') }}</label><input v-model="form.email" type="email" :placeholder="t('contact.email_ph')" required /></div>
             </div>
-            <div class="field"><label>Sujet</label>
+            <div class="field"><label>{{ t('contact.subject') }}</label>
               <select v-model="form.subject">
-                <option value="" disabled>Sélectionner</option>
-                <option>Question sur un produit</option>
-                <option>Commande / Téléchargement</option>
-                <option>Problème après-achat</option>
-                <option>Devenir vendeur</option>
-                <option>Prestation Game Design / 3D</option>
-                <option>Autre</option>
+                <option value="" disabled>{{ t('contact.select') }}</option>
+                <option>{{ t('contact.sub_question') }}</option>
+                <option>{{ t('contact.sub_order') }}</option>
+                <option>{{ t('contact.sub_after') }}</option>
+                <option>{{ t('contact.sub_seller') }}</option>
+                <option>{{ t('contact.sub_service') }}</option>
+                <option>{{ t('contact.sub_other') }}</option>
               </select>
             </div>
-            <div class="field"><label>Message *</label><textarea v-model="form.message" rows="6" placeholder="Décrivez votre demande..." required></textarea></div>
+            <div class="field"><label>{{ t('contact.message') }}</label><textarea v-model="form.message" rows="6" :placeholder="t('contact.message_ph')" required></textarea></div>
             <!-- Honeypot anti-spam -->
             <input v-model="form.website" type="text" class="hp-field" tabindex="-1" autocomplete="off" />
 
@@ -37,7 +37,7 @@
 
             <button class="btn-send" :disabled="sending">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              {{ sending ? 'Envoi…' : 'Envoyer le message' }}
+              {{ sending ? t('contact.sending') : t('contact.send') }}
             </button>
           </form>
         </div>
@@ -47,8 +47,8 @@
           <div class="ci-block">
             <div class="ci-icon"><IconDiscord :size="20" /></div>
             <div>
-              <h3>Discord — réponse rapide</h3>
-              <p>Pour une réponse immédiate, rejoignez le serveur communautaire.</p>
+              <h3>{{ t('contact.discord_title') }}</h3>
+              <p>{{ t('contact.discord_desc') }}</p>
               <a href="https://discord.gg/KDsEzGRnKs" target="_blank" rel="noopener" class="ci-link">discord.gg/KDsEzGRnKs</a>
             </div>
           </div>
@@ -56,8 +56,8 @@
           <div class="ci-block">
             <div class="ci-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
             <div>
-              <h3>Par email</h3>
-              <p>Le formulaire envoie directement votre message à l'équipe GSA.</p>
+              <h3>{{ t('contact.email_title') }}</h3>
+              <p>{{ t('contact.email_desc') }}</p>
               <span class="ci-mail">support-gsa@gsa-store.fr</span>
             </div>
           </div>
@@ -65,8 +65,8 @@
           <div class="ci-block">
             <div class="ci-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
             <div>
-              <h3>Délai de réponse</h3>
-              <p>Support de premier niveau sous 7 jours après un achat. Réponse sous 24-48h en moyenne.</p>
+              <h3>{{ t('contact.delay_title') }}</h3>
+              <p>{{ t('contact.delay_desc') }}</p>
             </div>
           </div>
         </div>
@@ -86,6 +86,7 @@ useSeoMeta({
 
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
+const { t } = useLang()
 
 const form = reactive({ name: '', email: '', subject: '', message: '', website: '' })
 const sending = ref(false)

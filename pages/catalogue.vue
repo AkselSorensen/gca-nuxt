@@ -16,7 +16,7 @@
       <!-- Category pills -->
       <div class="cat-pills anim-up">
         <button class="pill" :class="{ active: !filters.category }" @click="filters.category = ''">{{ t('catalogue.all') }} <span class="pill-count">{{ products.length }}</span></button>
-        <button v-for="c in categories" :key="c.slug" class="pill" :class="{ active: filters.category === c.slug }" @click="filters.category = filters.category === c.slug ? '' : c.slug">{{ c.name }} <span class="pill-count">{{ countByCategory(c.slug) }}</span></button>
+        <button v-for="c in categories" :key="c.slug" class="pill" :class="{ active: filters.category === c.slug }" @click="filters.category = filters.category === c.slug ? '' : c.slug">{{ t('category.' + c.slug) }} <span class="pill-count">{{ countByCategory(c.slug) }}</span></button>
       </div>
 
       <div class="mp-layout">
@@ -65,7 +65,7 @@
             <h4 class="filter-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> {{ t('catalogue.min_rating') }}</h4>
             <label v-for="r in ratingOptions" :key="r" class="radio-row" :class="{ active: filters.minRating === r }">
               <input type="radio" v-model="filters.minRating" :value="r" />
-              <span class="stars">{{ '★'.repeat(r === 0 ? 0 : Math.round(r)) }}{{ r === 0 ? 'Toutes' : '' }}</span>
+              <span class="stars">{{ '★'.repeat(r === 0 ? 0 : Math.round(r)) }}{{ r === 0 ? t('catalogue.any_rating') : '' }}</span>
             </label>
           </div>
 
@@ -151,7 +151,7 @@
               <h4 class="filter-title">Note minimale</h4>
               <label v-for="r in ratingOptions" :key="r" class="radio-row" :class="{ active: filters.minRating === r }">
                 <input type="radio" v-model="filters.minRating" :value="r" />
-                <span>{{ r === 0 ? 'Toutes' : r + '+' }}</span>
+                <span>{{ r === 0 ? t('catalogue.any_rating') : r + '+' }}</span>
               </label>
             </div>
             <div style="display:grid;gap:8px;padding:16px;">

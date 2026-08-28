@@ -9,7 +9,7 @@
           <div class="cat-bg" :style="{ background: c.bg }"></div>
           <div class="cat-icon" v-html="c.icon"></div>
           <div class="cat-info">
-            <span class="cat-name">{{ c.name }}</span>
+            <span class="cat-name">{{ t('category.' + c.slug) }}</span>
             <span class="cat-count">{{ c.count }} {{ c.count > 1 ? t('home.resources') : t('home.resource') }}</span>
           </div>
         </NuxtLink>
@@ -27,7 +27,7 @@
     </div></section>
 
     <section class="section"><div class="container">
-      <div class="section-header"><h2>{{ t('home.trending') }}</h2><NuxtLink to="/catalogue?sort=trending" class="section-link">Voir tout →</NuxtLink></div>
+      <div class="section-header"><h2>{{ t('home.trending') }}</h2><NuxtLink to="/catalogue?sort=trending" class="section-link">{{ t('home.see_all') }} →</NuxtLink></div>
       <div v-if="loading" class="loading">{{ t('home.loading') }}</div>
       <div v-else class="prod-carousel-wrap">
         <button class="prod-arrow prod-arrow-left" @click="slideProd('trending',-1)" :disabled="prodPage.trending === 0" :aria-label="t('home.prev')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -67,7 +67,7 @@
     </div></section>
 
     <section v-if="discounts.length" class="section"><div class="container">
-      <div class="section-header"><h2>{{ t('home.promotions') }}</h2><NuxtLink to="/catalogue?sort=discount" class="section-link">Voir tout →</NuxtLink></div>
+      <div class="section-header"><h2>{{ t('home.promotions') }}</h2><NuxtLink to="/catalogue?sort=discount" class="section-link">{{ t('home.see_all') }} →</NuxtLink></div>
       <div class="prod-carousel-wrap">
         <button class="prod-arrow prod-arrow-left" @click="slideProd('discount',-1)" :disabled="prodPage.discount === 0" :aria-label="t('home.prev')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
         <div class="prod-carousel" ref="discountStageRef">
