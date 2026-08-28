@@ -505,8 +505,9 @@ onMounted(async () => {
 .video-cta { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:4; display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:999px; background:rgba(15,15,15,.8); color:#fff; font-size:.8rem; font-weight:700; cursor:pointer; transition:background .15s ease, transform .15s ease; }
 .video-cta svg { color:#fff; flex-shrink:0; }
 .video-cta:hover { background:rgba(255,0,0,.95); transform:translateX(-50%) scale(1.04); }
-.yt-player-box { width:100%; height:100%; position:relative; z-index:1; }
-.yt-player-box iframe { width:100%; height:100%; border:0; }
+/* Conteneur du lecteur : hauteur garantie par aspect-ratio, iframe en absolute pleine taille */
+.yt-player-box { position:relative; width:100%; aspect-ratio:16/10; z-index:1; }
+.yt-player-box iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
 .video-fallback { display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 10px; font-size:.8rem; color:var(--text-muted); flex-wrap:wrap; }
 .video-fallback a { display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:8px; background:rgba(255,0,0,.12); color:#ff4d4d; font-weight:700; text-decoration:none; transition:background .15s ease; }
 .video-fallback a:hover { background:rgba(255,0,0,.22); }
