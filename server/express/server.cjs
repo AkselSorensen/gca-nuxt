@@ -3709,6 +3709,96 @@ app.get("/api/invoice/:orderItemId", requireAuth, async (req, res) => {
   }
 });
 
+// ─── Finances : panel centralisé (commission GSA + fiscalité vendeurs + logs) ──
+app.get("/api/admin/finances", requireAdmin, async (_req, res) => {
+  try {
+    await ensureRecentMigrations();
+    // Fiscalité par vendeur : CA, commission GSA, frais Stripe (répartis au prorata), net encaissé
+    const bySeller = await pool.query(`
+      SELECT
+        u.id AS seller_id,
+        u.display_name AS seller_name,
+        COALESCE(u.commission_percent, 25) AS commission_percent,
+        COUNT(DISTINCT oi.id)::int AS sales_count,
+        COALESCE(SUM(oi.price * oi.quantity), 0) AS revenue,
+        COALESCE(SUM(oi.platform_fee_amount), 0) AS commission_gsa,
+        COALESCE(SUM(oi.seller_net_amount), 0) AS net_seller,
+        COALESCE(SUM(
+          COALESCE(o.stripe_fee_amount, 0) * (oi.price * oi.quantity) / NULLIF(o.total_amount, 0)
+        ), 0) AS stripe_fees
+      FROM order_items oi
+      JOIN orders o ON o.id = oi.order_id
+      JOIN users u ON u.id = oi.seller_id
+      WHERE o.status = 'completed'
+      GROUP BY u.id, u.display_name, u.commission_percent
+      ORDER BY revenue DESC
+    `);
+
+    const totals = {
+      revenue: 0, commissionGsa: 0, netSeller: 0, stripeFees: 0, salesCount: 0,
+    };
+    const sellers = bySeller.rows.map((r) => {
+      const row = {
+        sellerId: r.seller_id,
+        sellerName: r.seller_name,
+        commissionPercent: Number(r.commission_percent),
+        salesCount: r.sales_count,
+        revenue: Number(r.revenue),
+        commissionGsa: Number(r.commission_gsa),
+        stripeFees: Number(r.stripe_fees),
+        netSeller: Number(r.net_seller),
+        netAfterFees: Number(r.net_seller) - Number(r.stripe_fees),
+      };
+      totals.revenue += row.revenue;
+      totals.commissionGsa += row.commissionGsa;
+      totals.netSeller += row.netSeller;
+      totals.stripeFees += row.stripeFees;
+      totals.salesCount += row.salesCount;
+      return row;
+    });
+
+    // Logs de vente (commandes complétées) — mêmes infos que l'onglet Revenus
+    const orders = await pool.query(`
+      SELECT
+        o.id, o.total_amount, o.created_at, o.stripe_fee_amount,
+        COALESCE(SUM(oi.platform_fee_amount), 0) AS platform_fee,
+        COALESCE(SUM(oi.seller_net_amount), 0) AS seller_net,
+        u.email AS buyer_email,
+        u.display_name AS buyer_name,
+        COALESCE(string_agg(DISTINCT s.display_name, ', '), '') AS sellers,
+        COALESCE(array_agg(DISTINCT s.id) FILTER (WHERE s.id IS NOT NULL), '{}') AS seller_ids
+      FROM orders o
+      LEFT JOIN order_items oi ON oi.order_id = o.id
+      LEFT JOIN users u ON u.id = o.user_id
+      LEFT JOIN users s ON s.id = oi.seller_id
+      WHERE o.status = 'completed'
+      GROUP BY o.id, u.email, u.display_name
+      ORDER BY o.created_at DESC
+      LIMIT 100
+    `);
+
+    res.json({
+      totals,
+      bySeller: sellers,
+      orders: orders.rows.map((r) => ({
+        id: r.id,
+        total: Number(r.total_amount),
+        fee: Number(r.stripe_fee_amount),
+        platformFee: Number(r.platform_fee),
+        sellerNet: Number(r.seller_net),
+        buyerEmail: r.buyer_email,
+        buyerName: r.buyer_name,
+        sellers: r.sellers,
+        sellerIds: Array.isArray(r.seller_ids) ? r.seller_ids.map(Number) : [],
+        createdAt: r.created_at,
+      })),
+    });
+  } catch (error) {
+    console.error("Admin finances error:", error);
+    res.status(500).json({ message: "Unable to fetch finances" });
+  }
+});
+
 // ─── Factures : listes admin + vendeur ─────────────────────────
 // Liste des factures (commandes) pour l'ADMIN : toutes les commandes.
 app.get("/api/admin/invoices", requireAdmin, async (_req, res) => {

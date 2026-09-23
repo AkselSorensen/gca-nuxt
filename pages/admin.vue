@@ -500,6 +500,65 @@
         <div v-else class="rev-loading error">Impossible de charger les revenus.</div>
       </div>
 
+      <!-- ==================== FINANCES ==================== -->
+      <div v-if="activeTab === 'finances'" class="tab-content">
+        <div class="tab-header">
+          <h2>Finances — suivi centralisé</h2>
+          <button class="btn-primary btn-sm" @click="loadFinances">Rafraîchir</button>
+        </div>
+
+        <template v-if="finances">
+          <!-- Récap global -->
+          <div class="rev-cards" style="margin-bottom:18px;">
+            <div class="rev-card"><span class="rev-card-label">Chiffre d'affaires</span><strong class="rev-card-val">{{ fmtMoney(finances.totals.revenue) }}</strong><span class="rev-card-sub">total des ventes</span></div>
+            <div class="rev-card accent"><span class="rev-card-label">Commission GSA</span><strong class="rev-card-val">{{ fmtMoney(finances.totals.commissionGsa) }}</strong><span class="rev-card-sub">part plateforme</span></div>
+            <div class="rev-card"><span class="rev-card-label">Net vendeurs</span><strong class="rev-card-val muted">{{ fmtMoney(finances.totals.netSeller) }}</strong><span class="rev-card-sub">après commission</span></div>
+            <div class="rev-card"><span class="rev-card-label">Frais Stripe</span><strong class="rev-card-val muted">{{ fmtMoney(finances.totals.stripeFees) }}</strong><span class="rev-card-sub">payés par les vendeurs</span></div>
+          </div>
+
+          <!-- Fiscalité par vendeur -->
+          <h3 class="rev-section-title">Fiscalité par vendeur</h3>
+          <div class="table-wrap">
+            <table v-if="finances.bySeller.length" class="admin-table">
+              <thead><tr><th>Vendeur</th><th>Commission</th><th>Ventes</th><th>CA</th><th>Commission GSA</th><th>Frais Stripe</th><th>Net encaissé</th><th>TVA</th></tr></thead>
+              <tbody>
+                <tr v-for="s in finances.bySeller" :key="s.sellerId">
+                  <td><strong>{{ s.sellerName }}</strong></td>
+                  <td>{{ s.commissionPercent }}%</td>
+                  <td>{{ s.salesCount }}</td>
+                  <td class="price-cell">{{ fmtMoney(s.revenue) }}</td>
+                  <td class="price-cell">{{ fmtMoney(s.commissionGsa) }}</td>
+                  <td class="price-cell muted">{{ fmtMoney(s.stripeFees) }}</td>
+                  <td class="price-cell">{{ fmtMoney(s.netAfterFees) }}</td>
+                  <td><span class="muted">non applicable (art. 293 B)</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <div v-else class="empty-tab">Aucun vendeur avec des ventes complétées.</div>
+          </div>
+
+          <!-- Logs de vente -->
+          <h3 class="rev-section-title">Logs de vente</h3>
+          <div class="table-wrap">
+            <table v-if="finances.orders.length" class="admin-table">
+              <thead><tr><th>#</th><th>Date</th><th>Client</th><th>Vendeur(s)</th><th>Total</th><th>Commission</th></tr></thead>
+              <tbody>
+                <tr v-for="o in finances.orders" :key="o.id">
+                  <td>{{ o.id }}</td>
+                  <td>{{ new Date(o.createdAt).toLocaleDateString('fr-FR') }} {{ new Date(o.createdAt).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
+                  <td>{{ o.buyerName || o.buyerEmail || '—' }}</td>
+                  <td>{{ o.sellers || '—' }}</td>
+                  <td class="price-cell">{{ fmtMoney(o.total) }}</td>
+                  <td class="price-cell">{{ fmtMoney(o.platformFee) }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div v-else class="empty-tab">Aucune vente complétée.</div>
+          </div>
+        </template>
+        <div v-else class="rev-loading">Chargement des finances…</div>
+      </div>
+
       <!-- ==================== FACTURES ==================== -->
       <div v-if="activeTab === 'invoices'" class="tab-content">
         <div class="tab-header">
@@ -828,6 +887,7 @@ const tabs = [
   { id:'sellers', label:'Vendeurs', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
   { id:'tags', label:'Tags', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>' },
   { id:'revenue', label:'Revenus', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
+  { id:'finances', label:'Finances', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
   { id:'invoices', label:'Factures', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
 ]
 
@@ -1579,6 +1639,14 @@ async function savePage(page: typeof editablePages.value[0]) {
   finally { page.saving = false }
 }
 
+// ─── Finances (panel centralisé) ───────────────────────
+const finances = ref<any>(null)
+async function loadFinances() {
+  try {
+    finances.value = await $fetch(api + '/api/admin/finances', { credentials: 'include' })
+  } catch { finances.value = null }
+}
+
 // ─── Factures ──────────────────────────────────────────
 const invoices = ref<any[]>([])
 async function loadInvoices() {
@@ -1588,7 +1656,7 @@ async function loadInvoices() {
   } catch { invoices.value = [] }
 }
 
-onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests(); loadTags(); loadCategories(); loadRevenue(); loadInvoices() })
+onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests(); loadTags(); loadCategories(); loadRevenue(); loadFinances(); loadInvoices() })
 </script>
 
 <style scoped>
