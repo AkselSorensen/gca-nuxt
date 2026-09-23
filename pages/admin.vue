@@ -500,6 +500,40 @@
         <div v-else class="rev-loading error">Impossible de charger les revenus.</div>
       </div>
 
+      <!-- ==================== FACTURES ==================== -->
+      <div v-if="activeTab === 'invoices'" class="tab-content">
+        <div class="tab-header">
+          <h2>Factures</h2>
+          <button class="btn-primary btn-sm" @click="loadInvoices">Rafraîchir</button>
+        </div>
+        <div class="table-wrap">
+          <table v-if="invoices.length" class="admin-table">
+            <thead><tr><th>Facture</th><th>Date</th><th>Client</th><th>Vendeur(s)</th><th>Total</th><th>PDF</th></tr></thead>
+            <tbody>
+              <tr v-for="inv in invoices" :key="inv.orderId">
+                <td class="mono">{{ inv.invoiceId }}</td>
+                <td>{{ new Date(inv.date).toLocaleDateString('fr-FR') }} {{ new Date(inv.date).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
+                <td>
+                  <div class="buyer-cell">
+                    <span v-if="inv.buyerName" class="buyer-name">{{ inv.buyerName }}</span>
+                    <span v-if="inv.buyerEmail" class="buyer-email">{{ inv.buyerEmail }}</span>
+                  </div>
+                </td>
+                <td>{{ inv.sellers || '—' }}</td>
+                <td class="price-cell">{{ fmtMoney(inv.total) }}</td>
+                <td>
+                  <a v-if="inv.orderItemId" class="btn-action" :href="api + '/api/invoice/' + inv.orderItemId" title="Télécharger la facture (PDF)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  </a>
+                  <span v-else class="muted">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else class="empty-tab">Aucune facture (aucune commande complétée).</div>
+        </div>
+      </div>
+
     </main>
   </div>
   <ToastNotif ref="toastRef" />
@@ -794,6 +828,7 @@ const tabs = [
   { id:'sellers', label:'Vendeurs', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
   { id:'tags', label:'Tags', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>' },
   { id:'revenue', label:'Revenus', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
+  { id:'invoices', label:'Factures', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
 ]
 
 // ─── Ambassadors ──────────────────────────────────────
@@ -1544,7 +1579,16 @@ async function savePage(page: typeof editablePages.value[0]) {
   finally { page.saving = false }
 }
 
-onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests(); loadTags(); loadCategories(); loadRevenue() })
+// ─── Factures ──────────────────────────────────────────
+const invoices = ref<any[]>([])
+async function loadInvoices() {
+  try {
+    const res = await $fetch(api + '/api/admin/invoices', { credentials: 'include' })
+    invoices.value = res.invoices || []
+  } catch { invoices.value = [] }
+}
+
+onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests(); loadTags(); loadCategories(); loadRevenue(); loadInvoices() })
 </script>
 
 <style scoped>

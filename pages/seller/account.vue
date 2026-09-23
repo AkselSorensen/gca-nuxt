@@ -13,6 +13,10 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             {{ t('seller.revenue_tab') }}
           </button>
+          <button class="tab-btn" :class="{ active: activeTab === 'invoices' }" @click="activeTab = 'invoices'; loadSellerInvoices()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Factures
+          </button>
         </div>
       </div>
 
@@ -114,7 +118,7 @@
       </div>
 
       <!-- ═══ Onglet Revenus ═══ -->
-      <div v-else class="revenue-panel">
+      <div v-else-if="activeTab === 'revenue'" class="revenue-panel">
         <div class="rev-header">
           <div class="rev-title">
             <h2>Revenus</h2>
@@ -237,6 +241,37 @@
           </template>
         </template>
       </div>
+
+      <!-- ═══ Onglet Factures ═══ -->
+      <div v-else-if="activeTab === 'invoices'" class="revenue-panel">
+        <div class="rev-header">
+          <div class="rev-title"><h2>Factures</h2></div>
+          <button class="rev-refresh" @click="loadSellerInvoices" title="Rafraîchir">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+        </div>
+        <div class="rev-table-wrap">
+          <table v-if="sellerInvoices.length" class="rev-table">
+            <thead><tr><th>Facture</th><th>Date</th><th>Produit</th><th>Client</th><th>Prix</th><th>Net vendeur</th><th>PDF</th></tr></thead>
+            <tbody>
+              <tr v-for="inv in sellerInvoices" :key="inv.orderItemId">
+                <td class="mono">{{ inv.invoiceId }}</td>
+                <td>{{ fmtDate(inv.date) }}</td>
+                <td class="rev-prod">{{ inv.productTitle }}</td>
+                <td class="rev-client">{{ inv.buyerName || inv.buyerEmail || '—' }}</td>
+                <td>{{ fmtMoney(inv.itemPrice * inv.itemQuantity) }}</td>
+                <td class="rev-net">+{{ fmtMoney(inv.sellerNet) }}</td>
+                <td>
+                  <a class="inv-dl" :href="api + '/api/invoice/' + inv.orderItemId" title="Télécharger la facture (PDF)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else class="rev-unlinked">Aucune facture pour vos ventes (commandes complétées uniquement).</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -265,6 +300,14 @@ const activeTab = ref('account')
 const revenue = ref<any>(null)
 const revenueLoading = ref(false)
 const revenueError = ref('')
+const sellerInvoices = ref<any[]>([])
+
+async function loadSellerInvoices() {
+  try {
+    const res = await $fetch(api + '/api/seller/invoices', { credentials: 'include' })
+    sellerInvoices.value = res.invoices || []
+  } catch { sellerInvoices.value = [] }
+}
 
 const profile = reactive({
   shopName: 'Ma boutique',
@@ -572,6 +615,8 @@ onMounted(async () => {
 .rev-account-id { font-size:.72rem; color:var(--text-muted); font-family:ui-monospace,Consolas,monospace; }
 .rev-refresh { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:10px; border:1px solid var(--border); background:var(--bg-surface); color:var(--text-secondary); cursor:pointer; transition:all .15s; }
 .rev-refresh:hover { color:var(--text); border-color:var(--text-muted); transform:rotate(90deg); }
+.inv-dl { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; border:1px solid var(--border); background:var(--bg-surface); color:var(--primary); transition:all .15s; }
+.inv-dl:hover { border-color:var(--primary); background:rgba(47,125,246,0.08); }
 .rev-loading { display:flex; align-items:center; gap:10px; color:var(--text-secondary); font-size:.9rem; padding:24px 0; }
 .rev-loading .spin { animation:spin 1s linear infinite; color:var(--primary); }
 .rev-error { color:var(--red); background:rgba(248,113,113,.06); border:1px solid rgba(248,113,113,.18); border-radius:10px; padding:14px 16px; font-size:.85rem; }

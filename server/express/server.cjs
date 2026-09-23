@@ -3500,7 +3500,24 @@ app.get("/api/invoice/:orderItemId", requireAuth, async (req, res) => {
     const orderItemId = Number(req.params.orderItemId);
     if (!orderItemId) return res.status(400).json({ message: "orderItemId invalide" });
 
-    // La facture couvre la commande entière ; l'utilisateur doit posséder l'item demandé
+    // Contrôle d'accès : admin (tout) / vendeur (ses items) / client (ses achats)
+    const owner = await pool.query(
+      `SELECT oi.id, oi.seller_id, o.user_id AS buyer_id
+       FROM order_items oi
+       JOIN orders o ON o.id = oi.order_id
+       WHERE oi.id = $1`,
+      [orderItemId]
+    );
+    if (!owner.rowCount) return res.status(404).json({ message: "Commande introuvable" });
+    const role = req.session.user.role;
+    const uid = req.session.user.id;
+    const allowed =
+      role === "admin" ||
+      owner.rows[0].seller_id === uid ||
+      owner.rows[0].buyer_id === uid;
+    if (!allowed) return res.status(403).json({ message: "Vous n'avez pas accès à cette facture" });
+
+    // La facture couvre la commande entière
     const result = await pool.query(
       `
         SELECT
@@ -3536,11 +3553,10 @@ app.get("/api/invoice/:orderItemId", requireAuth, async (req, res) => {
           JOIN orders o2 ON o2.id = oi2.order_id
           WHERE oi2.id = $1
         )
-        AND o.user_id = $2
         GROUP BY o.id, u.display_name, u.email
         LIMIT 1
       `,
-      [orderItemId, req.session.user.id]
+      [orderItemId]
     );
 
     if (!result.rowCount) {
@@ -3690,6 +3706,98 @@ app.get("/api/invoice/:orderItemId", requireAuth, async (req, res) => {
   } catch (error) {
     console.error("Invoice error:", error);
     res.status(500).json({ message: "Erreur lors de la génération de la facture" });
+  }
+});
+
+// ─── Factures : listes admin + vendeur ─────────────────────────
+// Liste des factures (commandes) pour l'ADMIN : toutes les commandes.
+app.get("/api/admin/invoices", requireAdmin, async (_req, res) => {
+  try {
+    await ensureRecentMigrations();
+    const result = await pool.query(`
+      SELECT
+        o.id AS order_id,
+        o.created_at,
+        o.total_amount,
+        u.email AS buyer_email,
+        u.display_name AS buyer_name,
+        COALESCE(string_agg(DISTINCT s.display_name, ', '), '') AS sellers,
+        MIN(oi.id) AS first_item_id,
+        COUNT(DISTINCT oi.id)::int AS items_count
+      FROM orders o
+      JOIN users u ON u.id = o.user_id
+      LEFT JOIN order_items oi ON oi.order_id = o.id
+      LEFT JOIN users s ON s.id = oi.seller_id
+      WHERE o.status = 'completed'
+      GROUP BY o.id, u.email, u.display_name
+      ORDER BY o.created_at DESC
+      LIMIT 200
+    `);
+    res.json({
+      invoices: result.rows.map((r) => ({
+        orderId: r.order_id,
+        invoiceId: invoiceNumber(r.order_id),
+        orderItemId: Number(r.first_item_id),
+        date: r.created_at,
+        total: Number(r.total_amount),
+        buyerEmail: r.buyer_email,
+        buyerName: r.buyer_name,
+        sellers: r.sellers,
+        itemsCount: r.items_count,
+      })),
+    });
+  } catch (error) {
+    console.error("Admin invoices error:", error);
+    res.status(500).json({ message: "Unable to fetch invoices" });
+  }
+});
+
+// Liste des factures (commandes) pour le VENDEUR : uniquement ses ventes.
+app.get("/api/seller/invoices", requireAuth, async (req, res) => {
+  if (req.session.user.role !== "seller" && req.session.user.role !== "admin") {
+    return res.status(403).json({ message: "Seller access required" });
+  }
+  try {
+    await ensureRecentMigrations();
+    const sellerId = req.session.user.id;
+    const result = await pool.query(`
+      SELECT
+        o.id AS order_id,
+        o.created_at,
+        o.total_amount,
+        u.email AS buyer_email,
+        u.display_name AS buyer_name,
+        oi.id AS order_item_id,
+        p.title AS product_title,
+        oi.price AS item_price,
+        oi.quantity AS item_quantity,
+        oi.seller_net_amount AS seller_net
+      FROM order_items oi
+      JOIN orders o ON o.id = oi.order_id
+      JOIN users u ON u.id = o.user_id
+      JOIN products p ON p.id = oi.product_id
+      WHERE oi.seller_id = $1 AND o.status = 'completed'
+      ORDER BY o.created_at DESC
+      LIMIT 200
+    `, [sellerId]);
+    res.json({
+      invoices: result.rows.map((r) => ({
+        orderId: r.order_id,
+        invoiceId: invoiceNumber(r.order_id),
+        orderItemId: Number(r.order_item_id),
+        date: r.created_at,
+        total: Number(r.total_amount),
+        itemPrice: Number(r.item_price),
+        itemQuantity: Number(r.item_quantity),
+        sellerNet: Number(r.seller_net),
+        buyerEmail: r.buyer_email,
+        buyerName: r.buyer_name,
+        productTitle: r.product_title,
+      })),
+    });
+  } catch (error) {
+    console.error("Seller invoices error:", error);
+    res.status(500).json({ message: "Unable to fetch invoices" });
   }
 });
 
