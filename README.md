@@ -1,75 +1,33 @@
-# Nuxt Minimal Starter
+# GSA Store — marketplace
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+GSA Store est une marketplace développée avec Nuxt et Vue. Elle réunit le catalogue public, les espaces clients et vendeurs et des outils d’administration.
 
-## Setup
+## Fonctionnalités
 
-Make sure to install dependencies:
+- Catalogue, recherche, catégories et fiches produits.
+- Comptes clients et vendeurs avec interfaces adaptées à leur rôle.
+- Gestion des produits, commandes, ventes et factures.
+- Paiement Stripe et suivi des commissions et frais.
+- Administration du contenu, des vendeurs et des indicateurs financiers.
+- Notifications par e-mail et déploiement conteneurisé.
+
+## Technologies
+
+Nuxt, Vue, TypeScript, Node.js, Stripe et Docker. Le déploiement est configuré pour un serveur OVH.
+
+## Développement local
 
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
+
+Les services de paiement, de base de données et d’envoi de courriels nécessitent une configuration d’environnement. Consulte `STRIPE_DOC.md` pour la documentation Stripe. Ne publie pas de secrets ou de clés API.
 
 ## Production
 
-Build the application for production:
-
 ```bash
-# npm
 npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+Le dépôt contient un `Dockerfile`, `docker-compose.yml` et une configuration de déploiement. Adapte les variables d’environnement et les services avant de lancer une instance.
