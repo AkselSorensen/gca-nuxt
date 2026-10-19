@@ -593,6 +593,46 @@
         </div>
       </div>
 
+      <!-- ==================== MAINTENANCE ==================== -->
+      <div v-if="activeTab === 'maintenance'" class="tab-content">
+        <div class="tab-header">
+          <div><h2>Maintenance du site</h2><p class="tab-desc">Prévenez les visiteurs pendant une intervention et gardez l’accès à l’administration.</p></div>
+          <span class="maintenance-state" :class="{ active: maintenanceForm.enabled }"><i></i>{{ maintenanceForm.enabled ? 'Maintenance activée' : 'Site en ligne' }}</span>
+        </div>
+        <div class="maintenance-admin-grid">
+          <section class="editor-card maintenance-controls">
+            <div class="maintenance-switch-row">
+              <div><h3>Mode maintenance</h3><p>Les visiteurs verront la page d’information pendant que vous travaillez.</p></div>
+              <button type="button" class="maintenance-switch" :class="{ enabled: maintenanceForm.enabled }" role="switch" :aria-checked="maintenanceForm.enabled" :disabled="maintenanceSaving || maintenanceLoading" @click="maintenanceForm.enabled = !maintenanceForm.enabled">
+                <span></span>{{ maintenanceForm.enabled ? 'ON' : 'OFF' }}
+              </button>
+            </div>
+            <div class="field maintenance-message-field">
+              <label for="maintenance-message">Message pour les visiteurs</label>
+              <textarea id="maintenance-message" v-model="maintenanceForm.message" rows="4" maxlength="300" placeholder="Expliquez brièvement l’intervention en cours…"></textarea>
+              <small>{{ maintenanceForm.message.length }}/300 caractères</small>
+            </div>
+            <div class="maintenance-admin-note"><span>ⓘ</span> Les pages d’administration et de connexion restent accessibles.</div>
+            <button class="btn-primary maintenance-save" :disabled="maintenanceSaving || maintenanceLoading" @click="saveMaintenanceSettings">
+              <span v-if="maintenanceSaving" class="spinner"></span>
+              {{ maintenanceSaving ? 'Enregistrement…' : 'Enregistrer les réglages' }}
+            </button>
+            <p v-if="maintenanceSaved" class="maintenance-saved">Réglages enregistrés ✓</p>
+          </section>
+          <section class="maintenance-preview-card">
+            <div class="maintenance-preview-heading"><span>Aperçu visiteur</span><span class="preview-dot"></span></div>
+            <div class="maintenance-preview">
+              <div class="maintenance-preview-mark">G</div>
+              <span class="maintenance-preview-label">Une petite pause pour mieux revenir</span>
+              <h3>On améliore<br />votre <span>terrain de jeu.</span></h3>
+              <p>{{ maintenanceForm.message || defaultMaintenanceMessage }}</p>
+              <div class="maintenance-preview-status"><i></i> Nous sommes sur le coup</div>
+              <div class="preview-orbit orbit-a"></div><div class="preview-orbit orbit-b"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+
     </main>
   </div>
   <ToastNotif ref="toastRef" />
@@ -866,6 +906,11 @@ definePageMeta({ layout: 'auth' })
 const { user, logout, checkAuth } = useAuth()
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
+const { update: updateMaintenance, defaultMessage: defaultMaintenanceMessage } = useMaintenance()
+const maintenanceForm = reactive({ enabled: false, message: defaultMaintenanceMessage })
+const maintenanceLoading = ref(false)
+const maintenanceSaving = ref(false)
+const maintenanceSaved = ref(false)
 
 // Garde admin : côté client uniquement — on attend la vérification d'auth
 // (sinon user est null au setup → redirect home à CHAQUE chargement, même admin).
@@ -889,7 +934,42 @@ const tabs = [
   { id:'revenue', label:'Revenus', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
   { id:'finances', label:'Finances', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
   { id:'invoices', label:'Factures', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+  { id:'maintenance', label:'Maintenance', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3 18l3 3 5.3-5.3a5 5 0 0 0 6.4-6.4L14 13l-3-3z"/><path d="m15 5 4 4"/></svg>' },
 ]
+
+async function loadMaintenanceSettings() {
+  maintenanceLoading.value = true
+  try {
+    const result = await $fetch(api + '/api/admin/settings', { credentials: 'include' })
+    maintenanceForm.enabled = Boolean(result.maintenanceMode)
+    maintenanceForm.message = result.maintenanceMessage || defaultMaintenanceMessage
+    updateMaintenance(maintenanceForm.enabled, maintenanceForm.message)
+  } catch (error: any) {
+    toastRef.value?.show('error', error?.data?.statusMessage || 'Impossible de charger les réglages de maintenance')
+  } finally {
+    maintenanceLoading.value = false
+  }
+}
+
+async function saveMaintenanceSettings() {
+  maintenanceSaving.value = true
+  maintenanceSaved.value = false
+  try {
+    await $fetch(api + '/api/admin/settings', {
+      credentials: 'include',
+      method: 'PATCH',
+      body: { maintenanceMode: maintenanceForm.enabled, maintenanceMessage: maintenanceForm.message.slice(0, 300) },
+    })
+    maintenanceForm.message = maintenanceForm.message.slice(0, 300)
+    updateMaintenance(maintenanceForm.enabled, maintenanceForm.message)
+    maintenanceSaved.value = true
+    toastRef.value?.show('success', maintenanceForm.enabled ? 'Mode maintenance activé' : 'Réglages de maintenance enregistrés')
+  } catch (error: any) {
+    toastRef.value?.show('error', error?.data?.statusMessage || 'Impossible d’enregistrer les réglages')
+  } finally {
+    maintenanceSaving.value = false
+  }
+}
 
 // ─── Ambassadors ──────────────────────────────────────
 const ambCodes = ref<any[]>([])
@@ -1656,7 +1736,7 @@ async function loadInvoices() {
   } catch { invoices.value = [] }
 }
 
-onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests(); loadTags(); loadCategories(); loadRevenue(); loadFinances(); loadInvoices() })
+onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests(); loadTags(); loadCategories(); loadRevenue(); loadFinances(); loadInvoices(); loadMaintenanceSettings() })
 </script>
 
 <style scoped>
@@ -1974,4 +2054,40 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .rev-status.pending { background:rgba(245,179,66,.1);color:#f5b342; }
 .rev-status.failed { background:rgba(248,113,113,.1);color:#f87171; }
 .mono { font-family:ui-monospace,Consolas,monospace;font-size:.74rem; }
+.maintenance-admin-grid { display:grid;grid-template-columns:minmax(300px,.9fr) minmax(340px,1.1fr);gap:18px;align-items:stretch; }
+.maintenance-controls { align-self:start; }
+.maintenance-switch-row { display:flex;align-items:center;justify-content:space-between;gap:18px;padding-bottom:20px;border-bottom:1px solid var(--border); }
+.maintenance-switch-row h3 { margin:0 0 6px;font-size:1rem; }
+.maintenance-switch-row p { max-width:330px;margin:0;color:var(--text-muted);font-size:.82rem;line-height:1.55; }
+.maintenance-switch { min-width:76px;display:flex;align-items:center;justify-content:space-between;gap:9px;padding:5px 10px 5px 5px;border:1px solid var(--border);border-radius:999px;background:var(--bg-surface);color:var(--text-muted);cursor:pointer;font-weight:800;font-size:.7rem; }
+.maintenance-switch span { width:25px;height:25px;border-radius:50%;background:#687386;transition:all .2s; }
+.maintenance-switch.enabled { border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.08);color:#fca5a5; }
+.maintenance-switch.enabled span { background:#f87171;box-shadow:0 0 12px rgba(248,113,113,.4); }
+.maintenance-switch:disabled { opacity:.55;cursor:wait; }
+.maintenance-message-field { display:grid;gap:8px;margin-top:20px; }
+.maintenance-message-field label { font-size:.82rem;font-weight:700; }
+.maintenance-message-field textarea { width:100%;padding:12px;border:1px solid var(--border);border-radius:9px;background:var(--bg-surface);color:var(--text);font:inherit;line-height:1.55;resize:vertical;outline:none; }
+.maintenance-message-field textarea:focus { border-color:var(--primary); }
+.maintenance-message-field small { text-align:right;color:var(--text-muted);font-size:.72rem; }
+.maintenance-admin-note { display:flex;gap:8px;margin-top:15px;padding:11px 12px;border-radius:9px;background:rgba(47,125,246,.07);color:var(--text-muted);font-size:.76rem;line-height:1.5; }
+.maintenance-admin-note span { flex:none;color:var(--primary); }
+.maintenance-save { margin-top:20px; }
+.maintenance-saved { display:inline-block;margin:0 0 0 12px;color:var(--green);font-size:.78rem;font-weight:700; }
+.maintenance-state { display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:999px;color:var(--text-muted);font-size:.72rem;font-weight:700;white-space:nowrap; }
+.maintenance-state i,.preview-dot { width:7px;height:7px;border-radius:50%;background:#6ee7b7; }
+.maintenance-state.active { border-color:rgba(248,113,113,.28);color:#fca5a5;background:rgba(248,113,113,.06); }
+.maintenance-state.active i { background:#f87171;box-shadow:0 0 10px #f87171; }
+.maintenance-preview-card { overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-lg);background:#080b11; }
+.maintenance-preview-heading { display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.08);color:#aab5c5;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase; }
+.maintenance-preview { position:relative;min-height:420px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;color:#f4f7fb;background:radial-gradient(ellipse at 75% 45%,rgba(66,91,190,.22),transparent 44%),#080b11; }
+.maintenance-preview-mark { z-index:1;width:44px;height:44px;display:grid;place-items:center;margin-bottom:18px;border:1px solid rgba(255,255,255,.18);border-radius:13px;background:linear-gradient(145deg,rgba(109,148,255,.3),rgba(109,148,255,.05));color:#c6d1ff;font-size:22px;font-weight:900; }
+.maintenance-preview-label { z-index:1;color:#9aaeff;font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase; }
+.maintenance-preview h3 { z-index:1;margin:12px 0;font-size:clamp(1.45rem,3vw,2rem);line-height:1.08;letter-spacing:-.05em; }
+.maintenance-preview h3 span { color:#a9baff; }
+.maintenance-preview p { z-index:1;max-width:370px;margin:0;color:#aab5c5;font-size:.8rem;line-height:1.65;overflow-wrap:anywhere; }
+.maintenance-preview-status { z-index:1;display:inline-flex;align-items:center;gap:8px;margin-top:20px;padding:8px 12px;border:1px solid rgba(110,231,183,.18);border-radius:999px;color:#a9e8ce;font-size:.69rem; }
+.maintenance-preview-status i { width:7px;height:7px;border-radius:50%;background:#6ee7b7;box-shadow:0 0 10px #6ee7b7; }
+.preview-orbit { position:absolute;width:240px;height:240px;border:1px solid rgba(143,158,232,.11);border-radius:50%; }
+.orbit-a { right:-30px;top:-110px; }.orbit-b { right:-65px;top:-145px;width:310px;height:310px;border-style:dashed; }
+@media(max-width:850px) { .maintenance-admin-grid { grid-template-columns:1fr; } }
 </style>

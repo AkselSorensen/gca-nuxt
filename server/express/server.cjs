@@ -534,6 +534,8 @@ async function maintenanceMiddleware(req, res, next) {
     "/auth/steam",
     "/auth/steam/callback",
     "/api/me",
+    "/api/maintenance",
+    "/login",
     "/login.html",
     "/maintenance.html",
     "/style.css",
@@ -4772,13 +4774,28 @@ app.patch("/api/admin/promo-codes/:id", requireAdmin, async (req, res) => {
   }
 });
 
-// GET /api/admin/settings -get maintenance mode
+// Public maintenance status used by the Nuxt shell before rendering the storefront.
+app.get("/api/maintenance", async (_req, res) => {
+  const defaultMessage = "Le site est temporairement indisponible afin d’effectuer quelques améliorations. Merci de votre patience.";
+  try {
+    const result = await pool.query("SELECT key, value FROM settings WHERE key IN ('maintenance_mode', 'maintenance_message')");
+    const settings = Object.fromEntries(result.rows.map(row => [row.key, row.value]));
+    res.json({ maintenanceMode: settings.maintenance_mode === "true", maintenanceMessage: settings.maintenance_message || defaultMessage });
+  } catch (error) {
+    console.error("Maintenance status error:", error);
+    res.json({ maintenanceMode: false, maintenanceMessage: defaultMessage });
+  }
+});
+
+// GET /api/admin/settings - maintenance + landing config
 app.get("/api/admin/settings", requireAdmin, async (_req, res) => {
   try {
-    const result = await pool.query(`SELECT value FROM settings WHERE key = 'maintenance_mode'`);
+    const result = await pool.query("SELECT key, value FROM settings WHERE key IN ('maintenance_mode', 'maintenance_message')");
     const landingConfig = await pool.query(`SELECT * FROM admin_landing_config ORDER BY id ASC`);
+    const settings = Object.fromEntries(result.rows.map(row => [row.key, row.value]));
     res.json({ 
-      maintenanceMode: result.rows[0]?.value === "true",
+      maintenanceMode: settings.maintenance_mode === "true",
+      maintenanceMessage: settings.maintenance_message || "Le site est temporairement indisponible afin d’effectuer quelques améliorations. Merci de votre patience.",
       landingConfig: landingConfig.rows
     });
   } catch (error) {
@@ -4928,15 +4945,24 @@ app.post("/api/admin/seller-requests/:id/reject", requireAdmin, async (req, res)
 
 // PATCH /api/admin/settings -update maintenance mode
 app.patch("/api/admin/settings", requireAdmin, async (req, res) => {
-  const { maintenanceMode } = req.body;
-  if (maintenanceMode === undefined) return res.status(400).json({ message: "maintenanceMode is required" });
+  const { maintenanceMode, maintenanceMessage } = req.body || {};
+  if (maintenanceMode === undefined && maintenanceMessage === undefined) return res.status(400).json({ message: "A maintenance setting is required" });
+  if (maintenanceMessage !== undefined && typeof maintenanceMessage !== "string") return res.status(400).json({ message: "maintenanceMessage must be a string" });
 
   try {
-    await pool.query(
-      `UPDATE settings SET value = $1 WHERE key = 'maintenance_mode'`,
-      [maintenanceMode ? "true" : "false"]
-    );
-    res.json({ ok: true, maintenanceMode: Boolean(maintenanceMode) });
+    if (maintenanceMode !== undefined) {
+      await pool.query(
+        "INSERT INTO settings (key, value) VALUES ('maintenance_mode', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+        [maintenanceMode ? "true" : "false"]
+      );
+    }
+    if (maintenanceMessage !== undefined) {
+      await pool.query(
+        "INSERT INTO settings (key, value) VALUES ('maintenance_message', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+        [maintenanceMessage.slice(0, 300)]
+      );
+    }
+    res.json({ ok: true, maintenanceMode: Boolean(maintenanceMode), maintenanceMessage: maintenanceMessage?.slice(0, 300) });
   } catch (error) {
     console.error("Settings update error:", error);
     res.status(500).json({ message: "Unable to update settings" });
