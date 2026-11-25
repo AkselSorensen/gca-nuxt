@@ -3,6 +3,7 @@
 // restent téléchargeables même si l'article ou le compte du vendeur est supprimé ensuite.
 import { query } from './db'
 import _PDFDocument from 'pdfkit'
+import { buildZipBuffer } from '../utils/zip'
 import logoB64Mod from '../express/logo-b64.cjs'
 
 const PDFDocument = (_PDFDocument as any).default || _PDFDocument
@@ -255,6 +256,46 @@ export function buildInvoicePdf(kind: InvoiceKind, sale: SaleSnapshot): Promise<
 
     doc.end()
   })
+}
+
+/** Ids des lignes de vente (commandes complétées) d'un mois AAAA-MM ; null si le format est invalide. */
+export async function saleIdsForMonth(month: string): Promise<number[] | null> {
+  const m = String(month || '').match(/^(\d{4})-(\d{2})$/)
+  if (!m) return null
+  const y = Number(m[1])
+  const mo = Number(m[2])
+  const r = await query(
+    `SELECT oi.id FROM order_items oi JOIN orders o ON o.id = oi.order_id
+      WHERE o.status = 'completed' AND o.created_at >= $1 AND o.created_at < $2
+      ORDER BY o.created_at ASC, oi.id ASC LIMIT 500`,
+    [new Date(Date.UTC(y, mo - 1, 1)).toISOString(), new Date(Date.UTC(y, mo, 1)).toISOString()]
+  )
+  return r.rows.map((row: any) => Number(row.id))
+}
+
+// Dossiers de l'archive : la facture « plateforme » s'appelle « admin » dans l'interface
+export const KIND_FOLDER: Record<InvoiceKind, string> = { client: 'client', vendeur: 'vendeur', plateforme: 'admin' }
+
+/**
+ * ZIP de plusieurs ventes : trois dossiers (client, vendeur, admin) ; le nom de chaque fichier contient
+ * le type, le numéro de facture et la date. Une facture client (par commande) n'est ajoutée qu'une fois.
+ */
+export async function buildSalesZip(itemIds: number[]): Promise<Buffer | null> {
+  const files: { name: string; data: Buffer }[] = []
+  const seen = new Set<string>()
+  for (const id of itemIds) {
+    const sale = await loadSale(id)
+    if (!sale) continue
+    const day = sale.createdAt.slice(0, 10)
+    for (const kind of INVOICE_KINDS) {
+      const folder = KIND_FOLDER[kind]
+      const name = `${folder}/${folder}_${invoiceNumber(kind, sale)}_${day}.pdf`
+      if (seen.has(name)) continue
+      seen.add(name)
+      files.push({ name, data: await buildInvoicePdf(kind, sale) })
+    }
+  }
+  return files.length ? buildZipBuffer(files) : null
 }
 
 export function slug(value: string) {

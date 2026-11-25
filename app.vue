@@ -1,11 +1,11 @@
 <template>
-  <div v-if="(maintenance.enabled || route.query.maintenancePreview === '1') && route.path !== '/admin' && !(route.path === '/login' && route.query.admin === '1')" class="maintenance-screen">
+  <div v-if="((maintenance.enabled && !isAdminSession) || route.query.maintenancePreview === '1') && route.path !== '/admin' && !(route.path === '/login' && route.query.admin === '1')" class="maintenance-screen">
     <div class="maintenance-noise"></div>
     <header class="maintenance-topbar">
       <NuxtLink to="/" class="maintenance-brand" aria-label="GSA, accueil"><img src="/logo.png" alt="GSA" class="maintenance-logo" /><small>MARKETPLACE</small></NuxtLink>
       <div class="maintenance-actions">
         <div class="maintenance-live"><span></span> Intervention en cours</div>
-        <NuxtLink to="/login?admin=1" class="maintenance-admin-btn">Connexion admin</NuxtLink>
+        <a href="/login?admin=1" class="maintenance-admin-btn">Connexion admin</a>
       </div>
     </header>
     <main class="maintenance-main">
@@ -30,18 +30,34 @@
         <div class="art-coordinates">48°51' N<br />02°21' E</div>
       </section>
     </main>
-    <NuxtLink to="/login?admin=1" class="maintenance-admin-btn-mobile"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Connexion admin</NuxtLink>
+    <a href="/login?admin=1" class="maintenance-admin-btn-mobile"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Connexion admin</a>
     <footer class="maintenance-footer"><span>© {{ new Date().getFullYear() }} GSA Marketplace</span><span class="footer-center"><i></i> Amélioration de la plateforme</span><span>À très vite <b>↗</b></span></footer>
   </div>
-  <NuxtLayout v-else>
-    <NuxtPage />
-  </NuxtLayout>
+  <template v-else>
+    <div v-if="maintenance.enabled && isAdminSession" class="maintenance-admin-bar" role="status">
+      <span>Maintenance activée : les visiteurs voient la page d'attente, vous voyez tout le site car vous êtes connecté en admin</span>
+      <a href="/admin">Ouvrir l'administration</a>
+    </div>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </template>
 </template>
 
 <script setup lang="ts">
 const route = useRoute()
 const { settings: maintenance, refresh } = useMaintenance()
 await refresh()
+
+// Un administrateur connecté garde l'accès à tout le site pendant la maintenance ;
+// seuls les visiteurs voient la page d'attente. Le cookie est relayé côté serveur pour éviter tout flash.
+const { user: authUser } = useAuth()
+const { data: me } = await useFetch<any>('/api/me', {
+  key: 'app-session',
+  headers: useRequestHeaders(['cookie']),
+  immediate: maintenance.value.enabled,
+})
+const isAdminSession = computed(() => authUser.value?.role === 'admin' || me.value?.user?.role === 'admin')
 watch(() => route.fullPath, refresh)
 onMounted(() => {
   const timer = window.setInterval(refresh, 30000)
@@ -62,6 +78,8 @@ onMounted(() => {
 .brand-separator { padding:0 3px;color:#67718a;font-weight:400; }
 .maintenance-live { display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#abb2c1;font-size:.7rem;font-weight:600;letter-spacing:.02em; }
 .maintenance-actions { display:flex;align-items:center;gap:10px; }
+.maintenance-admin-bar { position:sticky;top:0;z-index:100000;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 16px;min-height:36px;padding:6px 16px;background:#1b1c1f;border-bottom:1px solid rgba(255,255,255,.1);color:#e3b565;font-size:13px;line-height:20px;text-align:center; }
+.maintenance-admin-bar a { color:#ececee;text-decoration:underline; }
 .maintenance-admin-btn-mobile { display:none;align-items:center;justify-content:center;gap:9px;min-height:48px;margin-bottom:14px;border:1px solid rgba(154,174,255,.4);border-radius:14px;background:rgba(109,148,255,.13);color:#c9d5ff;font-size:.88rem;font-weight:700;text-decoration:none; }
 .maintenance-admin-btn { padding:9px 15px;border:1px solid rgba(154,174,255,.35);border-radius:999px;background:rgba(109,148,255,.12);color:#c0cdff;font-size:.7rem;font-weight:700;text-decoration:none;transition:background .2s,border-color .2s; }
 .maintenance-admin-btn:hover { background:rgba(109,148,255,.25);border-color:rgba(154,174,255,.6); }

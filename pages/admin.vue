@@ -406,9 +406,10 @@
               </select>
             </label>
             <button v-if="revClient || revArticle || revMonth" type="button" class="inv-chip" @click="resetSalesFilters">Effacer les filtres</button>
-            <a class="btn-primary rev-zip" :href="monthZipUrl" :download="'factures-' + (revMonth || currentMonthKey) + '.zip'">
-              Factures du mois (ZIP)
-            </a>
+            <button type="button" class="btn-primary rev-zip" :disabled="zipBusy" @click="downloadSalesZip">
+              <span v-if="zipBusy" class="spinner"></span>
+              {{ zipBusy ? 'Préparation…' : (revMonth ? 'Télécharger les factures du mois (ZIP)' : 'Télécharger les factures filtrées (ZIP)') }}
+            </button>
           </div>
 
           <!-- Ventes par article (achat groupé = 1 ligne par produit) -->
@@ -437,7 +438,10 @@
                   <td class="actions">
                     <a class="inv-pill" :href="invoiceUrl(s.id, 'client')" title="Facture client">Client</a>
                     <a class="inv-pill" :href="invoiceUrl(s.id, 'vendeur')" title="Facture vendeur">Vendeur</a>
-                    <a class="inv-pill" :href="invoiceUrl(s.id, 'plateforme')" title="Facture plateforme">GSA</a>
+                    <a class="inv-pill" :href="invoiceUrl(s.id, 'plateforme')" title="Facture admin (commission plateforme)">Admin</a>
+                    <a class="btn-action inv-all" :href="invoiceUrl(s.id, 'all')" title="Télécharger les 3 factures de cette vente" aria-label="Télécharger les 3 factures de cette vente">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </a>
                   </td>
                 </tr>
               </tbody>
@@ -611,17 +615,24 @@
 
           <div class="u-purchases">
             <span class="dd-label">Historique des achats</span>
+            <label v-if="userPurchases.length" class="u-search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input v-model="userPurchaseSearch" type="search" placeholder="Rechercher un article" aria-label="Rechercher un article acheté" />
+            </label>
             <div v-if="userPurchasesLoading" class="rev-loading">Chargement…</div>
-            <table v-else-if="userPurchases.length" class="admin-table">
+            <div v-else-if="userPurchases.length" class="u-scroll">
+            <table class="admin-table">
               <thead><tr><th>Date</th><th>Article</th><th>Prix payé</th></tr></thead>
               <tbody>
-                <tr v-for="pu in userPurchases" :key="pu.id">
+                <tr v-for="pu in filteredPurchases" :key="pu.id">
                   <td>{{ new Date(pu.date).toLocaleDateString('fr-FR') }}</td>
                   <td>{{ pu.title }}<span v-if="pu.quantity > 1" class="muted"> ×{{ pu.quantity }}</span></td>
                   <td class="price-cell">{{ fmtMoney(pu.paid) }}</td>
                 </tr>
               </tbody>
             </table>
+            <div v-if="!filteredPurchases.length" class="empty-tab" style="padding:24px">Aucun article ne correspond</div>
+            </div>
             <div v-else class="empty-tab" style="padding:24px">Aucun achat</div>
           </div>
 
@@ -1484,8 +1495,14 @@ async function revokeSeller(u: any) {
 const userModal = ref<any>(null)
 const userPurchases = ref<any[]>([])
 const userPurchasesLoading = ref(false)
+const userPurchaseSearch = ref('')
+const filteredPurchases = computed(() => {
+  const q = userPurchaseSearch.value.trim().toLowerCase()
+  return q ? userPurchases.value.filter((p: any) => String(p.title || '').toLowerCase().includes(q)) : userPurchases.value
+})
 async function openUser(u: any) {
   userModal.value = u
+  userPurchaseSearch.value = ''
   userPurchases.value = []
   userPurchasesLoading.value = true
   try {
@@ -1592,7 +1609,39 @@ const daysInRevMonth = computed(() => {
 watch(revMonth, () => { revDay.value = '' })
 function resetSalesFilters() { revClient.value = ''; revArticle.value = ''; revMonth.value = ''; revDay.value = '' }
 const invoiceUrl = (itemId: number, kind: string) => api + '/api/admin/invoices/' + itemId + '/' + kind
-const monthZipUrl = computed(() => api + '/api/admin/invoices/month?month=' + (revMonth.value || currentMonthKey))
+const zipBusy = ref(false)
+// ZIP selon les filtres : un mois seul = toutes les ventes du mois (même anciennes), sinon les lignes affichées
+async function downloadSalesZip() {
+  if (zipBusy.value) return
+  const rows = filteredSales.value
+  const onlyMonth = !!revMonth.value && !revDay.value && !revClient.value && !revArticle.value && sellerFilter.value === 'all' && !revSearch.value.trim()
+  if (!onlyMonth && !rows.length) {
+    toastRef.value?.show('error', 'Aucune vente à télécharger avec ces filtres')
+    return
+  }
+  zipBusy.value = true
+  try {
+    const blob = await $fetch<Blob>(api + '/api/admin/invoices/zip', {
+      method: 'POST',
+      credentials: 'include',
+      body: onlyMonth ? { month: revMonth.value } : { ids: rows.map((r: any) => r.id) },
+      responseType: 'blob',
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'factures-' + (revMonth.value || 'selection') + '.zip'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 4000)
+    toastRef.value?.show('success', 'Archive téléchargée')
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.statusMessage || 'Aucune facture à télécharger pour ce filtre')
+  } finally {
+    zipBusy.value = false
+  }
+}
 const filteredSales = computed(() => {
   const sales = revenue.value?.sales || []
   return sales.filter((s: any) => {
@@ -2128,10 +2177,15 @@ onMounted(() => { loadProducts(); loadUsers(); loadFormData(); loadFeaturedData(
 .inv-chip { min-height:40px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--text-secondary);font-size:14px;cursor:pointer;font-family:inherit;transition:background-color .15s,color .15s; }
 .inv-chip:hover { background:rgba(255,255,255,.05);color:var(--text); }
 .rev-zip { margin-left:auto;text-decoration:none; }
+.inv-all { display:inline-grid;vertical-align:middle;margin-left:4px;border-color:rgba(255,255,255,.12); }
 .inv-pill { display:inline-block;margin-right:4px;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.06);color:var(--text);font-size:12px;text-decoration:none;transition:background-color .15s; }
 .inv-pill:hover { background:rgba(142,168,255,.18);color:var(--primary); }
 .role-badge.banned { margin-left:6px;background:rgba(234,144,136,.14);color:var(--red); }
-.user-modal { max-width:620px; }
+.user-modal { max-width:620px;max-height:90vh;overflow-y:auto; }
+.u-search { display:flex;align-items:center;gap:8px;min-height:40px;margin:8px 0 12px;padding:0 12px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:var(--bg-surface);color:var(--text-muted); }
+.u-search input { flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:inherit;font-size:14px;outline:none; }
+.u-scroll { max-height:260px;overflow-y:auto;border-top:1px solid var(--border); }
+.u-scroll thead th { position:sticky;top:0;background:var(--bg-card);z-index:1; }
 .u-purchases { padding:0 22px 16px; }
 .u-purchases .admin-table th:first-child,.u-purchases .admin-table td:first-child { padding-left:0; }
 .u-purchases .admin-table td { height:44px; }
