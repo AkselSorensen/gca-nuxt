@@ -293,15 +293,6 @@
         <div class="tab-header">
           <h2>Revenus</h2>
           <div class="tab-actions">
-            <span v-if="revenue" class="rev-mode-badge" :class="revenue.stripeMode === 'LIVE' ? 'live' : 'test'">
-              {{ revenue.stripeMode === 'LIVE' ? '● LIVE' : '● TEST' }}
-            </span>
-            <select v-if="revenue?.sellersList?.length" v-model="sellerFilter" class="rev-filter">
-              <option value="all">Tous les vendeurs</option>
-              <option v-for="s in revenue.sellersList" :key="s.id" :value="s.id">
-                {{ s.name }}
-              </option>
-            </select>
             <button class="admin-btn-icon" @click="loadRevenue" title="Rafraîchir">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             </button>
@@ -348,12 +339,6 @@
               </div>
             </div>
           </section>
-
-          <!-- Infos compte -->
-          <div class="rev-account">
-            <span class="rev-account-id">{{ revenue.accountId || '-' }}</span>
-            <span v-if="revenue.accountEmail" class="rev-account-email">{{ revenue.accountEmail }}</span>
-          </div>
 
           <!-- Cartes stats -->
           <div class="rev-cards">
@@ -409,6 +394,10 @@
 
           <!-- Filtres du journal des ventes + archive mensuelle -->
           <div v-if="revTab === 'sales'" class="rev-filters">
+            <select v-if="revenue?.sellersList?.length" v-model="sellerFilter" class="rev-filter" aria-label="Filtrer par vendeur">
+              <option value="all">Tous les vendeurs</option>
+              <option v-for="sl in revenue.sellersList" :key="sl.id" :value="sl.id">{{ sl.name }}</option>
+            </select>
             <select v-model="revClient" class="rev-filter" aria-label="Filtrer par client">
               <option value="">Tous les clients</option>
               <option v-for="c in clientOptions" :key="c" :value="c">{{ c }}</option>
@@ -424,7 +413,7 @@
                 <option v-for="d in daysInRevMonth" :key="d" :value="String(d)">{{ String(d).padStart(2, '0') }}</option>
               </select>
             </label>
-            <button v-if="revClient || revArticle || revMonth" type="button" class="inv-chip" @click="resetSalesFilters">Effacer les filtres</button>
+            <button v-if="revClient || revArticle || revMonth || sellerFilter !== 'all'" type="button" class="inv-chip" @click="resetSalesFilters">Effacer les filtres</button>
             <button type="button" class="btn-primary rev-zip" :disabled="zipBusy" @click="downloadSalesZip">
               <span v-if="zipBusy" class="spinner"></span>
               {{ zipBusy ? 'Préparation…' : (revMonth ? 'Télécharger les factures du mois (ZIP)' : 'Télécharger les factures filtrées (ZIP)') }}
@@ -1654,7 +1643,9 @@ const daysInRevMonth = computed(() => {
   return new Date(y, m, 0).getDate()
 })
 watch(revMonth, () => { revDay.value = '' })
-function resetSalesFilters() { revClient.value = ''; revArticle.value = ''; revMonth.value = ''; revDay.value = '' }
+// Le filtre vendeur n'est visible que dans le journal des ventes : on le remet à zéro ailleurs
+watch(revTab, (t) => { if (t !== 'sales') sellerFilter.value = 'all' })
+function resetSalesFilters() { revClient.value = ''; revArticle.value = ''; revMonth.value = ''; revDay.value = ''; sellerFilter.value = 'all' }
 const invoiceUrl = (itemId: number, kind: string) => api + '/api/admin/invoices/' + itemId + '/' + kind
 const zipBusy = ref(false)
 // ZIP selon les filtres : un mois seul = toutes les ventes du mois (même anciennes), sinon les lignes affichées
@@ -2218,7 +2209,7 @@ onMounted(() => { loadProducts(); loadUsers(); loadFormData(); loadFeaturedData(
 /* ─── Indicateurs du mois, filtres, factures ─── */
 .month-stats-wrap { margin-bottom:16px; }
 .stats-period { display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px; }
-.stats-title { font-size:16px;font-weight:500;text-transform:capitalize;margin:0; }
+.stats-title { font-size:16px;font-weight:500;margin:0; }
 .stats-controls { display:flex;flex-wrap:wrap;align-items:center;gap:8px; }
 .month-stats.loading { opacity:.55;transition:opacity .15s; }
 .month-stats { display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px; }
