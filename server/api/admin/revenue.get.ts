@@ -189,6 +189,7 @@ export default defineEventHandler(async (event) => {
         `
           SELECT
             oi.id, oi.order_id, o.created_at, o.stripe_session_id,
+            ROW_NUMBER() OVER (ORDER BY o.created_at ASC, oi.id ASC) AS sale_number,
             p.title, p.slug,
             oi.quantity, oi.price,
             oi.platform_fee_percent, oi.platform_fee_amount, oi.seller_net_amount,
@@ -208,6 +209,7 @@ export default defineEventHandler(async (event) => {
       out.sales = sales.rows.map((r: any) => ({
         id: r.id,
         orderId: r.order_id,
+        saleNumber: Number(r.sale_number),
         createdAt: r.created_at,
         title: r.title || '(produit supprimé)',
         slug: r.slug || '',

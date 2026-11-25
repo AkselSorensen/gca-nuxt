@@ -415,10 +415,10 @@
           <!-- Ventes par article (achat groupé = 1 ligne par produit) -->
           <div v-if="revTab === 'sales'" class="table-wrap">
             <table v-if="filteredSales.length" class="admin-table">
-              <thead><tr><th>Cmd</th><th>Date</th><th>Article</th><th>Client</th><th>Vendeur</th><th>Qté</th><th>Brut</th><th>Comm.</th><th>Commission GSA</th><th>Net vendeur</th><th>Reversement</th><th>Factures</th></tr></thead>
+              <thead><tr><th>N°</th><th>Date</th><th>Article</th><th>Client</th><th>Vendeur</th><th>Qté</th><th>Brut</th><th>Comm.</th><th>Commission GSA</th><th>Net vendeur</th><th>Reversement</th><th>Factures</th></tr></thead>
               <tbody>
                 <tr v-for="s in filteredSales" :key="s.id">
-                  <td>#{{ s.orderId }}</td>
+                  <td :title="'Commande ' + s.orderId">#{{ s.saleNumber || s.id }}</td>
                   <td>{{ new Date(s.createdAt).toLocaleDateString('fr-FR') }}</td>
                   <td><strong>{{ s.title }}</strong></td>
                   <td>
@@ -1653,7 +1653,7 @@ const filteredSales = computed(() => {
       if (d.getFullYear() + '-' + pad2(d.getMonth() + 1) !== revMonth.value) return false
       if (revDay.value && d.getDate() !== Number(revDay.value)) return false
     }
-    return revMatch(s.title, s.buyerName, s.buyerEmail, s.sellerName, s.orderId, s.id, s.transferStatus)
+    return revMatch(s.title, s.buyerName, s.buyerEmail, s.sellerName, s.orderId, s.saleNumber, s.id, s.transferStatus)
   })
 })
 const salesTotals = computed(() => {
