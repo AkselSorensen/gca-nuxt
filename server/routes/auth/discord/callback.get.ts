@@ -5,6 +5,7 @@ import { query } from '../../../services/db'
 import { hashPassword, slugify, sanitizeUser } from '../../../services/users'
 import { createSession, updateSessionUser } from '../../../services/session'
 import { getSessionUser } from '../../../utils/auth'
+import { isMaintenanceOn } from '../../../services/maintenance'
 
 const BASE_URL = process.env.APP_BASE_URL || 'https://gsa-store.fr'
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID
@@ -157,6 +158,9 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    if (userRow.role !== 'admin' && await isMaintenanceOn()) {
+      return sendRedirect(event, `${BASE_URL}/`)
+    }
     await createSession(event, sanitizeUser(userRow))
     console.log('[discord-callback] session créée pour user', userRow.id, '| seller_status:', userRow.seller_status || 'none')
 

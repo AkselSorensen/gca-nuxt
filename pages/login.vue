@@ -9,7 +9,9 @@ useSeoMeta({
 const { login, user, checkAuth } = useAuth()
 const { t } = useLang()
 const route = useRoute()
-const tab = ref('user')
+// ?admin=1 (bouton de l'écran de maintenance) → uniquement le formulaire admin
+const adminOnly = route.query.admin === '1'
+const tab = ref(adminOnly ? 'admin' : 'user')
 const email = ref('')
 const password = ref('')
 const error = ref('')
@@ -88,7 +90,7 @@ onMounted(async () => {
         <NuxtLink to="/" class="auth-logo"><span class="logo-icon">G</span></NuxtLink>
         <h1>{{ t('login.title') }}</h1>
       </div>
-      <div class="auth-tabs">
+      <div v-if="!adminOnly" class="auth-tabs">
         <button class="tab-btn" :class="{ active: tab === 'user' }" @click="tab = 'user'">{{ t('login.tab_user') }}</button>
         <button class="tab-btn" :class="{ active: tab === 'seller' }" @click="tab = 'seller'">{{ t('login.tab_seller') }}</button>
         <button class="tab-btn" :class="{ active: tab === 'admin' }" @click="tab = 'admin'">{{ t('login.tab_admin') }}</button>

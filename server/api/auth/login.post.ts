@@ -3,6 +3,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { query } from '../../services/db'
 import { hashPassword, sanitizeUser } from '../../services/users'
 import { createSession } from '../../services/session'
+import { assertCanSignIn } from '../../services/maintenance'
 
 export default defineEventHandler(async (event) => {
   const { email, password } = await readBody(event)
@@ -17,6 +18,8 @@ export default defineEventHandler(async (event) => {
   if (!result.rowCount || result.rows[0].password_hash !== hashPassword(password)) {
     throw createError({ statusCode: 401, statusMessage: 'Invalid credentials' })
   }
+
+  await assertCanSignIn(result.rows[0].role)
 
   const user = sanitizeUser(result.rows[0])
   await createSession(event, user)

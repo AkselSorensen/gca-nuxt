@@ -1,11 +1,11 @@
 <template>
-  <div v-if="(maintenance.enabled || route.query.maintenancePreview === '1') && !['/admin', '/login'].includes(route.path)" class="maintenance-screen">
+  <div v-if="(maintenance.enabled || route.query.maintenancePreview === '1') && route.path !== '/admin' && !(route.path === '/login' && route.query.admin === '1')" class="maintenance-screen">
     <div class="maintenance-noise"></div>
     <header class="maintenance-topbar">
       <NuxtLink to="/" class="maintenance-brand" aria-label="GSA, accueil"><span class="maintenance-brand-mark">G</span><span>GSA<span class="brand-separator">/</span><small>MARKETPLACE</small></span></NuxtLink>
       <div class="maintenance-actions">
         <div class="maintenance-live"><span></span> Intervention en cours</div>
-        <NuxtLink to="/login" class="maintenance-admin-btn">Connexion admin</NuxtLink>
+        <NuxtLink to="/login?admin=1" class="maintenance-admin-btn">Connexion admin</NuxtLink>
       </div>
     </header>
     <main class="maintenance-main">

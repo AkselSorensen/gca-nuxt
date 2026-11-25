@@ -501,60 +501,76 @@
       </div>
 
       <!-- ==================== FINANCES ==================== -->
-      <div v-if="activeTab === 'finances'" class="tab-content">
-        <div class="tab-header">
-          <h2>Finances — suivi centralisé</h2>
-          <button class="btn-primary btn-sm" @click="loadFinances">Rafraîchir</button>
+      <div v-if="activeTab === 'finances'" class="tab-content fin">
+        <div class="fin-head">
+          <div>
+            <div class="fin-eyebrow"><span></span>ADMINISTRATION</div>
+            <h2>Finances</h2>
+            <p>Suivi centralisé des ventes, commissions et frais de paiement.</p>
+          </div>
+          <button class="fin-refresh" type="button" @click="loadFinances">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
+            Rafraîchir
+          </button>
         </div>
 
         <template v-if="finances">
-          <!-- Récap global -->
-          <div class="rev-cards" style="margin-bottom:18px;">
-            <div class="rev-card"><span class="rev-card-label">Chiffre d'affaires</span><strong class="rev-card-val">{{ fmtMoney(finances.totals.revenue) }}</strong><span class="rev-card-sub">total des ventes</span></div>
-            <div class="rev-card accent"><span class="rev-card-label">Commission GSA</span><strong class="rev-card-val">{{ fmtMoney(finances.totals.commissionGsa) }}</strong><span class="rev-card-sub">part plateforme</span></div>
-            <div class="rev-card"><span class="rev-card-label">Net vendeurs</span><strong class="rev-card-val muted">{{ fmtMoney(finances.totals.netSeller) }}</strong><span class="rev-card-sub">après commission</span></div>
-            <div class="rev-card"><span class="rev-card-label">Frais Stripe</span><strong class="rev-card-val muted">{{ fmtMoney(finances.totals.stripeFees) }}</strong><span class="rev-card-sub">payés par les vendeurs</span></div>
-          </div>
+          <section class="fin-kpis" aria-label="Indicateurs clés">
+            <div class="fin-kpi"><div class="fin-kpi-top"><span>CHIFFRE D'AFFAIRES</span><i style="background:#9db4ff"></i></div><strong>{{ fmtMoney(finances.totals.revenue) }}</strong><small>Total des ventes</small></div>
+            <div class="fin-kpi accent"><div class="fin-kpi-top"><span>COMMISSION GSA</span><i style="background:#9c83ff"></i></div><strong>{{ fmtMoney(finances.totals.commissionGsa) }}</strong><small>Part plateforme</small></div>
+            <div class="fin-kpi"><div class="fin-kpi-top"><span>NET VENDEURS</span><i style="background:#75cbb0"></i></div><strong>{{ fmtMoney(finances.totals.netSeller) }}</strong><small>Après commission</small></div>
+            <div class="fin-kpi"><div class="fin-kpi-top"><span>FRAIS STRIPE</span><i style="background:#f0b66b"></i></div><strong>{{ fmtMoney(finances.totals.stripeFees) }}</strong><small>Payés par les vendeurs</small></div>
+          </section>
 
-          <!-- Fiscalité par vendeur -->
-          <h3 class="rev-section-title">Fiscalité par vendeur</h3>
-          <div class="table-wrap">
-            <table v-if="finances.bySeller.length" class="admin-table">
-              <thead><tr><th>Vendeur</th><th>Commission</th><th>Ventes</th><th>CA</th><th>Commission GSA</th><th>Frais Stripe</th><th>Net encaissé</th><th>TVA</th></tr></thead>
-              <tbody>
-                <tr v-for="s in finances.bySeller" :key="s.sellerId">
-                  <td><strong>{{ s.sellerName }}</strong></td>
-                  <td>{{ s.commissionPercent }}%</td>
-                  <td>{{ s.salesCount }}</td>
-                  <td class="price-cell">{{ fmtMoney(s.revenue) }}</td>
-                  <td class="price-cell">{{ fmtMoney(s.commissionGsa) }}</td>
-                  <td class="price-cell muted">{{ fmtMoney(s.stripeFees) }}</td>
-                  <td class="price-cell">{{ fmtMoney(s.netAfterFees) }}</td>
-                  <td><span class="muted">non applicable (art. 293 B)</span></td>
-                </tr>
-              </tbody>
-            </table>
-            <div v-else class="empty-tab">Aucun vendeur avec des ventes complétées.</div>
-          </div>
+          <section class="fin-card" aria-label="Répartition du chiffre d'affaires">
+            <div class="fin-card-head"><h3>Répartition du chiffre d'affaires</h3><span>Sur {{ fmtMoney(finances.totals.revenue) }} de ventes</span></div>
+            <div class="fin-bar"><div v-for="s in finSplit" :key="s.label" :style="{ width: s.pct + '%', background: s.color }"></div></div>
+            <div class="fin-legend">
+              <div v-for="s in finSplit" :key="s.label"><i :style="{ background: s.color }"></i><span>{{ s.label }}</span><strong>{{ fmtMoney(s.value) }}</strong><em>{{ s.pct.toFixed(1).replace('.', ',') }} %</em></div>
+            </div>
+          </section>
 
-          <!-- Logs de vente -->
-          <h3 class="rev-section-title">Logs de vente</h3>
-          <div class="table-wrap">
-            <table v-if="finances.orders.length" class="admin-table">
-              <thead><tr><th>#</th><th>Date</th><th>Client</th><th>Vendeur(s)</th><th>Total</th><th>Commission</th></tr></thead>
-              <tbody>
-                <tr v-for="o in finances.orders" :key="o.id">
-                  <td>{{ o.id }}</td>
-                  <td>{{ new Date(o.createdAt).toLocaleDateString('fr-FR') }} {{ new Date(o.createdAt).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
-                  <td>{{ o.buyerName || o.buyerEmail || '—' }}</td>
-                  <td>{{ o.sellers || '—' }}</td>
-                  <td class="price-cell">{{ fmtMoney(o.total) }}</td>
-                  <td class="price-cell">{{ fmtMoney(o.platformFee) }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div v-else class="empty-tab">Aucune vente complétée.</div>
-          </div>
+          <section aria-label="Fiscalité par vendeur">
+            <h3 class="fin-title">Fiscalité par vendeur</h3>
+            <div class="fin-table-wrap">
+              <table v-if="finances.bySeller.length" class="fin-table" style="min-width:860px">
+                <thead><tr><th>VENDEUR</th><th>COMMISSION</th><th>VENTES</th><th class="r">CA</th><th class="r">COMMISSION GSA</th><th class="r">FRAIS STRIPE</th><th class="r">NET ENCAISSÉ</th><th>TVA</th></tr></thead>
+                <tbody>
+                  <tr v-for="s in finances.bySeller" :key="s.sellerId">
+                    <th scope="row"><span class="fin-seller"><span class="fin-avatar" aria-hidden="true">{{ (s.sellerName || '?').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() }}</span>{{ s.sellerName }}</span></th>
+                    <td><span class="fin-pill">{{ s.commissionPercent }} %</span></td>
+                    <td>{{ s.salesCount }}</td>
+                    <td class="r">{{ fmtMoney(s.revenue) }}</td>
+                    <td class="r blue">{{ fmtMoney(s.commissionGsa) }}</td>
+                    <td class="r">{{ fmtMoney(s.stripeFees) }}</td>
+                    <td class="r strong">{{ fmtMoney(s.netAfterFees) }}</td>
+                    <td class="dim">Non applicable (art. 293 B)</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div v-else class="empty-tab">Aucun vendeur avec des ventes complétées.</div>
+            </div>
+          </section>
+
+          <section aria-label="Logs de vente">
+            <h3 class="fin-title">Logs de vente</h3>
+            <div class="fin-table-wrap">
+              <table v-if="finances.orders.length" class="fin-table" style="min-width:720px">
+                <thead><tr><th>N°</th><th>DATE</th><th>CLIENT</th><th>VENDEUR(S)</th><th class="r">TOTAL</th><th class="r">COMMISSION</th></tr></thead>
+                <tbody>
+                  <tr v-for="o in finances.orders" :key="o.id">
+                    <td class="dim">{{ o.id }}</td>
+                    <td>{{ new Date(o.createdAt).toLocaleDateString('fr-FR') }} {{ new Date(o.createdAt).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
+                    <td>{{ o.buyerName || o.buyerEmail || '—' }}</td>
+                    <td>{{ o.sellers || '—' }}</td>
+                    <td class="r strong">{{ fmtMoney(o.total) }}</td>
+                    <td class="r blue">{{ fmtMoney(o.platformFee) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div v-else class="empty-tab">Aucune vente complétée.</div>
+            </div>
+          </section>
         </template>
         <div v-else class="rev-loading">Chargement des finances…</div>
       </div>
@@ -1721,6 +1737,17 @@ async function savePage(page: typeof editablePages.value[0]) {
 
 // ─── Finances (panel centralisé) ───────────────────────
 const finances = ref<any>(null)
+const finSplit = computed(() => {
+  const t = finances.value?.totals
+  if (!t) return []
+  const rev = Number(t.revenue) || 0
+  const parts = [
+    { label: 'Commission GSA', value: Number(t.commissionGsa) || 0, color: '#9c83ff' },
+    { label: 'Frais Stripe', value: Number(t.stripeFees) || 0, color: '#f0b66b' },
+    { label: 'Net encaissé vendeurs', value: (Number(t.netSeller) || 0) - (Number(t.stripeFees) || 0), color: '#75cbb0' },
+  ]
+  return parts.map(p => ({ ...p, pct: rev > 0 ? Math.max(0, p.value / rev * 100) : 0 }))
+})
 async function loadFinances() {
   try {
     finances.value = await $fetch(api + '/api/admin/finances', { credentials: 'include' })
@@ -2040,6 +2067,49 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .rev-card-val.muted { color:var(--text-secondary); }
 .rev-card-sub { font-size:.72rem;color:var(--text-muted); }
 .rev-section-title { font-size:.95rem;font-weight:700;margin:20px 0 10px; }
+.fin { display:flex;flex-direction:column;gap:28px; }
+.fin-head { display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px; }
+.fin-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:10px;color:#9aa3b5;font-size:.72rem;font-weight:700;letter-spacing:.14em; }
+.fin-eyebrow span { width:28px;height:1px;background:#9a87ff; }
+.fin-head h2 { margin:0;font-size:2.2rem;line-height:1.05;letter-spacing:-.04em;font-weight:750; }
+.fin-head p { margin:10px 0 0;color:#9aa3b5;font-size:.92rem; }
+.fin-refresh { display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 20px;border:0;border-radius:12px;background:#6d94ff;color:#0a1020;font-weight:700;font-size:.88rem;cursor:pointer; }
+.fin-refresh:hover { background:#7f9fff; }
+.fin-kpis { display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px; }
+.fin-kpi { display:flex;flex-direction:column;gap:14px;padding:22px;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:#0d121b; }
+.fin-kpi.accent { background:linear-gradient(145deg,rgba(109,148,255,.16),#0d121b 70%); }
+.fin-kpi-top { display:flex;align-items:center;justify-content:space-between;color:#9aa3b5;font-size:.72rem;font-weight:700;letter-spacing:.12em; }
+.fin-kpi-top i { width:8px;height:8px;border-radius:50%; }
+.fin-kpi strong { font-size:2.1rem;font-weight:750;letter-spacing:-.04em;line-height:1;color:#f5f6fa; }
+.fin-kpi small { color:#8f98ab;font-size:.8rem; }
+.fin-card { display:flex;flex-direction:column;gap:18px;padding:24px;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:#0d121b; }
+.fin-card-head { display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px; }
+.fin-card-head h3 { margin:0;font-size:1.1rem;letter-spacing:-.02em; }
+.fin-card-head span { color:#8f98ab;font-size:.8rem; }
+.fin-bar { display:flex;gap:3px;height:14px;border-radius:999px;overflow:hidden; }
+.fin-bar div { border-radius:4px; }
+.fin-legend { display:flex;flex-wrap:wrap;gap:12px 32px; }
+.fin-legend div { display:flex;align-items:center;gap:10px;font-size:.88rem; }
+.fin-legend i { width:10px;height:10px;border-radius:3px; }
+.fin-legend span { color:#c5cbd8; }
+.fin-legend em { color:#8f98ab;font-style:normal; }
+.fin-title { margin:0 0 14px;font-size:1.1rem;letter-spacing:-.02em; }
+.fin-table-wrap { overflow-x:auto;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:#0d121b; }
+.fin-table { width:100%;border-collapse:collapse;font-size:.88rem; }
+.fin-table th { padding:16px 12px;text-align:left;color:#8f98ab;font-size:.68rem;font-weight:700;letter-spacing:.12em; }
+.fin-table td, .fin-table tbody th { padding:18px 12px;font-size:.88rem;letter-spacing:0;color:#f5f6fa; }
+.fin-table th:first-child, .fin-table td:first-child { padding-left:20px; }
+.fin-table th:last-child, .fin-table td:last-child { padding-right:20px; }
+.fin-table tbody tr { border-top:1px solid rgba(255,255,255,.07); }
+.fin-table tbody tr:hover { background:rgba(255,255,255,.025); }
+.fin-table .r { text-align:right;font-variant-numeric:tabular-nums; }
+.fin-table .blue { color:#9db4ff;font-weight:650; }
+.fin-table .strong { font-weight:700; }
+.fin-table .dim { color:#8f98ab;font-size:.8rem; }
+.fin-seller { display:flex;align-items:center;gap:12px;font-weight:650; }
+.fin-avatar { width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:rgba(109,148,255,.16);color:#b9c8ff;font-size:.8rem;font-weight:800; }
+.fin-pill { padding:4px 10px;border-radius:999px;background:rgba(156,131,255,.15);color:#c9bdff;font-size:.75rem;font-weight:700; }
+
 .rev-subtabs { display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:22px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border); }
 .rev-subtab { display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--text-muted);font-size:.82rem;font-weight:600;cursor:pointer;transition:background .15s ease,color .15s ease; }
 .rev-subtab:hover { background:var(--bg-surface);color:var(--text); }

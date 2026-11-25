@@ -6,6 +6,7 @@ import { randomInt } from 'node:crypto'
 import { query } from '../../services/db'
 import { hashPassword, slugify, sanitizeUser } from '../../services/users'
 import { createSession } from '../../services/session'
+import { assertCanSignIn } from '../../services/maintenance'
 import { sendEmail, verificationEmailHtml } from '../../services/email'
 
 export default defineEventHandler(async (event) => {
@@ -14,6 +15,8 @@ export default defineEventHandler(async (event) => {
   if (!email || !password || !displayName) {
     throw createError({ statusCode: 400, statusMessage: 'email, password and displayName are required' })
   }
+
+  await assertCanSignIn(null)
 
   const normalizedEmail = String(email).trim().toLowerCase()
 
