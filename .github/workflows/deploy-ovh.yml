@@ -17,6 +17,7 @@ jobs:
           host: ${{ secrets.OVH_HOST }}
           username: gsa
           key: ${{ secrets.OVH_SSH_KEY }}
+          command_timeout: 40m
           script: |
             cd /opt/gsa
             git pull origin main
