@@ -311,22 +311,41 @@
         <div v-if="revenueLoading" class="rev-loading">Chargement des revenus…</div>
 
         <template v-else-if="revenue">
-          <!-- Indicateurs du mois en cours (commandes complétées uniquement) -->
-          <section class="month-stats" aria-label="Indicateurs du mois en cours">
-            <div class="month-stat">
-              <span class="rev-card-label">Argent brut généré</span>
-              <strong class="rev-card-val">{{ fmtMoney(revenue.monthStats?.gross) }}</strong>
-              <span class="rev-card-sub">{{ monthLabel }} · {{ revenue.monthStats?.count || 0 }} vente{{ (revenue.monthStats?.count || 0) > 1 ? 's' : '' }}</span>
+          <!-- Indicateurs d'une période (mois ou année), commandes complétées uniquement -->
+          <section class="month-stats-wrap" aria-label="Indicateurs financiers">
+            <div class="stats-period">
+              <h3 class="stats-title">Indicateurs de {{ periodLabel }}</h3>
+              <div class="stats-controls">
+                <label class="inv-date"><span>Mois</span>
+                  <select v-model.number="statsMonth" aria-label="Mois des indicateurs">
+                    <option :value="0">Toute l'année</option>
+                    <option v-for="(m, i) in monthNames" :key="m" :value="i + 1">{{ m }}</option>
+                  </select>
+                </label>
+                <label class="inv-date"><span>Année</span>
+                  <select v-model.number="statsYear" aria-label="Année des indicateurs">
+                    <option v-for="y in statsYears" :key="y" :value="y">{{ y }}</option>
+                  </select>
+                </label>
+                <button v-if="!isCurrentPeriod" type="button" class="inv-chip" @click="resetStatsPeriod">Mois en cours</button>
+              </div>
             </div>
-            <div class="month-stat">
-              <span class="rev-card-label">Part des vendeurs</span>
-              <strong class="rev-card-val">{{ fmtMoney(revenue.monthStats?.sellerNet) }}</strong>
-              <span class="rev-card-sub">Sommes dues aux vendeurs</span>
-            </div>
-            <div class="month-stat accent">
-              <span class="rev-card-label">Bénéfice de la plateforme</span>
-              <strong class="rev-card-val">{{ fmtMoney(revenue.monthStats?.platformFee) }}</strong>
-              <span class="rev-card-sub">Commissions GSA Store</span>
+            <div class="month-stats" :class="{ loading: statsLoading }">
+              <div class="month-stat">
+                <span class="rev-card-label">Argent brut généré</span>
+                <strong class="rev-card-val">{{ fmtMoney(periodStats?.gross) }}</strong>
+                <span class="rev-card-sub">{{ periodStats?.count || 0 }} vente{{ (periodStats?.count || 0) > 1 ? 's' : '' }}</span>
+              </div>
+              <div class="month-stat">
+                <span class="rev-card-label">Part des vendeurs</span>
+                <strong class="rev-card-val">{{ fmtMoney(periodStats?.sellerNet) }}</strong>
+                <span class="rev-card-sub">Sommes dues aux vendeurs</span>
+              </div>
+              <div class="month-stat accent">
+                <span class="rev-card-label">Bénéfice de la plateforme</span>
+                <strong class="rev-card-val">{{ fmtMoney(periodStats?.platformFee) }}</strong>
+                <span class="rev-card-sub">Commissions GSA Store</span>
+              </div>
             </div>
           </section>
 
@@ -1583,6 +1602,34 @@ const sellerFilter = ref<number | 'all'>('all')
 // Onglets internes de la page Revenus + recherche transverse
 const revTab = ref<'sales' | 'orders' | 'charges' | 'transfers' | 'payouts'>('sales')
 const revSearch = ref('')
+
+// Indicateurs financiers : mois + année au choix (0 = toute l'année)
+const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
+const statsYear = ref(new Date().getFullYear())
+const statsMonth = ref(new Date().getMonth() + 1)
+const periodStats = ref<any>(null)
+const statsLoading = ref(false)
+const statsYears = computed(() => periodStats.value?.years?.length ? periodStats.value.years : [new Date().getFullYear()])
+const isCurrentPeriod = computed(() => statsYear.value === new Date().getFullYear() && statsMonth.value === new Date().getMonth() + 1)
+const periodLabel = computed(() => statsMonth.value ? monthNames[statsMonth.value - 1].toLowerCase() + ' ' + statsYear.value : 'l\'année ' + statsYear.value)
+async function loadPeriodStats() {
+  statsLoading.value = true
+  try {
+    periodStats.value = await $fetch(api + '/api/admin/revenue-stats', {
+      credentials: 'include',
+      query: { year: statsYear.value, month: statsMonth.value },
+    })
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.statusMessage || 'Impossible de charger les indicateurs')
+  } finally {
+    statsLoading.value = false
+  }
+}
+function resetStatsPeriod() {
+  statsYear.value = new Date().getFullYear()
+  statsMonth.value = new Date().getMonth() + 1
+}
+watch([statsYear, statsMonth], loadPeriodStats)
 function revMatch(...fields: any[]) {
   const q = revSearch.value.trim().toLowerCase()
   if (!q) return true
@@ -1683,6 +1730,7 @@ async function loadRevenue() {
   try {
     const res = await $fetch(api + '/api/admin/revenue', { credentials: 'include' })
     revenue.value = res
+    loadPeriodStats()
   } catch (e: any) {
     revenue.value = null
     toastRef.value?.show('error', e?.data?.message || 'Erreur chargement revenus')
@@ -2168,7 +2216,12 @@ onMounted(() => { loadProducts(); loadUsers(); loadFormData(); loadFeaturedData(
 .tag-badge { display:inline-block;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.06);color:var(--text);font:400 13px 'IBM Plex Mono',ui-monospace,Consolas,monospace; }
 
 /* ─── Indicateurs du mois, filtres, factures ─── */
-.month-stats { display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:16px; }
+.month-stats-wrap { margin-bottom:16px; }
+.stats-period { display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px; }
+.stats-title { font-size:16px;font-weight:500;text-transform:capitalize;margin:0; }
+.stats-controls { display:flex;flex-wrap:wrap;align-items:center;gap:8px; }
+.month-stats.loading { opacity:.55;transition:opacity .15s; }
+.month-stats { display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px; }
 .month-stat { display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:14px;background:var(--bg-card); }
 .month-stat.accent .rev-card-val { color:var(--primary); }
 .rev-filters { display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:16px; }
