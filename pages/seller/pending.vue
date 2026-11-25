@@ -20,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+useSeoMeta({ robots: 'noindex, nofollow' })
 definePageMeta({ layout: 'default' })
 const pageRef = ref<HTMLElement | null>(null)
 

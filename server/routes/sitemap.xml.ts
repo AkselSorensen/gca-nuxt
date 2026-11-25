@@ -6,20 +6,19 @@ const BASE_URL = 'https://gsa-store.fr'
 
 // Pages statiques - priority 1.0 pour la home, 0.5 pour les autres.
 const STATIC_PAGES = [
-  { path: '/', priority: '1.0' },
-  { path: '/catalogue', priority: '0.5' },
-  { path: '/prestation', priority: '0.5' },
-  { path: '/about', priority: '0.5' },
-  { path: '/contact', priority: '0.5' },
-  { path: '/login', priority: '0.5' },
-  { path: '/register', priority: '0.5' },
-  { path: '/mentions-legales', priority: '0.5' },
-  { path: '/cgu', priority: '0.5' },
-  { path: '/cgv', priority: '0.5' },
-  { path: '/confidentialite', priority: '0.5' },
-  { path: '/cookies', priority: '0.5' },
-  { path: '/retractation', priority: '0.5' },
-  { path: '/contrat-vendeur', priority: '0.5' }
+  { path: '/', priority: '1.0', freq: 'daily' },
+  { path: '/catalogue', priority: '0.9', freq: 'daily' },
+  { path: '/prestation', priority: '0.6', freq: 'monthly' },
+  { path: '/about', priority: '0.5', freq: 'monthly' },
+  { path: '/fondations', priority: '0.5', freq: 'monthly' },
+  { path: '/contact', priority: '0.4', freq: 'yearly' },
+  { path: '/mentions-legales', priority: '0.2', freq: 'yearly' },
+  { path: '/cgu', priority: '0.2', freq: 'yearly' },
+  { path: '/cgv', priority: '0.2', freq: 'yearly' },
+  { path: '/confidentialite', priority: '0.2', freq: 'yearly' },
+  { path: '/cookies', priority: '0.2', freq: 'yearly' },
+  { path: '/retractation', priority: '0.2', freq: 'yearly' },
+  { path: '/contrat-vendeur', priority: '0.2', freq: 'yearly' }
 ]
 
 function escapeXml(value: string): string {
@@ -31,10 +30,11 @@ function escapeXml(value: string): string {
     .replace(/'/g, '&apos;')
 }
 
-function urlEntry(loc: string, lastmod: string, priority: string): string {
+function urlEntry(loc: string, lastmod: string, priority: string, freq = 'weekly'): string {
   return `  <url>
     <loc>${loc}</loc>
     <lastmod>${lastmod}</lastmod>
+    <changefreq>${freq}</changefreq>
     <priority>${priority}</priority>
   </url>`
 }
@@ -42,7 +42,7 @@ function urlEntry(loc: string, lastmod: string, priority: string): string {
 export default defineEventHandler(async (event) => {
   const now = new Date().toISOString()
   const urls = STATIC_PAGES.map((page) =>
-    urlEntry(`${BASE_URL}${page.path}`, now, page.priority)
+    urlEntry(`${BASE_URL}${page.path}`, now, page.priority, page.freq)
   )
 
   try {
@@ -54,8 +54,9 @@ export default defineEventHandler(async (event) => {
       urls.push(
         urlEntry(
           `${BASE_URL}/product/${escapeXml(product.slug)}`,
-          new Date(product.updated_at).toISOString(),
-          '0.8'
+          new Date(product.updated_at || Date.now()).toISOString(),
+          '0.8',
+          'weekly'
         )
       )
     }
@@ -65,14 +66,27 @@ export default defineEventHandler(async (event) => {
     for (const category of categories) {
       urls.push(
         urlEntry(
-          `${BASE_URL}/catalogue?c=${escapeXml(category.slug)}`,
+          `${BASE_URL}/catalogue?c=${encodeURIComponent(category.slug)}`.replace(/&/g, '&amp;'),
           now,
-          '0.6'
+          '0.7',
+          'daily'
         )
       )
     }
   } catch (error) {
     console.error('[sitemap] Erreur lors de la récupération des données dynamiques :', error)
+  }
+
+  try {
+    // Profils vendeurs publics
+    const { rows: sellers } = await query(
+      "SELECT slug FROM users WHERE role = 'seller' AND slug IS NOT NULL AND slug <> ''"
+    )
+    for (const seller of sellers) {
+      urls.push(urlEntry(`${BASE_URL}/seller/${escapeXml(seller.slug)}`, now, '0.5', 'weekly'))
+    }
+  } catch (error) {
+    console.error('[sitemap] Vendeurs indisponibles :', error)
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

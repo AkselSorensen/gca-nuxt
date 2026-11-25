@@ -232,6 +232,10 @@ useHead(() => {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: p.title || '',
+    url: seoCanonical.value,
+    sku: String(p.id || p.slug || ''),
+    brand: { '@type': 'Brand', name: p.sellerName || 'GSA Store' },
+    category: categoryName.value,
     image: seoImage.value,
     description: seoDescription.value,
     offers: {
@@ -247,7 +251,21 @@ useHead(() => {
   }
   return {
     link: seoCanonical.value ? [{ rel: 'canonical', href: seoCanonical.value }] : [],
-    script: [{ type: 'application/ld+json', children: JSON.stringify(ldJson) }],
+    script: [
+      { type: 'application/ld+json', children: JSON.stringify(ldJson) },
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Accueil', item: 'https://gsa-store.fr/' },
+            { '@type': 'ListItem', position: 2, name: 'Catalogue', item: 'https://gsa-store.fr/catalogue' },
+            { '@type': 'ListItem', position: 3, name: p.title || 'Produit', item: seoCanonical.value },
+          ],
+        }),
+      },
+    ],
   }
 })
 

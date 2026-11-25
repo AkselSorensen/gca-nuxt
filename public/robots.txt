@@ -1,4 +1,15 @@
-User-Agent: *
-Disallow:
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Allow: /api/media/
+Disallow: /auth/
+Disallow: /login
+Disallow: /register
+Disallow: /cart
+Disallow: /profile
+Disallow: /downloads
+Disallow: /seller/account
+Disallow: /seller/pending
 
 Sitemap: https://gsa-store.fr/sitemap.xml

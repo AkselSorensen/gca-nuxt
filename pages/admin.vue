@@ -188,19 +188,21 @@
         </div>
         <p class="tab-desc">Codes promo associés à des ambassadeurs pour le suivi des recommandations</p>
         <div v-if="ambLoading" class="loading">Chargement…</div>
-        <table v-else class="admin-table">
+        <div v-else class="table-wrap">
+        <table class="admin-table">
           <thead><tr><th>Code</th><th>Remise</th><th>Ambassadeur</th><th>Contact</th><th>Utilisations</th><th>Points</th></tr></thead>
           <tbody>
             <tr v-for="c in ambCodes" :key="c.id">
-              <td><strong>{{ c.code }}</strong></td>
-              <td>{{ c.discount_type === 'percent' ? c.discount_value + '%' : c.discount_value + '€' }}</td>
-              <td>{{ c.ambassador_name || '-' }}</td>
-              <td>{{ c.ambassador_contact || '-' }}</td>
-              <td>{{ c.max_uses ? c.redemption_count + '/' + c.max_uses : c.redemption_count }}</td>
-              <td>{{ c.points_balance || 0 }}</td>
+              <td><strong class="mono">{{ c.code }}</strong></td>
+              <td>{{ (c.discountType || c.discount_type) === 'percent' ? (c.discountValue ?? c.discount_value) + ' %' : (c.discountValue ?? c.discount_value) + ' €' }}</td>
+              <td>{{ c.ambassadorName || c.ambassador_name || '-' }}</td>
+              <td>{{ c.ambassadorContact || c.ambassador_contact || '-' }}</td>
+              <td>{{ (c.maxRedemptions ?? c.max_uses) ? (c.redeemedCount ?? c.redemption_count ?? 0) + ' / ' + (c.maxRedemptions ?? c.max_uses) : (c.redeemedCount ?? c.redemption_count ?? 0) }}</td>
+              <td>{{ c.pointsBalance ?? c.points_balance ?? 0 }}</td>
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
 
       <!-- Demandes Vendeurs -->
@@ -919,6 +921,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
+useSeoMeta({ title: 'Administration - GSA Store', robots: 'noindex, nofollow' })
 useHead({ link: [{ rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap' }] })
 const { user, logout, checkAuth } = useAuth()
 const config = useRuntimeConfig()
@@ -1104,7 +1107,7 @@ async function loadAmbCodes() {
   ambLoading.value = true
   try {
     const res = await $fetch(api + '/api/admin/promo-codes', { credentials: 'include' })
-    ambCodes.value = res.codes || res || []
+    ambCodes.value = res.items || res.codes || (Array.isArray(res) ? res : [])
   } catch { ambCodes.value = [] }
   finally { ambLoading.value = false }
 }
@@ -1799,7 +1802,16 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .tab-header h2 { font-size:24px;line-height:32px;letter-spacing:-.02em;font-weight:500; }
 .tab-desc { color:var(--text-secondary);font-size:14px;line-height:20px;margin:-12px 0 24px; }
 
+.tab-actions { display:flex;align-items:center;gap:8px; }
+
 /* ─── Buttons ─── */
+.admin-btn { display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-radius:10px;border:none;background:var(--text);color:#0e0f11;font-size:14px;font-weight:500;cursor:pointer;transition:background-color .15s;font-family:inherit; }
+.admin-btn:hover { background:#fff; }
+.admin-btn:focus-visible,.admin-btn-icon:focus-visible { outline:2px solid var(--primary);outline-offset:2px; }
+.admin-btn-icon { width:40px;height:40px;display:grid;place-items:center;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text-secondary);cursor:pointer;transition:background-color .15s,color .15s;font-family:inherit; }
+.admin-btn-icon:hover { background:rgba(255,255,255,.05);color:var(--text); }
+.tab-badge { display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--text); }
+.tab-badge::before { content:"";width:6px;height:6px;border-radius:50%;background:#e3b565; }
 .btn-primary {
   display:inline-flex;align-items:center;gap:8px;
   min-height:40px;padding:0 16px;border-radius:10px;border:none;
@@ -2058,10 +2070,7 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .tag-badge { display:inline-block;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.06);color:var(--text);font:400 13px 'IBM Plex Mono',ui-monospace,Consolas,monospace; }
 
 /* ─── Revenus ─── */
-.rev-mode-badge { display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:800;letter-spacing:.06em; }
-.rev-mode-badge.test { background:rgba(245,179,66,.1);border:1px solid rgba(245,179,66,.25);color:#f5b342; }
-.rev-mode-badge.live { background:rgba(110,231,183,.1);border:1px solid rgba(110,231,183,.25);color:#6ee7b7; }
-.rev-filter { padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.82rem;font-weight:600;font-family:inherit;outline:none;cursor:pointer; }
+.rev-mode-badge { display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:400;color:var(--text-secondary); }.rev-mode-badge::before { content:"";width:6px;height:6px;border-radius:50%;background:#e3b565; }.rev-mode-badge.live::before { background:var(--green); }.rev-filter { min-height:40px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:var(--bg-card);color:var(--text);font-size:14px;font-weight:400;font-family:inherit;outline:none;cursor:pointer; }
 .rev-filter:focus { border-color:var(--primary); }
 .user-search { padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:.82rem;font-family:inherit;outline:none;width:200px; }
 .user-search:focus { border-color:var(--primary); }

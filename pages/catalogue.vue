@@ -165,14 +165,6 @@
 </template>
 
 <script setup lang="ts">
-useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/catalogue' }] })
-useSeoMeta({
-  title: 'Catalogue - GSA Store',
-  description: 'Parcourez le catalogue GSA : HUD, mapping, particules, animations, UI et maps pour Garry\'s Mod.',
-  ogType: 'website',
-  
-})
-
 const config = useRuntimeConfig()
 const { t } = useLang()
 const api = config.public.apiOrigin
@@ -185,6 +177,47 @@ const sidebarOpen = ref(false)
 
 const products = computed(() => prodData.value?.items || prodData.value?.products || [])
 const categories = computed(() => catData.value || [])
+
+// SEO : chaque catégorie (?c=slug) a son titre, sa description et sa canonique
+const seoRoute = useRoute()
+const activeCat = computed(() => (categories.value as any[]).find((c: any) => c.slug === seoRoute.query.c))
+const catTitle = computed(() => activeCat.value ? activeCat.value.name + " pour Garry's Mod - Catalogue GSA" : 'Catalogue - GSA Store')
+const catDesc = computed(() => activeCat.value
+  ? (activeCat.value.description
+      ? activeCat.value.name + ' : ' + activeCat.value.description + ". Assets premium vérifiés pour Garry's Mod, prêts à déployer."
+      : 'Découvrez les assets ' + activeCat.value.name + " pour Garry's Mod sur GSA Store, vérifiés par notre équipe.")
+  : "Parcourez le catalogue GSA : HUD, mapping, particules, animations, UI et maps pour Garry's Mod.")
+const catUrl = computed(() => 'https://gsa-store.fr/catalogue' + (activeCat.value ? '?c=' + activeCat.value.slug : ''))
+useSeoMeta({
+  title: catTitle,
+  description: catDesc,
+  ogTitle: catTitle,
+  ogDescription: catDesc,
+  ogUrl: catUrl,
+  ogType: 'website',
+  twitterCard: 'summary_large_image',
+})
+useHead(() => ({
+  link: [{ rel: 'canonical', href: catUrl.value }],
+  script: [{
+    type: 'application/ld+json',
+    children: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: catTitle.value,
+      url: catUrl.value,
+      mainEntity: {
+        '@type': 'ItemList',
+        itemListElement: (products.value as any[]).slice(0, 24).map((p: any, i: number) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          url: 'https://gsa-store.fr/product/' + p.slug,
+          name: p.title,
+        })),
+      },
+    }),
+  }],
+}))
 const loading = computed(() => !prodData.value)
 
 const sortOptions = computed(() => [

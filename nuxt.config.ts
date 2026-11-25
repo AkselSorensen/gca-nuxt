@@ -13,11 +13,21 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'fr' },
       title: 'GSA Store - Des assets premium, prêts à déployer.',
       meta: [
-        { name: 'description', content: 'GSA Store - Des assets premium, prêts à déployer.' },
+        { name: 'description', content: 'Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer sur votre serveur Garry\'s Mod.' },
+        { property: 'og:title', content: 'Des assets premium pour Garry\'s Mod, prêts à déployer' },
+        { property: 'og:description', content: 'Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer sur votre serveur Garry\'s Mod.' },
         { property: 'og:locale', content: 'fr_FR' },
         { property: 'og:site_name', content: 'GSA Store' },
-        { property: 'og:image', content: 'https://gsa-store.fr/og-banner.png' },
-        { name: 'twitter:card', content: 'summary_large_image' }
+        { property: 'og:type', content: 'website' },
+        { property: 'og:image', content: 'https://gsa-store.fr/og-share.png' },
+        { property: 'og:image:type', content: 'image/png' },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { property: 'og:image:alt', content: 'GSA Store : pas une boutique, un standard. Assets premium pour Garry\'s Mod' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:image', content: 'https://gsa-store.fr/og-share.png' },
+        { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1' },
+        { name: 'theme-color', content: '#2f7df6' }
       ],
       link: [
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },

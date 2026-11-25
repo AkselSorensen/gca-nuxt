@@ -103,6 +103,7 @@
 </template>
 
 <script setup lang="ts">
+useSeoMeta({ robots: 'noindex, nofollow' })
 const { t } = useLang()
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin

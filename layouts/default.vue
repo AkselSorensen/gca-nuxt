@@ -13,13 +13,42 @@
 useHead({
   title: 'GSA Store - Des assets premium, prêts à déployer.',
   meta: [
-    { name: 'description', content: "GSA Store structure la distribution d'assets premium pour Garry's Mod et plus : mapping, particules, HUD, animations. Vérification humaine sur chaque produit." },
+    { name: 'description', content: "Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l'équipe GSA, prêts à déployer sur votre serveur Garry's Mod." },
+    { property: 'og:title', content: "Des assets premium pour Garry's Mod, prêts à déployer" },
+    { property: 'og:description', content: "Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l'équipe GSA, prêts à déployer sur votre serveur Garry's Mod." },
     { property: 'og:site_name', content: 'GSA Store' },
     { property: 'og:locale', content: 'fr_FR' },
     { property: 'og:type', content: 'website' },
     { property: 'og:url', content: 'https://gsa-store.fr' },
-    { property: 'og:image', content: 'https://gsa-store.fr/logo.png' },
+    { property: 'og:image', content: 'https://gsa-store.fr/og-share.png' },
     { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:image', content: 'https://gsa-store.fr/og-share.png' },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      children: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'Organization',
+            '@id': 'https://gsa-store.fr/#organization',
+            name: 'GSA Store',
+            url: 'https://gsa-store.fr/',
+            logo: 'https://gsa-store.fr/logo.png',
+            sameAs: ['https://discord.gg/KDsEzGRnKs'],
+          },
+          {
+            '@type': 'WebSite',
+            '@id': 'https://gsa-store.fr/#website',
+            url: 'https://gsa-store.fr/',
+            name: 'GSA Store',
+            inLanguage: 'fr-FR',
+            publisher: { '@id': 'https://gsa-store.fr/#organization' },
+          },
+        ],
+      }),
+    },
   ],
 })
 

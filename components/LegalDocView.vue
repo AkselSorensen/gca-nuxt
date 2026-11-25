@@ -22,6 +22,14 @@
 
 <script setup lang="ts">
 const props = defineProps<{ title: string; subtitle?: string; content: string }>()
+const seoRoute = useRoute()
+useSeoMeta({
+  title: () => props.title + ' - GSA Store',
+  description: () => (props.subtitle ? props.title + ' - ' + props.subtitle : props.title) + ' de GSA Store, marketplace d\'assets pour Garry\'s Mod',
+  ogTitle: () => props.title + ' - GSA Store',
+  ogType: 'article',
+})
+useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr' + seoRoute.path }] })
 const pageRef = ref<HTMLElement | null>(null)
 
 onMounted(async () => {

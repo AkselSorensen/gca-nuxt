@@ -116,9 +116,13 @@
 useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/' }] })
 useSeoMeta({
   title: 'GSA Store - Des assets premium, prêts à déployer.',
-  description: 'GSA Store - Pas une boutique. Un standard. Des assets premium pour Garry\'s Mod : mapping, particules, HUD, animations.',
+  description: 'Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer sur votre serveur Garry\'s Mod.',
   ogType: 'website',
-  
+  ogTitle: 'Des assets premium pour Garry\'s Mod, prêts à déployer',
+  ogDescription: 'Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer sur votre serveur Garry\'s Mod.',
+  ogImage: 'https://gsa-store.fr/og-share.png',
+  ogUrl: 'https://gsa-store.fr/',
+  twitterCard: 'summary_large_image',
 })
 
 const config = useRuntimeConfig()
