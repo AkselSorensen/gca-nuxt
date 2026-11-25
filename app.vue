@@ -2,7 +2,7 @@
   <div v-if="(maintenance.enabled || route.query.maintenancePreview === '1') && route.path !== '/admin' && !(route.path === '/login' && route.query.admin === '1')" class="maintenance-screen">
     <div class="maintenance-noise"></div>
     <header class="maintenance-topbar">
-      <NuxtLink to="/" class="maintenance-brand" aria-label="GSA, accueil"><span class="maintenance-brand-mark">G</span><span>GSA<span class="brand-separator">/</span><small>MARKETPLACE</small></span></NuxtLink>
+      <NuxtLink to="/" class="maintenance-brand" aria-label="GSA, accueil"><img src="/logo.png" alt="GSA" class="maintenance-logo" /><small>MARKETPLACE</small></NuxtLink>
       <div class="maintenance-actions">
         <div class="maintenance-live"><span></span> Intervention en cours</div>
         <NuxtLink to="/login?admin=1" class="maintenance-admin-btn">Connexion admin</NuxtLink>
@@ -23,7 +23,7 @@
       <section class="maintenance-art" aria-label="Illustration abstraite de maintenance">
         <div class="art-grid"></div>
         <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-orbit orbit-three"></div>
-        <div class="art-core"><div class="core-glow"></div><div class="core-g">G</div><span class="core-caption">GSA<br />SYSTEMS</span></div>
+        <div class="art-core"><div class="core-glow"></div><img src="/logo.png" alt="GSA" class="core-logo" /><span class="core-caption">GSA<br />SYSTEMS</span></div>
         <div class="float-chip chip-top"><span class="chip-spark">✦</span> UPGRADING EXPERIENCE</div>
         <div class="float-chip chip-bottom"><span class="chip-dot"></span> ONLINE AGAIN SOON</div>
         <div class="art-cross cross-a">+</div><div class="art-cross cross-b">+</div>
@@ -55,7 +55,9 @@ onMounted(() => {
 .maintenance-topbar { height:90px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08); }
 .maintenance-brand { display:flex;align-items:center;gap:11px;color:#fff;text-decoration:none;font-size:1.16rem;font-weight:900;letter-spacing:-.04em; }
 .maintenance-brand-mark { width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.18);border-radius:10px;background:linear-gradient(145deg,rgba(109,148,255,.3),rgba(109,148,255,.05));color:#a9bdff; }
-.maintenance-brand small { display:block;margin-top:1px;color:#737b89;font-size:.52rem;font-weight:700;letter-spacing:.19em; }
+.maintenance-logo { height:46px;width:auto;display:block; }
+.maintenance-brand small { display:block;padding-left:11px;border-left:1px solid rgba(255,255,255,.14);color:#8a92a3;font-size:.56rem;font-weight:700;letter-spacing:.19em; }
+.core-logo { position:relative;width:74%;height:auto;display:block;transform:rotate(8deg);filter:drop-shadow(0 0 28px rgba(155,158,255,.5)); }
 .brand-separator { padding:0 3px;color:#67718a;font-weight:400; }
 .maintenance-live { display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#abb2c1;font-size:.7rem;font-weight:600;letter-spacing:.02em; }
 .maintenance-actions { display:flex;align-items:center;gap:10px; }
