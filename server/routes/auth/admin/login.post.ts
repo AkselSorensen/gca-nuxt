@@ -1,4 +1,4 @@
-// POST /auth/admin/login — connexion admin (réplique du monolithe)
+// POST /auth/admin/login - connexion admin (réplique du monolithe)
 import { defineEventHandler, readBody, createError } from 'h3'
 import { query } from '../../../services/db'
 import { hashPassword, slugify, sanitizeUser } from '../../../services/users'

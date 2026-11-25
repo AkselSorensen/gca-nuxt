@@ -1,4 +1,4 @@
-// POST /api/admin/products/:id/files — enregistrer un fichier (réplique du monolithe)
+// POST /api/admin/products/:id/files - enregistrer un fichier (réplique du monolithe)
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../../utils/auth'
 import { query } from '../../../../services/db'

@@ -1,4 +1,4 @@
-// DELETE /api/admin/landing-config/:key — suppression config landing (réplique du monolithe)
+// DELETE /api/admin/landing-config/:key - suppression config landing (réplique du monolithe)
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

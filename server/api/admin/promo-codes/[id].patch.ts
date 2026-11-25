@@ -1,4 +1,4 @@
-// PATCH /api/admin/promo-codes/:id — mise à jour (réplique du monolithe)
+// PATCH /api/admin/promo-codes/:id - mise à jour (réplique du monolithe)
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

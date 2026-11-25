@@ -1,4 +1,4 @@
-// GET /api/me — utilisateur courant (réplique du monolithe Express)
+// GET /api/me - utilisateur courant (réplique du monolithe Express)
 import { defineEventHandler, createError } from 'h3'
 import { query } from '../services/db'
 import { sanitizeUser } from '../services/users'

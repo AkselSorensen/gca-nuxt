@@ -1,4 +1,4 @@
-// DELETE /api/admin/tags/:id — supprimer un tag (retiré des produits)
+// DELETE /api/admin/tags/:id - supprimer un tag (retiré des produits)
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

@@ -1,4 +1,4 @@
-// PATCH /api/profile — mise à jour du profil (réplique du monolithe)
+// PATCH /api/profile - mise à jour du profil (réplique du monolithe)
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireUser } from '../utils/auth'
 import { query } from '../services/db'

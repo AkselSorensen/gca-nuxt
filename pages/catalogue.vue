@@ -167,7 +167,7 @@
 <script setup lang="ts">
 useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/catalogue' }] })
 useSeoMeta({
-  title: 'Catalogue — GSA Store',
+  title: 'Catalogue - GSA Store',
   description: 'Parcourez le catalogue GSA : HUD, mapping, particules, animations, UI et maps pour Garry\'s Mod.',
   ogType: 'website',
   

@@ -1,4 +1,4 @@
-// POST /api/locale — changer la langue de session (réplique du monolithe)
+// POST /api/locale - changer la langue de session (réplique du monolithe)
 import { defineEventHandler, readBody } from 'h3'
 import { query } from '../services/db'
 import { getSessionId } from '../services/session'

@@ -1,4 +1,4 @@
-// GET /api/page-content/:page — contenu public des pages (réplique du monolithe)
+// GET /api/page-content/:page - contenu public des pages (réplique du monolithe)
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { query } from '../../services/db'
 

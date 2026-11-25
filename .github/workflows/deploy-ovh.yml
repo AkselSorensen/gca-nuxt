@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
 
+# Un seul déploiement à la fois : un nouveau push annule celui en cours
+# (sinon plusieurs builds Docker se disputent le CPU du VPS et tout ralentit).
+concurrency:
+  group: deploy-ovh
+  cancel-in-progress: true
+
 jobs:
   deploy:
     name: Build & deploy sur le VPS

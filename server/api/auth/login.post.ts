@@ -1,4 +1,4 @@
-// POST /api/auth/login — connexion (réplique du monolithe Express)
+// POST /api/auth/login - connexion (réplique du monolithe Express)
 import { defineEventHandler, readBody, createError } from 'h3'
 import { query } from '../../services/db'
 import { hashPassword, sanitizeUser } from '../../services/users'

@@ -1,4 +1,4 @@
-// GET /api/search?q= — recherche produits (réplique du monolithe Express)
+// GET /api/search?q= - recherche produits (réplique du monolithe Express)
 import { defineEventHandler, getQuery, createError, setResponseHeader } from 'h3'
 import { query } from '../services/db'
 

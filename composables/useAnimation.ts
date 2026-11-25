@@ -16,7 +16,7 @@ export function initGsap() {
   return { load }
 }
 
-// Export top-level `load` — les pages font
+// Export top-level `load` - les pages font
 // `const { load, pageEntrance } = await import('~/composables/useAnimation')`
 export async function load() {
   if (typeof window === 'undefined') return

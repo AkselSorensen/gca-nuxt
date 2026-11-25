@@ -1,4 +1,4 @@
-// GET /api/stripe/config — clé publique Stripe (réplique du monolithe)
+// GET /api/stripe/config - clé publique Stripe (réplique du monolithe)
 import { defineEventHandler } from 'h3'
 
 export default defineEventHandler(() => {

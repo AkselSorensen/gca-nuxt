@@ -1,4 +1,4 @@
-// POST /api/auth/register — inscription (réplique du monolithe Express)
+// POST /api/auth/register - inscription (réplique du monolithe Express)
 // + vérification email : code de validation envoyé par email (Resend) ou
 // affiché à l'écran en mode dev (RESEND_API_KEY absent).
 import { defineEventHandler, readBody, createError } from 'h3'
@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
   // dans la réponse pour permettre la validation.
   const emailSent = await sendEmail(
     normalizedEmail,
-    'Vérifiez votre adresse email — GSA Store',
+    'Vérifiez votre adresse email - GSA Store',
     verificationEmailHtml(verificationCode)
   )
 

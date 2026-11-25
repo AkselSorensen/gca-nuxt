@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 useSeoMeta({
-  title: 'Connexion — GSA Store',
+  title: 'Connexion - GSA Store',
   description: 'Connectez-vous à GSA Store pour accéder à votre compte, vos téléchargements et vos avantages clients.',
   ogType: 'website',
   robots: 'noindex, nofollow',
@@ -22,7 +22,12 @@ const pageRef = ref<HTMLElement | null>(null)
 if (process.client) {
   onMounted(async () => {
     await checkAuth()
-    if (user.value?.id) navigateTo('/')
+    // Admin déjà connecté → direct au panneau (sinon on retombait sur l'accueil = écran de maintenance).
+    // Mode ?admin=1 avec un compte non-admin : on reste sur le formulaire pour se reconnecter en admin.
+    if (user.value?.id) {
+      if (user.value.role === 'admin') navigateTo('/admin')
+      else if (!adminOnly) navigateTo('/')
+    }
   })
 }
 

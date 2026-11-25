@@ -1,4 +1,4 @@
-// GET /api/products/:slug — détail + owned (réplique du monolithe Express)
+// GET /api/products/:slug - détail + owned (réplique du monolithe Express)
 // Cache PRIVÉ 30s (jamais de cache CDN partagé : le flag owned est par utilisateur)
 import { defineEventHandler, getRouterParam, createError, setResponseHeader } from 'h3'
 import { query } from '../../services/db'

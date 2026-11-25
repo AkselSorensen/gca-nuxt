@@ -1,4 +1,4 @@
-// GET /auth/discord — redirection OAuth Discord (réplique du monolithe)
+// GET /auth/discord - redirection OAuth Discord (réplique du monolithe)
 import { defineEventHandler, getQuery, sendRedirect } from 'h3'
 
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID

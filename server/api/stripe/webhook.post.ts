@@ -1,5 +1,5 @@
-// POST /api/stripe/webhook — événements Stripe (body BRUT requis pour la signature)
-// NB : readRawBody donne la chaîne brute — indispensable pour constructEvent.
+// POST /api/stripe/webhook - événements Stripe (body BRUT requis pour la signature)
+// NB : readRawBody donne la chaîne brute - indispensable pour constructEvent.
 import { defineEventHandler, readRawBody, getHeader, createError } from 'h3'
 import { pool, query } from '../../services/db'
 import { stripe, PLATFORM_COMMISSION_PERCENT, maybeCreateSellerTransfers, recordStripeFee } from '../../services/stripe'

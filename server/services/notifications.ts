@@ -23,8 +23,8 @@ export function orderInvoiceHtml(items: any[], total: number, discount: number, 
   `
   return premiumShell(summary, {
     heroTitle: 'Merci pour votre achat ! 🎉',
-    heroSub: `Récapitulatif de votre commande — <strong>${currency(total)}</strong>`,
-    preheader: `Votre facture GSA Store — ${currency(total)}`,
+    heroSub: `Récapitulatif de votre commande - <strong>${currency(total)}</strong>`,
+    preheader: `Votre facture GSA Store - ${currency(total)}`,
   })
 }
 
@@ -58,13 +58,13 @@ export function soldNotificationHtml(productTitle: string, quantity: number, pri
         </td>
       </tr>
     </table>
-    <p class="text-sub" style="font-size:13.5px;color:#5a6478;line-height:1.7;margin:0 0 14px;">Acheteur : <strong>${buyerEmail || '—'}</strong><br/>Le montant net (après commission GSA) sera reversé via votre compte Stripe Connect.</p>
+    <p class="text-sub" style="font-size:13.5px;color:#5a6478;line-height:1.7;margin:0 0 14px;">Acheteur : <strong>${buyerEmail || '-'}</strong><br/>Le montant net (après commission GSA) sera reversé via votre compte Stripe Connect.</p>
     ${buttonRowHtml('Suivre mes ventes', `${APP_URL}/seller/account`)}
   `
   return premiumShell(content, {
     heroTitle: '🎉 Une vente sur GSA Store !',
     heroSub: productTitle,
-    preheader: `Vente : ${productTitle} — ${currency(price)}`,
+    preheader: `Vente : ${productTitle} - ${currency(price)}`,
   })
 }
 
@@ -75,7 +75,7 @@ export function soldNotificationHtml(productTitle: string, quantity: number, pri
 export async function notifyOrderEmails(orderId: number, buyerEmail: string): Promise<void> {
   try {
     // Verrou d'idempotence : la 1re requête qui "réclame" la commande envoie les emails.
-    // Le webhook Stripe ET /api/checkout/confirm-session appellent cette fonction —
+    // Le webhook Stripe ET /api/checkout/confirm-session appellent cette fonction -
     // un seul des deux doit réellement envoyer (colonne orders.notified_at).
     try {
       const claim = await query(
@@ -83,7 +83,7 @@ export async function notifyOrderEmails(orderId: number, buyerEmail: string): Pr
         [orderId]
       )
       if (!claim.rowCount) {
-        console.log('[email] commande', orderId, '— emails déjà envoyés, on saute')
+        console.log('[email] commande', orderId, '- emails déjà envoyés, on saute')
         return
       }
     } catch (e: any) {
@@ -122,7 +122,7 @@ export async function notifyOrderEmails(orderId: number, buyerEmail: string): Pr
     const discount = Number(order.discount_amount || 0)
 
     // 1) Facture à l'acheteur
-    await sendEmail(emailTo, `Votre commande GSA Store n°${orderId} — ${currency(total)}`, orderInvoiceHtml(items, total, discount, orderId))
+    await sendEmail(emailTo, `Votre commande GSA Store n°${orderId} - ${currency(total)}`, orderInvoiceHtml(items, total, discount, orderId))
 
     // 2) Invitation à laisser un avis
     await sendEmail(emailTo, 'Votre avis compte sur GSA Store ⭐', reviewInviteHtml(items))
@@ -137,7 +137,7 @@ export async function notifyOrderEmails(orderId: number, buyerEmail: string): Pr
       if (it.seller_email) {
         await sendEmail(
           it.seller_email,
-          `🎉 Vente sur GSA Store — ${it.title}`,
+          `🎉 Vente sur GSA Store - ${it.title}`,
           soldNotificationHtml(it.title, qty, sellerTotal, emailTo)
         )
       }

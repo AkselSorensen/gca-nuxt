@@ -42,7 +42,7 @@
         <h2>Vérifiez votre email</h2>
         <p class="verify-sub">Un code de validation a été envoyé à <strong>{{ registeredEmail }}</strong>.</p>
         <div v-if="devCode" class="verify-devcode">
-          <span>Mode démo (email non configuré) — votre code :</span>
+          <span>Mode démo (email non configuré) - votre code :</span>
           <strong>{{ devCode }}</strong>
         </div>
         <div class="field anim-up">
@@ -79,19 +79,19 @@
               <p>GSA est une plateforme numérique spécialisée dans la distribution, la valorisation et la commercialisation de ressources numériques destinées à la création de projets vidéoludiques. GSA exerce une activité hybride comprenant une activité de marketplace mettant en relation vendeurs et acheteurs, une activité de prestation de services liés à la présentation, la sélection et la promotion des contenus, et une activité de création et de fourniture de prestations professionnelles réalisées directement par GSA.</p>
               <p>Le présent contrat régit les relations entre <strong>GSA Store</strong> (ci-après « GSA » ou « la Plateforme ») et tout créateur inscrit en qualité de vendeur (ci-après « le Vendeur »). En créant un compte vendeur, le Vendeur accepte sans réserve l'intégralité des présentes conditions ainsi que les Fondations Juridiques de GSA.</p>
 
-              <h3>Article 1 — Définitions</h3>
+              <h3>Article 1 - Définitions</h3>
               <p>Les termes utilisés dans le présent contrat s'entendent au sens des Fondations Juridiques de GSA (version 1.0.0) :</p>
               <ul>
                 <li><strong>Produit numérique</strong> : tout contenu immatériel proposé à la vente (modèles 3D, textures, environnements, maps, effets visuels, interfaces, sons, animations, ressources pour moteurs de jeux…) ;</li>
-                <li><strong>Validation GSA</strong> : processus interne de contrôle humain effectué avant publication — prestation de contrôle qualité, ne constituant ni certification technique absolue, ni garantie contre tout défaut, ni garantie de compatibilité ;</li>
+                <li><strong>Validation GSA</strong> : processus interne de contrôle humain effectué avant publication - prestation de contrôle qualité, ne constituant ni certification technique absolue, ni garantie contre tout défaut, ni garantie de compatibilité ;</li>
                 <li><strong>Présentation GSA</strong> : miniatures, captures, vidéos, descriptions et textes promotionnels préparés par GSA, protégés au titre du droit d'auteur ;</li>
                 <li><strong>Commission</strong> : rémunération perçue par GSA, définie contractuellement avec chaque Vendeur.</li>
               </ul>
 
-              <h3>Article 2 — Nature du rôle de GSA</h3>
+              <h3>Article 2 - Nature du rôle de GSA</h3>
               <p>GSA agit en qualité d'opérateur de plateforme permettant la mise en relation entre vendeurs et acheteurs. Sauf indication contraire, GSA n'est ni l'auteur des contenus proposés par les Vendeurs, ni le titulaire des droits attachés à ces contenus, ni le développeur des produits commercialisés par des tiers. Les obligations relatives au contenu vendu demeurent à la charge du Vendeur concerné.</p>
 
-              <h3>Article 3 — Obligations du Vendeur</h3>
+              <h3>Article 3 - Obligations du Vendeur</h3>
               <p>Le Vendeur demeure responsable :</p>
               <ul>
                 <li>de la titularité des droits attachés aux contenus proposés (contenu original ou réalisé avec l'autorisation expresse des ayants droit) ;</li>
@@ -100,13 +100,13 @@
                 <li>de ne pas publier de contenu contraire aux lois, aux droits des tiers ou aux bonnes mœurs.</li>
               </ul>
 
-              <h3>Article 4 — Commission et paiements</h3>
+              <h3>Article 4 - Commission et paiements</h3>
               <p>La Plateforme prélève une commission de <strong>25%</strong> sur le prix de chaque vente (20% pour les vendeurs partenaires), qui rémunère notamment l'accès à la plateforme, la visibilité, la Validation GSA, la Présentation GSA, la gestion technique et le support de premier niveau. Les paiements sont traités exclusivement via Stripe : le Vendeur doit disposer d'un compte Stripe Connect actif pour recevoir ses fonds. Le montant net, après déduction de la commission, est transféré dans les délais prévus par Stripe (généralement 2 à 7 jours ouvrés). Les frais de traitement Stripe (1,5% + 0,25 € par transaction) restent à la charge de la Plateforme.</p>
 
-              <h3>Article 5 — Propriété intellectuelle et licence de vente</h3>
+              <h3>Article 5 - Propriété intellectuelle et licence de vente</h3>
               <p>Le Vendeur conserve l'intégralité des droits de propriété intellectuelle sur ses créations. Il concède à GSA une licence non exclusive lui permettant de représenter, stocker et distribuer les créations dans le cadre strict de la vente. L'acheteur acquiert une Licence GSA : non exclusive, personnelle, non transférable, sans transfert de propriété et sans droit de redistribution. Sont notamment interdits sauf autorisation : la reproduction, la redistribution, la revente, la mise à disposition publique et l'exploitation commerciale non autorisée des contenus.</p>
 
-              <h3>Article 6 — Hiérarchie contractuelle</h3>
+              <h3>Article 6 - Hiérarchie contractuelle</h3>
               <p>Les documents contractuels applicables sont : 1. Mentions légales ; 2. Conditions Générales d'Utilisation ; 3. Conditions Générales de Vente ; 4. Licence GSA ; 5. Contrat vendeur (présent contrat) ; 6. Politiques complémentaires. En cas de contradiction, le document spécifique prévaut sur le document général. En cas de manquement grave aux présentes conditions, GSA se réserve le droit de suspendre ou supprimer le compte Vendeur. Le droit applicable est le droit français.</p>
             </div>
 
@@ -165,7 +165,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 useSeoMeta({
-  title: 'Inscription — GSA Store',
+  title: 'Inscription - GSA Store',
   description: 'Créez votre compte GSA Store : acheteurs et vendeurs d\'assets premium pour Garry\'s Mod.',
   ogType: 'website',
   robots: 'noindex, nofollow',

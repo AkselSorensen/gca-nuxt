@@ -1,4 +1,4 @@
-// DELETE /api/admin/categories/:id — suppression
+// DELETE /api/admin/categories/:id - suppression
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

@@ -1,4 +1,4 @@
-// POST /api/admin/products/:id/upload-image — upload image → R2
+// POST /api/admin/products/:id/upload-image - upload image → R2
 // (remplace le stockage base64 en DB : les images vivent dans R2)
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../../utils/auth'

@@ -1,4 +1,4 @@
-// PATCH /api/seller/profile — met à jour la description/boutique du vendeur connecté
+// PATCH /api/seller/profile - met à jour la description/boutique du vendeur connecté
 import { defineEventHandler, readBody, createError } from 'h3'
 import { query } from '../../services/db'
 import { getSessionUser } from '../../utils/auth'

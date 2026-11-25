@@ -1,4 +1,4 @@
-// Purge du cache de routes Nitro (SWR) — à appeler après toute mutation admin
+// Purge du cache de routes Nitro (SWR) - à appeler après toute mutation admin
 // d'un produit : sans ça la marketplace sert l'ancien prix pendant la durée du SWR
 // (routeRules : '/' 60 s, '/catalogue' + '/product/**' 300 s).
 import { useStorage } from '#imports'

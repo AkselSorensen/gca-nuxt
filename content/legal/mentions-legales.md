@@ -49,7 +49,7 @@ Toute personne estimant qu'un contenu présent sur GSA porte atteinte à ses dro
 
 # 11. Données personnelles
 
-GSA collecte et traite certaines données personnelles dans le cadre de la fourniture de ses services. Ces traitements sont réalisés conformément : ●​ au Règlement Général sur la Protection des Données (RGPD — Règlement UE 2016/679) ; ●​ à la Loi n°78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés. Les informations relatives aux traitements réalisés sont détaillées dans la Politique de confidentialité accessible depuis le site. Les utilisateurs disposent notamment : ●​ d'un droit d'accès ; ●​ d'un droit de rectification ; ●​ d'un droit d'effacement ; ●​ d'un droit à la limitation ; ●​ d'un droit d'opposition ; ●​ d'un droit à la portabilité lorsque applicable.
+GSA collecte et traite certaines données personnelles dans le cadre de la fourniture de ses services. Ces traitements sont réalisés conformément : ●​ au Règlement Général sur la Protection des Données (RGPD - Règlement UE 2016/679) ; ●​ à la Loi n°78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés. Les informations relatives aux traitements réalisés sont détaillées dans la Politique de confidentialité accessible depuis le site. Les utilisateurs disposent notamment : ●​ d'un droit d'accès ; ●​ d'un droit de rectification ; ●​ d'un droit d'effacement ; ●​ d'un droit à la limitation ; ●​ d'un droit d'opposition ; ●​ d'un droit à la portabilité lorsque applicable.
 
 # 12. Cookies et technologies similaires
 

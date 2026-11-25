@@ -1,4 +1,4 @@
-// POST /api/checkout/buy-now — achat direct d'un produit (réplique du monolithe)
+// POST /api/checkout/buy-now - achat direct d'un produit (réplique du monolithe)
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireUser } from '../../utils/auth'
 import { query } from '../../services/db'

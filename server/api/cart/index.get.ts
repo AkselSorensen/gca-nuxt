@@ -1,4 +1,4 @@
-// GET /api/cart — panier de l'utilisateur connecté (réplique du monolithe)
+// GET /api/cart - panier de l'utilisateur connecté (réplique du monolithe)
 import { defineEventHandler, createError } from 'h3'
 import { requireUser } from '../../utils/auth'
 import { getCart } from '../../services/cart'

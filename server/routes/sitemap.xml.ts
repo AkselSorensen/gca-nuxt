@@ -4,7 +4,7 @@ import { query } from '../services/db'
 
 const BASE_URL = 'https://gsa-store.fr'
 
-// Pages statiques — priority 1.0 pour la home, 0.5 pour les autres.
+// Pages statiques - priority 1.0 pour la home, 0.5 pour les autres.
 const STATIC_PAGES = [
   { path: '/', priority: '1.0' },
   { path: '/catalogue', priority: '0.5' },
@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
   )
 
   try {
-    // Produits visibles uniquement (is_hidden = false) — priority 0.8.
+    // Produits visibles uniquement (is_hidden = false) - priority 0.8.
     const { rows: products } = await query(
       'SELECT slug, updated_at FROM products WHERE is_hidden = false'
     )
@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
       )
     }
 
-    // Catégories — priority 0.6.
+    // Catégories - priority 0.6.
     const { rows: categories } = await query('SELECT slug FROM categories')
     for (const category of categories) {
       urls.push(

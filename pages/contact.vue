@@ -78,7 +78,7 @@
 <script setup lang="ts">
 useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/contact' }] })
 useSeoMeta({
-  title: 'Contact — GSA Store',
+  title: 'Contact - GSA Store',
   description: 'Contactez l\'équipe GSA Store : support, questions, prestations.',
   ogType: 'website',
   
@@ -105,7 +105,7 @@ async function submit() {
     })
     if (res?.delivered === false) {
       success.value = true
-      successMsg.value = 'Message enregistré — la configuration email sera bientôt active. Rejoignez le Discord pour une réponse immédiate.'
+      successMsg.value = 'Message enregistré - la configuration email sera bientôt active. Rejoignez le Discord pour une réponse immédiate.'
     } else {
       success.value = true
       successMsg.value = 'Votre message a bien été envoyé ! Nous vous répondrons sous 24-48h.'

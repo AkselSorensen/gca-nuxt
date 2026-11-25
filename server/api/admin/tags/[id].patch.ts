@@ -1,4 +1,4 @@
-// PATCH /api/admin/tags/:id — renommer un tag (propagé aux produits)
+// PATCH /api/admin/tags/:id - renommer un tag (propagé aux produits)
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

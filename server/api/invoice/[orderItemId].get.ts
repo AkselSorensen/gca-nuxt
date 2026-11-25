@@ -1,4 +1,4 @@
-// GET /api/invoice/:orderItemId — facture PDF (réplique du monolithe Express)
+// GET /api/invoice/:orderItemId - facture PDF (réplique du monolithe Express)
 import { defineEventHandler, getRouterParam, createError, setResponseHeader } from 'h3'
 import { requireUser } from '../../utils/auth'
 import { query } from '../../services/db'
@@ -96,7 +96,7 @@ function generatePdf(order: any): Promise<Buffer> {
       rowY += rowHeight + 8
     })
 
-    // Totaux — section HT → TVA → TTC (labels alignés à droite jusqu'à x=440, montants jusqu'à x=48+W)
+    // Totaux - section HT → TVA → TTC (labels alignés à droite jusqu'à x=440, montants jusqu'à x=48+W)
     if (rowY > usableBottom - 170) {
       doc.addPage()
       rowY = 48

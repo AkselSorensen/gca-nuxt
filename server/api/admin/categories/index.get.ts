@@ -1,4 +1,4 @@
-// GET /api/admin/categories — liste des catégories
+// GET /api/admin/categories - liste des catégories
 import { defineEventHandler, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

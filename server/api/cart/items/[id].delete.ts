@@ -1,4 +1,4 @@
-// DELETE /api/cart/items/:id — retirer un article (réplique du monolithe)
+// DELETE /api/cart/items/:id - retirer un article (réplique du monolithe)
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { requireUser } from '../../../utils/auth'
 import { getCart } from '../../../services/cart'

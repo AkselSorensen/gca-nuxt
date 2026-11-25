@@ -1,4 +1,4 @@
-// POST /api/admin/products/:id/upload — upload base64 vers R2 (réplique du monolithe)
+// POST /api/admin/products/:id/upload - upload base64 vers R2 (réplique du monolithe)
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../../utils/auth'
 import { query } from '../../../../services/db'

@@ -1,4 +1,4 @@
-// POST /api/admin/products — création (réplique du monolithe)
+// POST /api/admin/products - création (réplique du monolithe)
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

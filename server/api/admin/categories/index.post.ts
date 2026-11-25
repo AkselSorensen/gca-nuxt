@@ -1,4 +1,4 @@
-// POST /api/admin/categories — création d'une catégorie
+// POST /api/admin/categories - création d'une catégorie
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

@@ -1,4 +1,4 @@
-// PATCH /api/admin/page-content/:page — sauvegarde du contenu (réplique du monolithe)
+// PATCH /api/admin/page-content/:page - sauvegarde du contenu (réplique du monolithe)
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

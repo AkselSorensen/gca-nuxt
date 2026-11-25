@@ -1,6 +1,6 @@
-// GET /api/bootstrap — données de la home (réplique du monolithe Express)
+// GET /api/bootstrap - données de la home (réplique du monolithe Express)
 // Cache navigateur 60s + CDN 5min : données publiques (le champ `user` n'est
-// pas utilisé par la home — le header lit /api/me côté client).
+// pas utilisé par la home - le header lit /api/me côté client).
 import { defineEventHandler, createError, setResponseHeader } from 'h3'
 import { query } from '../services/db'
 import { getSessionUser, getSessionLocale } from '../utils/auth'
@@ -173,7 +173,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       locale,
-      user: null, // jamais d'utilisateur dans le cache CDN — le header lit /api/me
+      user: null, // jamais d'utilisateur dans le cache CDN - le header lit /api/me
       categories: categories.rows,
       trending: trending.rows.map(thumb),
       discounts: discounts.rows.map(thumb),

@@ -1,4 +1,4 @@
-// GET /api/media/:id — sert une image produit :
+// GET /api/media/:id - sert une image produit :
 //  1. stockée en R2 (storage_path) → stream depuis R2 (Cloudflare)
 //  2. sinon base64 en DB → stream du buffer
 //  3. URL externe → redirection

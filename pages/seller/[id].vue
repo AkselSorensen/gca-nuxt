@@ -245,7 +245,7 @@ const truncateText = (s: string, max: number) => {
 }
 
 const sellerName = computed(() => seller.value?.displayName || 'Vendeur')
-const seoTitle = computed(() => sellerName.value + ' — Vendeur GSA Store')
+const seoTitle = computed(() => sellerName.value + ' - Vendeur GSA Store')
 const seoDescription = computed(() => truncateText(seller.value?.bio || 'Découvrez les créations de ' + sellerName.value + ' sur GSA Store.', 150))
 
 useSeoMeta({
@@ -281,7 +281,7 @@ const avgRating = computed(() => {
   // Fallback : moyenne des produits notés (si l'API ne fournit pas la valeur)
   const p = products.value
   const rated = p.filter((x: any) => Number(x.rating) > 0)
-  if (!rated.length) return '—'
+  if (!rated.length) return '-'
   const avg = rated.reduce((s: number, x: any) => s + Number(x.rating), 0) / rated.length
   return avg.toFixed(1)
 })
@@ -292,12 +292,12 @@ const totalReviews = computed(() => products.value.reduce((s: number, x: any) =>
 const filteredProducts = computed(() => products.value)
 
 function formatDate(dateStr: string) {
-  if (!dateStr) return '—'
+  if (!dateStr) return '-'
   try {
     const d = new Date(dateStr)
-    if (isNaN(d.getTime())) return '—'
+    if (isNaN(d.getTime())) return '-'
     return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-  } catch { return '—' }
+  } catch { return '-' }
 }
 
 function shareProfile() {

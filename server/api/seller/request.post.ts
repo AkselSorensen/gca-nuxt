@@ -1,4 +1,4 @@
-// POST /api/seller/request — un client demande à devenir vendeur
+// POST /api/seller/request - un client demande à devenir vendeur
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireUser } from '../../utils/auth'
 import { query } from '../../services/db'

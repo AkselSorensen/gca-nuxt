@@ -1,4 +1,4 @@
-// GET /api/admin/seller-requests — demandes vendeurs en attente (réplique du monolithe)
+// GET /api/admin/seller-requests - demandes vendeurs en attente (réplique du monolithe)
 import { defineEventHandler, createError } from 'h3'
 import { requireAdmin } from '../../utils/auth'
 import { query } from '../../services/db'

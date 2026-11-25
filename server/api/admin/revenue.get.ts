@@ -1,4 +1,4 @@
-// GET /api/admin/revenue — dashboard Stripe (réplique du monolithe)
+// GET /api/admin/revenue - dashboard Stripe (réplique du monolithe)
 import { defineEventHandler, createError } from 'h3'
 import { requireAdmin } from '../../utils/auth'
 import { pool, query } from '../../services/db'
@@ -167,7 +167,7 @@ export default defineEventHandler(async (event) => {
       createdAt: r.created_at,
     }))
 
-    // Ventes ligne par ligne (achat groupé = 1 ligne par article) — suivi des dispatchs d'argent
+    // Ventes ligne par ligne (achat groupé = 1 ligne par article) - suivi des dispatchs d'argent
     try {
       const sales = await query(
         `
@@ -204,7 +204,7 @@ export default defineEventHandler(async (event) => {
         transferId: r.transfer_id || null,
         transferStatus: r.transfer_status || 'pending',
         sellerId: r.seller_id ? Number(r.seller_id) : null,
-        sellerName: r.seller_name || '—',
+        sellerName: r.seller_name || '-',
         buyerEmail: r.buyer_email || '',
         buyerName: r.buyer_name || '',
       }))

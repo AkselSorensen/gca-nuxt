@@ -1,4 +1,4 @@
-// Service : helpers utilisateurs (identiques au monolithe Express —
+// Service : helpers utilisateurs (identiques au monolithe Express -
 // hashPassword doit rester byte-identique pour la compatibilité des mots de passe).
 import { createHash } from 'node:crypto'
 

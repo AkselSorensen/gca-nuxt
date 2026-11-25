@@ -6,7 +6,7 @@ let expressHandler: ReturnType<typeof fromNodeMiddleware> | null = null
 
 export default defineEventHandler(async (event) => {
   if (!expressHandler) {
-    // @ts-ignore — module CommonJS exporté par server/express/server.cjs
+    // @ts-ignore - module CommonJS exporté par server/express/server.cjs
     const mod = await import('../../express/server.cjs')
     expressHandler = fromNodeMiddleware(mod.default || mod)
   }

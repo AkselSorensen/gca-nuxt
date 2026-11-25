@@ -1,4 +1,4 @@
-// Service : envoi d'emails — SMTP OVH (Zimbra) en priorité, Resend en secours.
+// Service : envoi d'emails - SMTP OVH (Zimbra) en priorité, Resend en secours.
 // Désactivé silencieusement si aucun transport n'est configuré (mode démo).
 import nodemailer from 'nodemailer'
 import { premiumShell } from './email-templates'
@@ -17,11 +17,11 @@ export async function sendEmail(to: string, subject: string, html: string, opts:
     .map((r) => r.trim())
     .filter(Boolean)
   if (!recipients.length) {
-    console.warn('[email] aucun destinataire — envoi ignoré')
+    console.warn('[email] aucun destinataire - envoi ignoré')
     return false
   }
 
-  // 1) SMTP (OVH Zimbra / ssl0.ovh.net) — transport principal
+  // 1) SMTP (OVH Zimbra / ssl0.ovh.net) - transport principal
   if (smtpUser && smtpPass) {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'ssl0.ovh.net',
@@ -37,7 +37,7 @@ export async function sendEmail(to: string, subject: string, html: string, opts:
         html,
         ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
       })
-      console.log('[email] SMTP envoyé à', recipients.join(', '), '—', subject)
+      console.log('[email] SMTP envoyé à', recipients.join(', '), '-', subject)
       return true
     } catch (error) {
       console.error('[email] SMTP error:', error)
@@ -45,7 +45,7 @@ export async function sendEmail(to: string, subject: string, html: string, opts:
     }
   }
 
-  // 2) Resend — secours
+  // 2) Resend - secours
   const apiKey = process.env.RESEND_API_KEY
   if (apiKey) {
     try {
@@ -74,7 +74,7 @@ export async function sendEmail(to: string, subject: string, html: string, opts:
     }
   }
 
-  console.warn('[email] aucun transport configuré (SMTP_USER/SMTP_PASS ou RESEND_API_KEY) — email non envoyé à', recipients.join(', '))
+  console.warn('[email] aucun transport configuré (SMTP_USER/SMTP_PASS ou RESEND_API_KEY) - email non envoyé à', recipients.join(', '))
   return false
 }
 

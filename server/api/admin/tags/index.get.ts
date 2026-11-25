@@ -1,4 +1,4 @@
-// GET /api/admin/tags — liste des tags (id + nom)
+// GET /api/admin/tags - liste des tags (id + nom)
 import { defineEventHandler } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

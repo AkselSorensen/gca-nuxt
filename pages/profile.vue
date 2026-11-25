@@ -20,7 +20,7 @@
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </div>
               <div class="avatar-meta">
-                <strong>{{ form.displayName || '—' }}</strong>
+                <strong>{{ form.displayName || '-' }}</strong>
                 <span>{{ form.email || '' }}</span>
               </div>
             </div>
@@ -138,7 +138,7 @@
                 <div class="field"><label>Discord</label>
                   <div v-if="user?.discordTag" class="discord-linked">
                     <IconDiscord :size="16" />
-                    <span>Discord lié — <strong>{{ user.discordTag }}</strong></span>
+                    <span>Discord lié - <strong>{{ user.discordTag }}</strong></span>
                   </div>
                   <button v-else type="button" class="btn-discord-link" @click="linkDiscord">
                     <IconDiscord :size="16" />
@@ -160,7 +160,7 @@
                 <div class="field"><label>Discord</label>
                   <div v-if="user?.discordTag" class="discord-linked">
                     <IconDiscord :size="16" />
-                    <span>Discord lié — <strong>{{ user.discordTag }}</strong></span>
+                    <span>Discord lié - <strong>{{ user.discordTag }}</strong></span>
                   </div>
                   <button v-else type="button" class="btn-discord-link" @click="linkDiscord">
                     <IconDiscord :size="16" />

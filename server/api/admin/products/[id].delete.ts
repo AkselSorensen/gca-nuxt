@@ -1,4 +1,4 @@
-// DELETE /api/admin/products/:id — suppression (réplique du monolithe)
+// DELETE /api/admin/products/:id - suppression (réplique du monolithe)
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

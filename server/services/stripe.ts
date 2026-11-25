@@ -1,4 +1,4 @@
-// Service : Stripe (client + helpers de paiement/transferts — réplique du monolithe)
+// Service : Stripe (client + helpers de paiement/transferts - réplique du monolithe)
 import Stripe from 'stripe'
 import { pool, query } from './db'
 

@@ -1,4 +1,4 @@
-// POST /api/cart/items — ajouter un article au panier (réplique du monolithe)
+// POST /api/cart/items - ajouter un article au panier (réplique du monolithe)
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireUser } from '../../utils/auth'
 import { getCart } from '../../services/cart'

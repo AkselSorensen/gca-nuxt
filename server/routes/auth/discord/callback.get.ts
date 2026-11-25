@@ -1,4 +1,4 @@
-// GET /auth/discord/callback — retour OAuth Discord (réplique du monolithe)
+// GET /auth/discord/callback - retour OAuth Discord (réplique du monolithe)
 // + vérification d'appartenance au serveur Discord GSA (auth obligatoire)
 import { defineEventHandler, getQuery, sendRedirect } from 'h3'
 import { query } from '../../../services/db'
@@ -11,7 +11,7 @@ const BASE_URL = process.env.APP_BASE_URL || 'https://gsa-store.fr'
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET
 const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI
-// Serveur 🛒 GSA Store — vérification d'appartenance
+// Serveur 🛒 GSA Store - vérification d'appartenance
 const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID || '1364909003800580096'
 
 export default defineEventHandler(async (event) => {
@@ -165,7 +165,7 @@ export default defineEventHandler(async (event) => {
     console.log('[discord-callback] session créée pour user', userRow.id, '| seller_status:', userRow.seller_status || 'none')
 
     // Redirection intelligente : ne jamais renvoyer vers /login ou /register
-    // (l'utilisateur est connecté — le renvoyer sur la page de login fait croire
+    // (l'utilisateur est connecté - le renvoyer sur la page de login fait croire
     // que la connexion a échoué)
     const safeReturn = (u: string) => {
       const path = (u || '').split('?')[0]

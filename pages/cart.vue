@@ -258,7 +258,7 @@ async function loadPreviews() {
       const thumb = p?.preview?.url || p?.thumbnail || p?.media?.[0]?.thumbnail || p?.media?.[0]?.url || ''
       if (thumb) {
         it.thumbnail = thumb
-        // Ne re-stocker que les URLs http (léger) — JAMAIS les base64 (quota)
+        // Ne re-stocker que les URLs http (léger) - JAMAIS les base64 (quota)
         if (thumb.startsWith('http')) {
           try { localStorage.setItem('gsa-cart', JSON.stringify(items.value)) } catch {}
         }

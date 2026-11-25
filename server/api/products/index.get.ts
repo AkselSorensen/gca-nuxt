@@ -1,4 +1,4 @@
-// GET /api/products — liste avec filtres + tri (réplique du monolithe Express)
+// GET /api/products - liste avec filtres + tri (réplique du monolithe Express)
 // Cache navigateur 60s + CDN 5min : données publiques, pas d'utilisateur.
 import { defineEventHandler, getQuery, createError, setResponseHeader } from 'h3'
 import { query } from '../../services/db'

@@ -1,4 +1,4 @@
-// GET /api/categories — liste des catégories (réplique du monolithe Express)
+// GET /api/categories - liste des catégories (réplique du monolithe Express)
 import { defineEventHandler, createError, setResponseHeader } from 'h3'
 import { query } from '../services/db'
 

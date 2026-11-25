@@ -10,6 +10,6 @@ const { locale } = useLang()
 const md = computed(() => (locale.value === 'en' ? mdEn : mdFr))
 const title = computed(() => (locale.value === 'en' ? 'Legal Notice' : 'Mentions légales'))
 const subtitle = computed(() =>
-  locale.value === 'en' ? 'GSA Store — legal information' : 'GSA Store — informations légales'
+  locale.value === 'en' ? 'GSA Store - legal information' : 'GSA Store - informations légales'
 )
 </script>

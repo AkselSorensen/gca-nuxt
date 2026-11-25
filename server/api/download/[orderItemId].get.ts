@@ -1,4 +1,4 @@
-// GET /api/download/:orderItemId — signed URLs R2 (1h) pour télécharger (réplique du monolithe)
+// GET /api/download/:orderItemId - signed URLs R2 (1h) pour télécharger (réplique du monolithe)
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { requireUser } from '../../utils/auth'
 import { query } from '../../services/db'

@@ -1,4 +1,4 @@
-// POST /api/checkout/confirm-session — confirme une session payée et crée la commande
+// POST /api/checkout/confirm-session - confirme une session payée et crée la commande
 // (réplique fidèle du monolithe Express : transactions, promo, transferts, frais)
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireUser } from '../../utils/auth'
@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
       await maybeCreateSellerTransfers(ord.rows[0].id, session)
       await recordStripeFee(ord.rows[0].id, session)
       // Emails : facture + invitation avis (acheteur) + notification de vente (vendeur).
-      // Idempotent (orders.notified_at) — le webhook Stripe appelle la même fonction.
+      // Idempotent (orders.notified_at) - le webhook Stripe appelle la même fonction.
       await notifyOrderEmails(ord.rows[0].id, user.email || session.customer_details?.email || '')
       return { ok: true, orderId: ord.rows[0].id }
     }
@@ -151,7 +151,7 @@ export default defineEventHandler(async (event) => {
     await maybeCreateSellerTransfers(orderId, session)
     await recordStripeFee(orderId, session)
     // Emails : facture + invitation avis (acheteur) + notification de vente (vendeur).
-    // Idempotent (orders.notified_at) — le webhook Stripe appelle la même fonction.
+    // Idempotent (orders.notified_at) - le webhook Stripe appelle la même fonction.
     await notifyOrderEmails(orderId, user.email || session.customer_details?.email || '')
 
     return { ok: true, orderId, alreadyConfirmed: false }

@@ -1,4 +1,4 @@
-// PATCH /api/admin/settings — mode maintenance (réplique du monolithe)
+// PATCH /api/admin/settings - mode maintenance (réplique du monolithe)
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireAdmin } from '../../utils/auth'
 import { query } from '../../services/db'

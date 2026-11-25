@@ -1,4 +1,4 @@
-// Template email premium GSA Store — responsive (mobile) + dark mode (Gmail/Apple/Outlook)
+// Template email premium GSA Store - responsive (mobile) + dark mode (Gmail/Apple/Outlook)
 // Shell partagé : logo + hero + contenu + CTA + footer. Styles inline + media queries.
 
 const APP_URL = process.env.APP_BASE_URL || 'https://gsa-store.fr'
@@ -84,14 +84,14 @@ export function premiumShell(content: string, opts: { heroTitle?: string; heroSu
       <tr>
         <td class="card-bg" style="padding:22px 32px 28px;text-align:center;border-top:1px solid #eef2f9;background:#ffffff;">
           <img src="${APP_URL}/logo.png" alt="GSA" width="80" style="width:80px;max-width:80px;opacity:.8;display:inline-block;margin-bottom:10px;" />
-          <div class="text-main" style="font-size:12.5px;color:#111827;font-weight:700;">GSA Store — Pas une boutique. Un standard.</div>
+          <div class="text-main" style="font-size:12.5px;color:#111827;font-weight:700;">GSA Store - Pas une boutique. Un standard.</div>
           <div class="text-soft" style="font-size:11.5px;color:#9ca3af;margin-top:6px;line-height:1.8;">
             <a href="${APP_URL}/catalogue" style="color:#2f7df6;text-decoration:none;">Catalogue</a> &nbsp;·&nbsp;
             <a href="${APP_URL}/prestation" style="color:#2f7df6;text-decoration:none;">Prestations</a> &nbsp;·&nbsp;
             <a href="https://discord.gg/KDsEzGRnKs" style="color:#2f7df6;text-decoration:none;">Discord</a> &nbsp;·&nbsp;
             <a href="${APP_URL}/contact" style="color:#2f7df6;text-decoration:none;">Contact</a>
           </div>
-          <div class="text-soft" style="font-size:10.5px;color:#b6bfce;margin-top:10px;">© 2026 GSA Store — SIREN 105982003</div>
+          <div class="text-soft" style="font-size:10.5px;color:#b6bfce;margin-top:10px;">© 2026 GSA Store - SIREN 105982003</div>
         </td>
       </tr>
     </table>
@@ -100,7 +100,7 @@ export function premiumShell(content: string, opts: { heroTitle?: string; heroSu
 </html>`
 }
 
-// Ligne produit (facture / récap) — sans avatar, titre + quantité | prix
+// Ligne produit (facture / récap) - sans avatar, titre + quantité | prix
 export function productRowHtml(it: { title: string; slug?: string; price: number; quantity?: number; oldPrice?: number }): string {
   const lineTotal = Number(it.price) * Number(it.quantity || 1)
   return `

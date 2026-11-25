@@ -38,7 +38,7 @@
               <tr v-for="p in visibleProducts" :key="p.id">
                 <td><img :src="p.thumbnail || p.media?.[0]?.thumbnail || p.media?.[0]?.url || ''" class="thumb" /></td>
                 <td><strong>{{ p.title }}</strong> <span v-if="p.is_hidden" class="badge-hidden">Masqué</span></td>
-                <td><span class="badge-cat">{{ p.category || p.categoryName || '—' }}</span></td>
+                <td><span class="badge-cat">{{ p.category || p.categoryName || '-' }}</span></td>
                 <td class="price-cell">{{ Number(p.price).toFixed(2) }}€</td>
                 <td>
                   <span class="badge-comm" :class="{ 'is-default': p.commission_percent === null || p.commission_percent === undefined }">
@@ -83,12 +83,12 @@
                 <td><strong>{{ u.displayName || u.username }}</strong></td>
                 <td>{{ u.email }}</td>
                 <td><span class="role-badge" :class="u.role">{{ u.role }}</span></td>
-                <td>{{ u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—' }}</td>
+                <td>{{ u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-' }}</td>
                 <td class="actions">
                   <button v-if="u.role === 'seller'" type="button" class="btn-action danger" title="Révoquer le rôle vendeur" @click="revokeSeller(u)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-9.33-5"/><path d="M6 8a6 6 0 0 0 9.33 5"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
                   </button>
-                  <span v-else class="muted">—</span>
+                  <span v-else class="muted">-</span>
                 </td>
               </tr>
             </tbody>
@@ -193,8 +193,8 @@
             <tr v-for="c in ambCodes" :key="c.id">
               <td><strong>{{ c.code }}</strong></td>
               <td>{{ c.discount_type === 'percent' ? c.discount_value + '%' : c.discount_value + '€' }}</td>
-              <td>{{ c.ambassador_name || '—' }}</td>
-              <td>{{ c.ambassador_contact || '—' }}</td>
+              <td>{{ c.ambassador_name || '-' }}</td>
+              <td>{{ c.ambassador_contact || '-' }}</td>
               <td>{{ c.max_uses ? c.redemption_count + '/' + c.max_uses : c.redemption_count }}</td>
               <td>{{ c.points_balance || 0 }}</td>
             </tr>
@@ -219,9 +219,9 @@
             <tbody>
               <tr v-for="r in sellerRequests" :key="r.id" class="clickable-row" @click="openSellerModal(r)">
                 <td><strong>{{ r.displayName || r.email }}</strong></td>
-                <td>{{ r.shopName || '—' }}</td>
-                <td><span class="desc-preview" :title="r.sellerDescription">{{ r.sellerDescription?.substring(0, 60) || '—' }}{{ r.sellerDescription?.length > 60 ? '…' : '' }}</span></td>
-                <td>{{ r.discordTag || '—' }}</td>
+                <td>{{ r.shopName || '-' }}</td>
+                <td><span class="desc-preview" :title="r.sellerDescription">{{ r.sellerDescription?.substring(0, 60) || '-' }}{{ r.sellerDescription?.length > 60 ? '…' : '' }}</span></td>
+                <td>{{ r.discordTag || '-' }}</td>
                 <td>{{ new Date(r.createdAt).toLocaleDateString('fr-FR') }}</td>
                 <td class="actions" @click.stop>
                   <button class="btn-action" title="Approuver" @click="approveSeller(r.id)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></button>
@@ -280,7 +280,7 @@
               <tr v-for="c in categoryList" :key="c.id">
                 <td><span class="tag-badge">{{ c.name }}</span></td>
                 <td><code style="font-size:.8rem;color:var(--text-muted)">{{ c.slug }}</code></td>
-                <td style="color:var(--text-secondary);font-size:.82rem">{{ c.description || '—' }}</td>
+                <td style="color:var(--text-secondary);font-size:.82rem">{{ c.description || '-' }}</td>
                 <td class="actions">
                   <button class="btn-action" title="Modifier" @click="openCatEdit(c)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                   <button class="btn-action danger" title="Supprimer" @click="deleteCategory(c)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
@@ -304,7 +304,7 @@
               <div class="modal-body">
                 <div class="field"><label>Nom de la catégorie</label><input v-model="catForm.name" type="text" placeholder="ex. HUD, Mapping, Particles…" @keyup.enter="submitCategory" /></div>
                 <div class="field"><label>Description courte</label><input v-model="catForm.description" type="text" placeholder="ex. Interfaces et HUD pour vos serveurs" @keyup.enter="submitCategory" /></div>
-                <div class="field"><label>Lien (optionnel)</label><input v-model="catForm.slug" type="text" placeholder="ex. hud — laissé vide, il est généré automatiquement" @keyup.enter="submitCategory" /></div>
+                <div class="field"><label>Lien (optionnel)</label><input v-model="catForm.slug" type="text" placeholder="ex. hud - laissé vide, il est généré automatiquement" @keyup.enter="submitCategory" /></div>
               </div>
               <div class="modal-actions">
                 <button class="btn-ghost" @click="showCatModal = false">Annuler</button>
@@ -340,7 +340,7 @@
         <template v-else-if="revenue">
           <!-- Infos compte -->
           <div class="rev-account">
-            <span class="rev-account-id">{{ revenue.accountId || '—' }}</span>
+            <span class="rev-account-id">{{ revenue.accountId || '-' }}</span>
             <span v-if="revenue.accountEmail" class="rev-account-email">{{ revenue.accountEmail }}</span>
           </div>
 
@@ -407,7 +407,7 @@
                       <span v-if="s.buyerName" class="buyer-name">{{ s.buyerName }}</span>
                       <span v-if="s.buyerEmail" class="buyer-email">{{ s.buyerEmail }}</span>
                     </div>
-                    <span v-else class="muted">—</span>
+                    <span v-else class="muted">-</span>
                   </td>
                   <td><span class="seller-cell">{{ s.sellerName }}</span></td>
                   <td>{{ s.quantity }}</td>
@@ -445,9 +445,9 @@
                       <span v-if="o.buyerName" class="buyer-name">{{ o.buyerName }}</span>
                       <span v-if="o.buyerEmail" class="buyer-email">{{ o.buyerEmail }}</span>
                     </div>
-                    <span v-else class="muted">—</span>
+                    <span v-else class="muted">-</span>
                   </td>
-                  <td><span v-if="o.sellers" class="seller-cell">{{ o.sellers }}</span><span v-else class="muted">—</span></td>
+                  <td><span v-if="o.sellers" class="seller-cell">{{ o.sellers }}</span><span v-else class="muted">-</span></td>
                   <td class="price-cell">{{ fmtMoney(o.total) }}</td>
                   <td>{{ fmtMoney(o.sellerNet) }}</td>
                   <td class="price-cell">{{ fmtMoney(o.platformFee) }}</td>
@@ -465,11 +465,11 @@
                 <tr v-for="c in filteredCharges" :key="c.id">
                   <td class="mono">{{ c.id }}</td>
                   <td>{{ new Date(c.created).toLocaleDateString('fr-FR') }} {{ new Date(c.created).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
-                  <td>{{ c.email || '—' }}</td>
+                  <td>{{ c.email || '-' }}</td>
                   <td>
                     <span v-if="c.sellerName" class="seller-cell">{{ c.sellerName }}</span>
                     <span v-else-if="c.transferDestination" class="mono muted">{{ c.transferDestination }}</span>
-                    <span v-else class="muted">—</span>
+                    <span v-else class="muted">-</span>
                   </td>
                   <td class="price-cell">{{ fmtMoney(c.amount) }} {{ c.currency?.toUpperCase() }}</td>
                   <td><span class="rev-status" :class="c.status">{{ c.status }}</span></td>
@@ -561,8 +561,8 @@
                   <tr v-for="o in finances.orders" :key="o.id">
                     <td class="dim">{{ o.id }}</td>
                     <td>{{ new Date(o.createdAt).toLocaleDateString('fr-FR') }} {{ new Date(o.createdAt).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
-                    <td>{{ o.buyerName || o.buyerEmail || '—' }}</td>
-                    <td>{{ o.sellers || '—' }}</td>
+                    <td>{{ o.buyerName || o.buyerEmail || '-' }}</td>
+                    <td>{{ o.sellers || '-' }}</td>
                     <td class="r strong">{{ fmtMoney(o.total) }}</td>
                     <td class="r blue">{{ fmtMoney(o.platformFee) }}</td>
                   </tr>
@@ -594,13 +594,13 @@
                     <span v-if="inv.buyerEmail" class="buyer-email">{{ inv.buyerEmail }}</span>
                   </div>
                 </td>
-                <td>{{ inv.sellers || '—' }}</td>
+                <td>{{ inv.sellers || '-' }}</td>
                 <td class="price-cell">{{ fmtMoney(inv.total) }}</td>
                 <td>
                   <a v-if="inv.orderItemId" class="btn-action" :href="api + '/api/invoice/' + inv.orderItemId" title="Télécharger la facture (PDF)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   </a>
-                  <span v-else class="muted">—</span>
+                  <span v-else class="muted">-</span>
                 </td>
               </tr>
             </tbody>
@@ -674,18 +674,18 @@
           <div class="seller-detail-grid">
             <div class="seller-detail-item">
               <span class="dd-label">Boutique</span>
-              <strong>{{ sellerModal.shopName || '—' }}</strong>
+              <strong>{{ sellerModal.shopName || '-' }}</strong>
             </div>
             <div class="seller-detail-item">
               <span class="dd-label">Discord</span>
               <strong class="dd-discord">
                 <IconDiscord :size="14" />
-                {{ sellerModal.discordTag || '—' }}
+                {{ sellerModal.discordTag || '-' }}
               </strong>
             </div>
             <div class="seller-detail-item">
               <span class="dd-label">Demande envoyée le</span>
-              <strong>{{ sellerModal.createdAt ? new Date(sellerModal.createdAt).toLocaleDateString('fr-FR') : '—' }}</strong>
+              <strong>{{ sellerModal.createdAt ? new Date(sellerModal.createdAt).toLocaleDateString('fr-FR') : '-' }}</strong>
             </div>
             <div class="seller-detail-item">
               <span class="dd-label">Statut</span>
@@ -757,7 +757,7 @@
             <div class="field"><label>Catégories * <small>(plusieurs possibles)</small></label>
               <div class="cat-multi">
                 <button v-for="c in categories" :key="c.slug" type="button" class="cat-chip" :class="{ on: productForm.categories.includes(c.slug) }" @click="toggleCat(c.slug)">{{ c.name }}</button>
-                <span v-if="!categories.length" class="tag-empty">Aucune catégorie — créez-en dans l'onglet Catégories</span>
+                <span v-if="!categories.length" class="tag-empty">Aucune catégorie - créez-en dans l'onglet Catégories</span>
               </div>
             </div>
             <div class="field"><label>Vendeur *</label><select v-model="productForm.sellerSlug"><option value="" disabled>Sélectionner</option><option v-for="s in sellers" :key="s.slug" :value="s.slug">{{ s.username }}</option></select></div>
@@ -805,7 +805,7 @@
               <div v-if="!uploadFile && !existingFile" class="file-zone" @click="fileInput?.click()" @dragover.prevent @drop.prevent="handleFileUpload">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
                 <span>Glissez votre fichier zip ici</span>
-                <small>Max 2 Go — un seul fichier par produit</small>
+                <small>Max 2 Go - un seul fichier par produit</small>
               </div>
               <div v-else-if="uploadFile" class="file-preview">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
@@ -844,7 +844,7 @@
                 </div>
                 <button type="button" class="media-add" @click="addMediaImage" title="Ajouter une image"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
               </div>
-              <small v-if="!editingId" class="field-hint">Ajoutez autant d'images que vous voulez — elles sont envoyées sur R2 juste après la création du produit.</small>
+              <small v-if="!editingId" class="field-hint">Ajoutez autant d'images que vous voulez - elles sont envoyées sur R2 juste après la création du produit.</small>
             </div>
           </div>
         </div>
@@ -928,7 +928,7 @@ const maintenanceLoading = ref(false)
 const maintenanceSaving = ref(false)
 const maintenanceSaved = ref(false)
 
-// Garde admin : côté client uniquement — on attend la vérification d'auth
+// Garde admin : côté client uniquement - on attend la vérification d'auth
 // (sinon user est null au setup → redirect home à CHAQUE chargement, même admin).
 // Au SSR on ne redirige pas : le shell rend, le client valide après hydration
 // (les données sont de toute façon protégées par l'API requireAdmin).
@@ -1339,7 +1339,7 @@ const uploadFile = ref<File | null>(null)
 const uploadFileName = ref('')
 const uploadFileSize = ref(0)
 const fileInput = ref<HTMLInputElement | null>(null)
-// Fichier ACTUELLEMENT lié au produit (édition) — un seul fichier par produit
+// Fichier ACTUELLEMENT lié au produit (édition) - un seul fichier par produit
 const existingFile = ref<any | null>(null)
 function handleFileUpload(e: any) {
   const file = e.target?.files?.[0] || e.dataTransfer?.files?.[0]
@@ -1429,7 +1429,7 @@ async function saveProduct() {
 
 async function loadFormData() {
   try {
-    // Catégories : API admin directe (PAS bootstrap — il est caché SWR et reste périmé)
+    // Catégories : API admin directe (PAS bootstrap - il est caché SWR et reste périmé)
     const catRes = await $fetch(api + '/api/admin/categories', { credentials: 'include' }).catch(() => ({ categories: [] }))
     categories.value = catRes.categories || []
     const b = await $fetch(api + '/api/bootstrap', { credentials: 'include' })
@@ -1452,7 +1452,7 @@ async function deleteProduct(id: number) {
   try {
     const res: any = await $fetch(api + '/api/admin/products/' + id, { credentials: 'include', method: 'DELETE' })
     loadProducts()
-    toastRef.value?.show('success', res?.soft ? 'Produit masqué (des ventes existent — historique conservé)' : 'Produit supprimé')
+    toastRef.value?.show('success', res?.soft ? 'Produit masqué (des ventes existent - historique conservé)' : 'Produit supprimé')
   } catch (e: any) {
     toastRef.value?.show('error', e?.data?.statusMessage || e?.data?.message || 'Impossible de supprimer le produit')
   }
@@ -1492,7 +1492,7 @@ async function revokeSeller(u: any) {
   try {
     const res = await $fetch(api + `/api/admin/users/${u.id}/revoke-seller`, { method: 'POST', credentials: 'include' })
     u.role = 'customer'
-    toastRef.value?.show('success', `Rôle vendeur révoqué — ${res.hiddenProducts || 0} produit(s) masqué(s)`)
+    toastRef.value?.show('success', `Rôle vendeur révoqué - ${res.hiddenProducts || 0} produit(s) masqué(s)`)
     loadUsers()
     loadProducts()
   } catch (e: any) {

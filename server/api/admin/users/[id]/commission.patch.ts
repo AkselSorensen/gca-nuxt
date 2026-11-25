@@ -1,4 +1,4 @@
-// PATCH /api/admin/users/:id/commission — commission vendeur (réplique du monolithe)
+// PATCH /api/admin/users/:id/commission - commission vendeur (réplique du monolithe)
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../../utils/auth'
 import { query } from '../../../../services/db'

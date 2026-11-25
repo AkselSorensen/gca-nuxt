@@ -1,5 +1,5 @@
-// DELETE /api/admin/products/:id/files/:fileId — suppression fichier + R2
-// NB : le dossier DOIT s'appeler [id] comme les autres routes produit — un second nom
+// DELETE /api/admin/products/:id/files/:fileId - suppression fichier + R2
+// NB : le dossier DOIT s'appeler [id] comme les autres routes produit - un second nom
 // de paramètre ([productId]) au même niveau casse le routage Nitro : certaines routes
 // voisines (upload-image) tombaient dans le fallback Express (204 vide).
 import { defineEventHandler, getRouterParam, createError } from 'h3'

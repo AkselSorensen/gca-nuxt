@@ -1,4 +1,4 @@
-// POST /api/admin/tags — créer un tag
+// POST /api/admin/tags - créer un tag
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

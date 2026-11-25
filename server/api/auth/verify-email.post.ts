@@ -1,4 +1,4 @@
-// POST /api/auth/verify-email — valider le code reçu par email
+// POST /api/auth/verify-email - valider le code reçu par email
 import { defineEventHandler, readBody, createError } from 'h3'
 import { query } from '../../services/db'
 import { sanitizeUser } from '../../services/users'

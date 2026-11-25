@@ -25,7 +25,7 @@
               </a>
             </div>
             <div v-else-if="showVideo && videoThumbUrl" class="video-preview" @click="showVideo = true; videoPlaying = true">
-              <img :src="videoThumbUrl" :alt="'Vidéo — ' + product.title" />
+              <img :src="videoThumbUrl" :alt="'Vidéo - ' + product.title" />
               <div class="video-play">
                 <!-- Bouton lecture style YouTube : rectangle arrondi rouge + triangle blanc -->
                 <span class="yt-play-btn">
@@ -104,7 +104,7 @@
           </div>
           <div v-else-if="isOwnProduct" class="own-product-note">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
-            C'est votre produit — vous ne pouvez pas l'acheter.
+            C'est votre produit - vous ne pouvez pas l'acheter.
           </div>
           <div v-else class="info-actions">
             <button class="btn-cart-add" @click="addToCart">
@@ -164,7 +164,7 @@
           <div v-if="activeTab === 'installation'" class="tab-panel">
             <div class="desc-text" v-html="installationHtml || '<p>Aucune instruction d\'installation fournie.</p>'"></div>
           </div>
-          <!-- Vidéo supprimée de l'onglet — le carrousel intègre la vidéo -->
+          <!-- Vidéo supprimée de l'onglet - le carrousel intègre la vidéo -->
           <!-- Reviews -->
           <div v-if="activeTab === 'reviews'" class="tab-panel reviews-panel">
             <ProductReviews :product="product" :owned="owned" @updated="reloadProduct" />
@@ -204,7 +204,7 @@ const truncateText = (s: string, max: number) => {
   return clean.length > max ? clean.slice(0, max - 1).trimEnd() + '…' : clean
 }
 
-const seoTitle = computed(() => (product.value?.title ? product.value.title + ' — GSA Store' : 'GSA Store'))
+const seoTitle = computed(() => (product.value?.title ? product.value.title + ' - GSA Store' : 'GSA Store'))
 const seoDescription = computed(() => truncateText(product.value?.shortDescription || product.value?.description || '', 150))
 const seoImage = computed(() => {
   const url = product.value?.media?.[0]?.url || ''
@@ -349,7 +349,7 @@ const videoEmbedUrl = computed(() => {
   const v = product.value?.videoUrl
   if (!v) return ''
   const m = String(v).match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/)
-  // youtube-nocookie.com : mode confidentialité renforcée — se charge aussi avec les
+  // youtube-nocookie.com : mode confidentialité renforcée - se charge aussi avec les
   // bloqueurs de traqueurs (uBlock/Brave) qui font "charger à l'infini" sur youtube.com/embed
   return m ? `https://www.youtube-nocookie.com/embed/${m[1]}` : ''
 })

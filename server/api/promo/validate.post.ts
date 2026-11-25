@@ -1,4 +1,4 @@
-// POST /api/promo/validate — valider un code promo (réplique du monolithe)
+// POST /api/promo/validate - valider un code promo (réplique du monolithe)
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireUser } from '../../utils/auth'
 import { getCart, syncClientCart } from '../../services/cart'

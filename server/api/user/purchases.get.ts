@@ -1,4 +1,4 @@
-// GET /api/user/purchases — produits achetés (réplique du monolithe)
+// GET /api/user/purchases - produits achetés (réplique du monolithe)
 import { defineEventHandler, createError } from 'h3'
 import { requireUser } from '../../utils/auth'
 import { query } from '../../services/db'

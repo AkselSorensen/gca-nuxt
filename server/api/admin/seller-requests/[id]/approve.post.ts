@@ -1,4 +1,4 @@
-// POST /api/admin/seller-requests/:id/approve — approuver un vendeur (réplique du monolithe)
+// POST /api/admin/seller-requests/:id/approve - approuver un vendeur (réplique du monolithe)
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../../utils/auth'
 import { query } from '../../../../services/db'
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     const approved = result.rows[0]
     await sendEmail(
       approved.email,
-      'Votre compte vendeur est activé — GSA Store',
+      'Votre compte vendeur est activé - GSA Store',
       `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px">
         <h2 style="margin:0 0 12px;color:#11171f">Félicitations ${approved.display_name || ''} ! 🎉</h2>
         <p style="color:#5a6478;font-size:14px;line-height:1.6">Votre demande de compte vendeur a été <strong>approuvée</strong>. Vous pouvez dès maintenant publier vos créations et suivre vos revenus depuis votre espace vendeur.</p>

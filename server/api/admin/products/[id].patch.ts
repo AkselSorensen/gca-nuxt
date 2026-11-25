@@ -1,4 +1,4 @@
-// PATCH /api/admin/products/:id — modification (réplique du monolithe)
+// PATCH /api/admin/products/:id - modification (réplique du monolithe)
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     const values: any[] = []
     let idx = 1
     if (title !== undefined) { updates.push(`title = $${idx++}`); values.push(String(title).trim()) }
-    // Commission plateforme par produit — modifiable à tout moment ('' ou null → taux plateforme par défaut)
+    // Commission plateforme par produit - modifiable à tout moment ('' ou null → taux plateforme par défaut)
     if (commissionPercent !== undefined) {
       const raw = commissionPercent === '' || commissionPercent === null ? null : Number(commissionPercent)
       const value = raw === null || Number.isNaN(raw) ? null : Math.min(100, Math.max(0, raw))

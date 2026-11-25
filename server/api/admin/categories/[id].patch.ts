@@ -1,4 +1,4 @@
-// PATCH /api/admin/categories/:id — renommage / description
+// PATCH /api/admin/categories/:id - renommage / description
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'

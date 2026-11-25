@@ -1,4 +1,4 @@
-// GET /api/admin/products/:id/files — liste des fichiers (réplique du monolithe)
+// GET /api/admin/products/:id/files - liste des fichiers (réplique du monolithe)
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { requireAdmin } from '../../../../utils/auth'
 import { query } from '../../../../services/db'

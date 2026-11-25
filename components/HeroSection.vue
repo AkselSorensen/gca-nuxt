@@ -29,7 +29,7 @@
           <span class="stat-lbl">{{ t('hero.sales') }}</span>
         </div>
         <div class="stat">
-          <span class="stat-val">{{ Number(avgRating) > 0 ? avgRating : '—' }}</span>
+          <span class="stat-val">{{ Number(avgRating) > 0 ? avgRating : '-' }}</span>
           <span class="stat-lbl">{{ totalReviews ? totalReviews + (totalReviews > 1 ? ' avis' : ' avis') : t('hero.rating') }}</span>
         </div>
         <div class="stat">

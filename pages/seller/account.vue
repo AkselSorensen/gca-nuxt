@@ -194,7 +194,7 @@
                   <tr v-for="(s, i) in revenue.sales" :key="i">
                     <td>{{ fmtDate(s.date) }}</td>
                     <td class="rev-prod">{{ s.productTitle }}</td>
-                    <td class="rev-client">{{ s.client || '—' }}</td>
+                    <td class="rev-client">{{ s.client || '-' }}</td>
                     <td>{{ fmtMoney(s.price * s.quantity) }}</td>
                     <td class="muted">-{{ fmtMoney(s.platformFee) }}<template v-if="s.platformFeePercent"> ({{ s.platformFeePercent }}%)</template></td>
                     <td class="rev-net">+{{ fmtMoney(s.sellerNet) }}</td>
@@ -258,7 +258,7 @@
                 <td class="mono">{{ inv.invoiceId }}</td>
                 <td>{{ fmtDate(inv.date) }}</td>
                 <td class="rev-prod">{{ inv.productTitle }}</td>
-                <td class="rev-client">{{ inv.buyerName || inv.buyerEmail || '—' }}</td>
+                <td class="rev-client">{{ inv.buyerName || inv.buyerEmail || '-' }}</td>
                 <td>{{ fmtMoney(inv.itemPrice * inv.itemQuantity) }}</td>
                 <td class="rev-net">+{{ fmtMoney(inv.sellerNet) }}</td>
                 <td>
@@ -319,7 +319,7 @@ const stats = reactive({
   products: 0,
   sales: 0,
   revenue: 0,
-  rating: '—'
+  rating: '-'
 })
 
 function saveProfile() {
@@ -458,7 +458,7 @@ async function loadSellerStats() {
     const rc = res.stats?.reviewCount ?? 0
     stats.rating = rc > 0
       ? Number(res.stats?.rating ?? 0).toFixed(1).replace('.', ',')
-      : '—'
+      : '-'
   } catch { /* stats non bloquantes */ }
 }
 
@@ -480,13 +480,13 @@ function fmtMoney(v: number | null | undefined) {
 }
 
 function fmtDate(ts: number | string | null | undefined) {
-  if (!ts) return '—'
+  if (!ts) return '-'
   const d = typeof ts === 'number' ? new Date(ts) : new Date(ts)
   return d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 }
 
 onMounted(async () => {
-  // Stripe d'abord — indépendant de GSAP (si GSAP échoue, le statut part quand même)
+  // Stripe d'abord - indépendant de GSAP (si GSAP échoue, le statut part quand même)
   checkStripeConnect()
   loadSellerStats()
   loadRevenue()

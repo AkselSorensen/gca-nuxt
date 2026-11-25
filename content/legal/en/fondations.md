@@ -1,4 +1,4 @@
-# GSA — Legal Foundations
+# GSA - Legal Foundations
 
 General definitions and fundamental principles · Version: 1.0.0 · Entry into force: 24/08/2026
 
@@ -15,9 +15,9 @@ GSA operates a hybrid activity including:
 
 These legal foundations constitute the common framework applicable to the various contractual documents of GSA.
 
-## Article 1 — Definitions
+## Article 1 - Definitions
 
-### 1.1 — GSA
+### 1.1 - GSA
 
 The term "GSA" designates the digital platform operated under this brand as well as all associated services. Depending on the context, GSA may designate:
 - the operating company;
@@ -25,7 +25,7 @@ The term "GSA" designates the digital platform operated under this brand as well
 - the technical tools;
 - the services offered to users.
 
-### 1.2 — User
+### 1.2 - User
 
 Designates any natural or legal person using all or part of the services offered by GSA. The user may notably have the status of:
 - Buyer;
@@ -34,13 +34,13 @@ Designates any natural or legal person using all or part of the services offered
 - Service provider;
 - Visitor.
 
-### 1.3 — Buyer
+### 1.3 - Buyer
 
 Designates any person acquiring a digital product or a service offered via GSA. The Buyer only acquires the rights expressly provided by the applicable license.
 
 In accordance with the principles applicable to intellectual property, notably the provisions of the French Intellectual Property Code, the purchase of digital content does not entail the automatic transfer of the copyright attached to that content.
 
-### 1.4 — Seller
+### 1.4 - Seller
 
 Designates any natural or legal person offering a digital product on the GSA platform. The Seller remains responsible for:
 - the ownership of the rights attached to the content offered;
@@ -48,7 +48,7 @@ Designates any natural or legal person offering a digital product on the GSA pla
 - the accuracy of the information provided;
 - compliance with applicable third-party licenses.
 
-### 1.5 — Digital product
+### 1.5 - Digital product
 
 Designates any intangible content offered for sale on GSA. Notably concerned:
 - 3D models, textures, materials;
@@ -57,7 +57,7 @@ Designates any intangible content offered for sale on GSA. Notably concerned:
 - resources intended for game engines;
 - digital files necessary for the creation of video game projects.
 
-### 1.6 — GSA License
+### 1.6 - GSA License
 
 Designates the usage authorization granted to the Buyer upon the acquisition of a digital product. Unless otherwise stated:
 - the license is non-exclusive;
@@ -67,7 +67,7 @@ Designates the usage authorization granted to the Buyer upon the acquisition of 
 
 The detailed conditions are defined in the applicable GSA License.
 
-### 1.7 — GSA Validation
+### 1.7 - GSA Validation
 
 GSA Validation designates the internal human review process performed before the publication of a product. It may notably include:
 - a verification of the files provided;
@@ -81,13 +81,13 @@ GSA Validation constitutes a quality control service. However, it does not const
 - a guarantee of compatibility with all environments;
 - a substitute for the seller's legal obligations.
 
-### 1.8 — GSA Presentation
+### 1.8 - GSA Presentation
 
 Designates all the promotional elements created, modified or organized by GSA to present a product. Notably concerned: thumbnails, screenshots, videos, commercial descriptions, promotional texts, graphic elements.
 
 These elements may be protected by copyright in accordance with Articles L111-1 et seq. of the French Intellectual Property Code.
 
-### 1.9 — GSA Professional Services
+### 1.9 - GSA Professional Services
 
 Designates the services performed directly by GSA. These services may notably include:
 - Game Design;
@@ -96,7 +96,7 @@ Designates the services performed directly by GSA. These services may notably in
 - 3D modeling;
 - customized services.
 
-### 1.10 — Commission
+### 1.10 - Commission
 
 Designates the remuneration received by GSA for the services provided in connection with the marketing of a product. This commission notably remunerates:
 - platform access, the visibility offered;
@@ -106,7 +106,7 @@ Designates the remuneration received by GSA for the services provided in connect
 
 The applicable amount is defined contractually with each seller.
 
-## Article 2 — Nature of the role of GSA
+## Article 2 - Nature of the role of GSA
 
 GSA acts as a platform operator enabling the connection between sellers and buyers.
 
@@ -117,7 +117,7 @@ Unless otherwise stated, GSA is not:
 
 The obligations relating to the sold content remain the responsibility of the seller concerned.
 
-## Article 3 — Protection of intellectual property
+## Article 3 - Protection of intellectual property
 
 GSA recognizes and protects the intellectual property rights attached to the creations offered on its platform.
 
@@ -130,7 +130,7 @@ Notably prohibited unless authorized:
 - public availability;
 - unauthorized commercial exploitation.
 
-## Article 4 — Contractual hierarchy
+## Article 4 - Contractual hierarchy
 
 The contractual documents applicable to GSA notably include:
 1. Legal notice;

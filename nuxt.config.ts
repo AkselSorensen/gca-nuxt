@@ -11,9 +11,9 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'fr' },
-      title: 'GSA Store — Des assets premium, prêts à déployer.',
+      title: 'GSA Store - Des assets premium, prêts à déployer.',
       meta: [
-        { name: 'description', content: 'GSA Store — Des assets premium, prêts à déployer.' },
+        { name: 'description', content: 'GSA Store - Des assets premium, prêts à déployer.' },
         { property: 'og:locale', content: 'fr_FR' },
         { property: 'og:site_name', content: 'GSA Store' },
         { property: 'og:image', content: 'https://gsa-store.fr/og-banner.png' },
@@ -36,10 +36,10 @@ export default defineNuxtConfig({
     }
   },
   // Cache CDN (ISR) : les pages publiques sont servies depuis le CDN et
-  // régénérées en arrière-plan — plus de cold start Vercel pour les visiteurs.
+  // régénérées en arrière-plan - plus de cold start Vercel pour les visiteurs.
   routeRules: {
     // Pas de SWR sur les pages dynamiques : le HTML est une coquille (données fetchées
-    // côté client via /api/*) et le SWR gardait l'ancienne version 60 s — l'utilisateur
+    // côté client via /api/*) et le SWR gardait l'ancienne version 60 s - l'utilisateur
     // devait refresh pour voir un prix changé côté admin.
     '/': { swr: false },
     '/catalogue': { swr: false },

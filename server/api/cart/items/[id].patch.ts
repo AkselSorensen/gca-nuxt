@@ -1,4 +1,4 @@
-// PATCH /api/cart/items/:id — modifier la quantité (réplique du monolithe)
+// PATCH /api/cart/items/:id - modifier la quantité (réplique du monolithe)
 import { defineEventHandler, readBody, getRouterParam, createError } from 'h3'
 import { requireUser } from '../../../utils/auth'
 import { getCart } from '../../../services/cart'

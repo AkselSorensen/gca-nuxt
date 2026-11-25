@@ -1,4 +1,4 @@
-// POST /api/admin/users/:id/revoke-seller — révoque le rôle vendeur d'un compte.
+// POST /api/admin/users/:id/revoke-seller - révoque le rôle vendeur d'un compte.
 // Le compte redevient client (role='customer', seller_status='revoked') et ses produits
 // sont masqués du catalogue : un vendeur révoqué ne doit plus vendre.
 // Les commandes passées et les taux de commission historiques ne sont PAS touchés.
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
       [userId]
     )
     await purgeRouteCache()
-    console.log(`[admin] rôle vendeur révoqué pour ${userId} — ${hidden.rowCount} produit(s) masqué(s)`)
+    console.log(`[admin] rôle vendeur révoqué pour ${userId} - ${hidden.rowCount} produit(s) masqué(s)`)
     return { ok: true, user: updated.rows[0], hiddenProducts: hidden.rowCount }
   } catch (error: any) {
     if (error?.statusCode) throw error

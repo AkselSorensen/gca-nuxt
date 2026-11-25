@@ -1,6 +1,6 @@
 // Service : sessions compatibles express-session (connect-pg-simple).
 // Même table (user_sessions), même cookie signé (connect.sid = "s:<sid>.<sig>")
-// que le monolithe Express — les sessions créées ici sont lisibles par les
+// que le monolithe Express - les sessions créées ici sont lisibles par les
 // routes monolithe et inversement.
 import { randomBytes } from 'node:crypto'
 import { getCookie, setCookie, deleteCookie } from 'h3'
@@ -20,7 +20,7 @@ const COOKIE_OPTS = {
 }
 
 export function createSid(): string {
-  // 24 chars, base64url — même format que le genid par défaut d'express-session
+  // 24 chars, base64url - même format que le genid par défaut d'express-session
   return randomBytes(18).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 

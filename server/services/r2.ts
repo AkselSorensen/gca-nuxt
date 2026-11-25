@@ -1,4 +1,4 @@
-// Service : R2 (Cloudflare) — client + presigner (réplique du monolithe)
+// Service : R2 (Cloudflare) - client + presigner (réplique du monolithe)
 import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
