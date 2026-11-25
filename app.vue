@@ -3,7 +3,10 @@
     <div class="maintenance-noise"></div>
     <header class="maintenance-topbar">
       <NuxtLink to="/" class="maintenance-brand" aria-label="GSA, accueil"><span class="maintenance-brand-mark">G</span><span>GSA<span class="brand-separator">/</span><small>MARKETPLACE</small></span></NuxtLink>
-      <div class="maintenance-live"><span></span> Intervention en cours</div>
+      <div class="maintenance-actions">
+        <div class="maintenance-live"><span></span> Intervention en cours</div>
+        <NuxtLink to="/login" class="maintenance-admin-btn">Connexion admin</NuxtLink>
+      </div>
     </header>
     <main class="maintenance-main">
       <section class="maintenance-copy">
@@ -55,6 +58,10 @@ onMounted(() => {
 .maintenance-brand small { display:block;margin-top:1px;color:#737b89;font-size:.52rem;font-weight:700;letter-spacing:.19em; }
 .brand-separator { padding:0 3px;color:#67718a;font-weight:400; }
 .maintenance-live { display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#abb2c1;font-size:.7rem;font-weight:600;letter-spacing:.02em; }
+.maintenance-actions { display:flex;align-items:center;gap:10px; }
+.maintenance-admin-btn { padding:9px 15px;border:1px solid rgba(154,174,255,.35);border-radius:999px;background:rgba(109,148,255,.12);color:#c0cdff;font-size:.7rem;font-weight:700;text-decoration:none;transition:background .2s,border-color .2s; }
+.maintenance-admin-btn:hover { background:rgba(109,148,255,.25);border-color:rgba(154,174,255,.6); }
+@media(max-width:650px) { .maintenance-actions { gap:6px; }.maintenance-admin-btn { padding:8px 10px;font-size:.62rem; } }
 .maintenance-live>span,.footer-center i { width:7px;height:7px;border-radius:50%;background:#9c83ff;box-shadow:0 0 12px rgba(156,131,255,.75);animation:maintenanceBlink 2s ease-in-out infinite; }
 .maintenance-main { flex:1;min-height:560px;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:4%;max-width:1440px;width:100%;margin:auto; }
 .maintenance-copy { position:relative;z-index:2;padding:70px 0;animation:maintenanceRise .7s ease both; }
