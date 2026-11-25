@@ -2,12 +2,14 @@
 import { defineEventHandler, createError } from 'h3'
 import { requireAdmin } from '../../utils/auth'
 import { query } from '../../services/db'
+import { ensureBanColumns } from '../../services/bans'
 
 export default defineEventHandler(async (event) => {
   try {
     await requireAdmin(event)
+    await ensureBanColumns()
     const result = await query(
-      'SELECT id, email, display_name, role, avatar_url, discord_id, steam_id, commission_percent, created_at FROM users ORDER BY created_at DESC'
+      'SELECT id, email, display_name, role, avatar_url, discord_id, steam_id, commission_percent, created_at, is_banned, banned_at, ban_reason FROM users ORDER BY created_at DESC'
     )
     return result.rows.map((r: any) => ({
       id: r.id,
@@ -19,6 +21,9 @@ export default defineEventHandler(async (event) => {
       steamId: r.steam_id,
       commissionPercent: Number(r.commission_percent),
       createdAt: r.created_at,
+      isBanned: Boolean(r.is_banned),
+      bannedAt: r.banned_at,
+      banReason: r.ban_reason,
     }))
   } catch (error: any) {
     if (error?.statusCode) throw error

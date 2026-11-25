@@ -14,7 +14,8 @@ const adminOnly = route.query.admin === '1'
 const tab = ref(adminOnly ? 'admin' : 'user')
 const email = ref('')
 const password = ref('')
-const error = ref('')
+const error = ref(route.query.error === 'banned' ? 'Votre compte a été suspendu. Contactez le support.' : '')
+const adminSession = computed(() => adminOnly && user.value?.role === 'admin')
 const submitting = ref(false)
 const pageRef = ref<HTMLElement | null>(null)
 
@@ -22,12 +23,9 @@ const pageRef = ref<HTMLElement | null>(null)
 if (process.client) {
   onMounted(async () => {
     await checkAuth()
-    // Admin déjà connecté → direct au panneau (sinon on retombait sur l'accueil = écran de maintenance).
-    // Mode ?admin=1 avec un compte non-admin : on reste sur le formulaire pour se reconnecter en admin.
-    if (user.value?.id) {
-      if (user.value.role === 'admin') navigateTo('/admin')
-      else if (!adminOnly) navigateTo('/')
-    }
+    // Via le bouton admin (?admin=1) : aucune redirection automatique, il faut cliquer ou se connecter.
+    // Sur la page de connexion normale, un utilisateur déjà connecté retourne à l'accueil.
+    if (user.value?.id && !adminOnly) navigateTo('/')
   })
 }
 
@@ -131,6 +129,10 @@ onMounted(async () => {
 
       <!-- Admin Login -->
       <form v-if="tab === 'admin'" @submit.prevent="handleLogin" class="auth-form">
+        <div v-if="adminSession" class="admin-notice anim-left">
+          <span>{{ 'Session administrateur ouverte : ' + (user?.displayName || user?.email || '') }}</span>
+          <button type="button" class="btn-submit btn-admin" style="margin-top:10px" @click="navigateTo('/admin')">Ouvrir l'administration</button>
+        </div>
         <div class="admin-notice anim-left">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <span>{{ t('login.admin_sub') }}</span>

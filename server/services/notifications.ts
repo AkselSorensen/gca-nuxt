@@ -1,6 +1,7 @@
 // Notifications email liées aux commandes : facture acheteur, invitation avis,
 // notification vendeur ("vous avez vendu"). Silencieux si le transport échoue.
 import { query } from './db'
+import { snapshotOrder } from './invoices'
 import { sendEmail } from './email'
 import { premiumShell, productRowHtml, buttonRowHtml, currency } from './email-templates'
 
@@ -73,6 +74,8 @@ export function soldNotificationHtml(productTitle: string, quantity: number, pri
 // Envoie les notifications d'une commande (facture + avis au client, vente aux vendeurs).
 // Ne lève jamais : les erreurs d'email ne doivent pas casser le webhook.
 export async function notifyOrderEmails(orderId: number, buyerEmail: string): Promise<void> {
+  // Archive la vente pour les factures admin (client / vendeur / plateforme), même si les emails sont déjà partis
+  await snapshotOrder(orderId)
   try {
     // Verrou d'idempotence : la 1re requête qui "réclame" la commande envoie les emails.
     // Le webhook Stripe ET /api/checkout/confirm-session appellent cette fonction -

@@ -158,6 +158,9 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    if (userRow.is_banned) {
+      return sendRedirect(event, `${BASE_URL}/login?error=banned`)
+    }
     if (userRow.role !== 'admin' && await isMaintenanceOn()) {
       return sendRedirect(event, `${BASE_URL}/`)
     }

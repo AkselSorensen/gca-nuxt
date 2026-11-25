@@ -19,6 +19,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Invalid credentials' })
   }
 
+  if (result.rows[0].is_banned) {
+    throw createError({ statusCode: 403, statusMessage: 'Compte suspendu', data: { message: 'Votre compte a été suspendu. Contactez le support.' } })
+  }
   await assertCanSignIn(result.rows[0].role)
 
   const user = sanitizeUser(result.rows[0])

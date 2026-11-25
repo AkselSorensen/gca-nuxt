@@ -18,6 +18,8 @@ export default defineEventHandler(async (event) => {
       orders: [],
       sales: [],
       sellersList: [],
+      payouts: [],
+      monthStats: { month: '', gross: 0, sellerNet: 0, platformFee: 0, count: 0 },
     }
 
     if (stripe) {
@@ -36,6 +38,20 @@ export default defineEventHandler(async (event) => {
         available: (balance.available || []).map((b) => ({ currency: b.currency, amount: b.amount / 100 })),
         pending: (balance.pending || []).map((b) => ({ currency: b.currency, amount: b.amount / 100 })),
       }
+
+      // Virements de la plateforme vers son compte bancaire (distincts des versements aux vendeurs)
+      try {
+        const payouts = await stripe.payouts.list({ limit: 50 })
+        out.payouts = (payouts.data || []).map((p: any) => ({
+          id: p.id,
+          amount: p.amount / 100,
+          currency: p.currency,
+          status: p.status,
+          created: p.created * 1000,
+          arrival: p.arrival_date ? p.arrival_date * 1000 : null,
+          reference: p.statement_descriptor || p.description || null,
+        }))
+      } catch { /* non bloquant */ }
 
       out.charges = (charges.data || []).map((c: any) => ({
         id: c.id,
@@ -223,6 +239,36 @@ export default defineEventHandler(async (event) => {
         name: r.display_name,
       }))
     } catch { out.sellersList = [] }
+
+    // Indicateurs du mois en cours : uniquement les commandes "completed"
+    // (les remboursements, annulations et paiements échoués ne passent jamais par ce statut)
+    try {
+      const m = await query(
+        `
+          SELECT
+            COALESCE(SUM(oi.price * oi.quantity), 0) AS gross,
+            COALESCE(SUM(oi.seller_net_amount), 0) AS seller_net,
+            COALESCE(SUM(oi.platform_fee_amount), 0) AS platform_fee,
+            COUNT(oi.id)::int AS count,
+            to_char(date_trunc('month', now()), 'YYYY-MM') AS month
+          FROM order_items oi
+          JOIN orders o ON o.id = oi.order_id
+          WHERE o.status = 'completed'
+            AND o.created_at >= date_trunc('month', now())
+            AND o.created_at < date_trunc('month', now()) + interval '1 month'
+        `
+      )
+      const row = m.rows[0]
+      out.monthStats = {
+        month: row.month,
+        gross: Number(row.gross),
+        sellerNet: Number(row.seller_net),
+        platformFee: Number(row.platform_fee),
+        count: Number(row.count),
+      }
+    } catch (e: any) {
+      console.error('[revenue] indicateurs du mois:', e?.message || e)
+    }
 
     return out
   } catch (error: any) {

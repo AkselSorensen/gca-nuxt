@@ -79,13 +79,13 @@
           <table v-if="filteredUsers.length" class="admin-table">
             <thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Date</th><th>Actions</th></tr></thead>
             <tbody>
-              <tr v-for="u in filteredUsers" :key="u.id">
+              <tr v-for="u in filteredUsers" :key="u.id" class="clickable-row" @click="openUser(u)">
                 <td>{{ u.id }}</td>
                 <td><strong>{{ u.displayName || u.username }}</strong></td>
                 <td>{{ u.email }}</td>
-                <td><span class="role-badge" :class="u.role">{{ u.role }}</span></td>
+                <td><span class="role-badge" :class="u.role">{{ u.role }}</span><span v-if="u.isBanned" class="role-badge banned">Banni</span></td>
                 <td>{{ u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-' }}</td>
-                <td class="actions">
+                <td class="actions" @click.stop>
                   <button v-if="u.role === 'seller'" type="button" class="btn-action danger" title="Révoquer le rôle vendeur" @click="revokeSeller(u)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-9.33-5"/><path d="M6 8a6 6 0 0 0 9.33 5"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
                   </button>
@@ -143,36 +143,6 @@
           <span v-if="savingFeatured" class="spinner"></span>
           {{ savingFeatured ? 'Enregistrement…' : 'Enregistrer la mise en avant' }}
         </button>
-      </div>
-
-      <!-- ==================== PAGES / CONFIG ==================== -->
-      <div v-if="activeTab === 'pages'" class="tab-content">
-        <div class="tab-header"><h2>Configuration des pages</h2></div>
-        <div class="page-editors">
-          <div v-for="page in editablePages" :key="page.key" class="editor-card">
-            <div class="editor-header">
-              <h3>{{ page.label }}</h3>
-              <div class="editor-actions">
-                <button class="btn-ghost btn-sm" @click="page.showPreview = !page.showPreview">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  {{ page.showPreview ? 'Masquer' : 'Aperçu' }}
-                </button>
-                <button class="btn-primary btn-sm" :disabled="page.saving" @click="savePage(page)">
-                  <span v-if="page.saving" class="spinner" style="width:14px;height:14px;border-width:2px;"></span>
-                  <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                  {{ page.saving ? 'Sauvegarde…' : 'Enregistrer' }}
-                </button>
-                <span v-if="page.saved" class="saved-msg">Enregistré ✓</span>
-              </div>
-            </div>
-            <div class="editor-layout" v-if="!page.showPreview">
-              <textarea v-model="page.raw" rows="16" class="editor-textarea" placeholder="Données JSON…"></textarea>
-            </div>
-            <div v-else class="preview-wrap">
-              <div class="preview-json">{{ page.raw }}</div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- ==================== AMBASSADEURS ==================== -->
@@ -341,6 +311,25 @@
         <div v-if="revenueLoading" class="rev-loading">Chargement des revenus…</div>
 
         <template v-else-if="revenue">
+          <!-- Indicateurs du mois en cours (commandes complétées uniquement) -->
+          <section class="month-stats" aria-label="Indicateurs du mois en cours">
+            <div class="month-stat">
+              <span class="rev-card-label">Argent brut généré</span>
+              <strong class="rev-card-val">{{ fmtMoney(revenue.monthStats?.gross) }}</strong>
+              <span class="rev-card-sub">{{ monthLabel }} · {{ revenue.monthStats?.count || 0 }} vente{{ (revenue.monthStats?.count || 0) > 1 ? 's' : '' }}</span>
+            </div>
+            <div class="month-stat">
+              <span class="rev-card-label">Part des vendeurs</span>
+              <strong class="rev-card-val">{{ fmtMoney(revenue.monthStats?.sellerNet) }}</strong>
+              <span class="rev-card-sub">Sommes dues aux vendeurs</span>
+            </div>
+            <div class="month-stat accent">
+              <span class="rev-card-label">Bénéfice de la plateforme</span>
+              <strong class="rev-card-val">{{ fmtMoney(revenue.monthStats?.platformFee) }}</strong>
+              <span class="rev-card-sub">Commissions GSA Store</span>
+            </div>
+          </section>
+
           <!-- Infos compte -->
           <div class="rev-account">
             <span class="rev-account-id">{{ revenue.accountId || '-' }}</span>
@@ -388,7 +377,10 @@
               Paiements Stripe <span class="rev-subtab-count">{{ revenue.charges?.length || 0 }}</span>
             </button>
             <button type="button" class="rev-subtab" :class="{ active: revTab === 'transfers' }" @click="revTab = 'transfers'">
-              Transferts <span class="rev-subtab-count">{{ revenue.transfers?.length || 0 }}</span>
+              Versements vendeurs <span class="rev-subtab-count">{{ revenue.transfers?.length || 0 }}</span>
+            </button>
+            <button type="button" class="rev-subtab" :class="{ active: revTab === 'payouts' }" @click="revTab = 'payouts'">
+              Virements bancaires <span class="rev-subtab-count">{{ revenue.payouts?.length || 0 }}</span>
             </button>
             <label class="rev-search">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -396,10 +388,33 @@
             </label>
           </div>
 
+          <!-- Filtres du journal des ventes + archive mensuelle -->
+          <div v-if="revTab === 'sales'" class="rev-filters">
+            <select v-model="revClient" class="rev-filter" aria-label="Filtrer par client">
+              <option value="">Tous les clients</option>
+              <option v-for="c in clientOptions" :key="c" :value="c">{{ c }}</option>
+            </select>
+            <select v-model="revArticle" class="rev-filter" aria-label="Filtrer par article">
+              <option value="">Tous les articles</option>
+              <option v-for="a in articleOptions" :key="a" :value="a">{{ a }}</option>
+            </select>
+            <label class="inv-date"><span>Mois</span><input v-model="revMonth" type="month" /></label>
+            <label v-if="revMonth" class="inv-date"><span>Jour</span>
+              <select v-model="revDay">
+                <option value="">Tous</option>
+                <option v-for="d in daysInRevMonth" :key="d" :value="String(d)">{{ String(d).padStart(2, '0') }}</option>
+              </select>
+            </label>
+            <button v-if="revClient || revArticle || revMonth" type="button" class="inv-chip" @click="resetSalesFilters">Effacer les filtres</button>
+            <a class="btn-primary rev-zip" :href="monthZipUrl" :download="'factures-' + (revMonth || currentMonthKey) + '.zip'">
+              Factures du mois (ZIP)
+            </a>
+          </div>
+
           <!-- Ventes par article (achat groupé = 1 ligne par produit) -->
           <div v-if="revTab === 'sales'" class="table-wrap">
             <table v-if="filteredSales.length" class="admin-table">
-              <thead><tr><th>Cmd</th><th>Date</th><th>Article</th><th>Client</th><th>Vendeur</th><th>Qté</th><th>Brut</th><th>Comm.</th><th>Commission GSA</th><th>Net vendeur</th><th>Reversement</th></tr></thead>
+              <thead><tr><th>Cmd</th><th>Date</th><th>Article</th><th>Client</th><th>Vendeur</th><th>Qté</th><th>Brut</th><th>Comm.</th><th>Commission GSA</th><th>Net vendeur</th><th>Reversement</th><th>Factures</th></tr></thead>
               <tbody>
                 <tr v-for="s in filteredSales" :key="s.id">
                   <td>#{{ s.orderId }}</td>
@@ -419,6 +434,11 @@
                   <td class="price-cell">{{ fmtMoney(s.platformFee) }}</td>
                   <td>{{ fmtMoney(s.sellerNet) }}</td>
                   <td><span class="rev-status" :class="s.transferStatus">{{ s.transferStatus }}</span></td>
+                  <td class="actions">
+                    <a class="inv-pill" :href="invoiceUrl(s.id, 'client')" title="Facture client">Client</a>
+                    <a class="inv-pill" :href="invoiceUrl(s.id, 'vendeur')" title="Facture vendeur">Vendeur</a>
+                    <a class="inv-pill" :href="invoiceUrl(s.id, 'plateforme')" title="Facture plateforme">GSA</a>
+                  </td>
                 </tr>
               </tbody>
               <tfoot>
@@ -428,6 +448,7 @@
                   <td></td>
                   <td class="price-cell"><strong>{{ fmtMoney(salesTotals.platformFee) }}</strong></td>
                   <td><strong>{{ fmtMoney(salesTotals.sellerNet) }}</strong></td>
+                  <td></td>
                   <td></td>
                 </tr>
               </tfoot>
@@ -498,117 +519,25 @@
             </table>
             <div v-else class="empty-tab">Aucun transfert.</div>
           </div>
+          <!-- Virements de la plateforme vers son compte bancaire -->
+          <div v-if="revTab === 'payouts'" class="table-wrap">
+            <table v-if="revenue.payouts?.length" class="admin-table">
+              <thead><tr><th>Date du virement</th><th>Montant</th><th>Statut</th><th>Référence</th><th>Arrivée prévue</th></tr></thead>
+              <tbody>
+                <tr v-for="po in revenue.payouts" :key="po.id">
+                  <td>{{ new Date(po.created).toLocaleDateString('fr-FR') }}</td>
+                  <td class="price-cell">{{ fmtMoney(po.amount) }} {{ po.currency?.toUpperCase() }}</td>
+                  <td><span class="rev-status" :class="po.status">{{ po.status }}</span></td>
+                  <td class="mono">{{ po.reference || po.id }}</td>
+                  <td>{{ po.arrival ? new Date(po.arrival).toLocaleDateString('fr-FR') : '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div v-else class="empty-tab">Aucun virement vers le compte bancaire</div>
+          </div>
         </template>
 
         <div v-else class="rev-loading error">Impossible de charger les revenus.</div>
-      </div>
-
-      <!-- ==================== FINANCES ==================== -->
-      <div v-if="activeTab === 'finances'" class="tab-content fin">
-        <div class="fin-head">
-          <div>
-            <h2>Finances</h2>
-            <p>Suivi centralisé des ventes, commissions et frais de paiement</p>
-          </div>
-          <button class="fin-refresh" type="button" @click="loadFinances">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
-            Rafraîchir
-          </button>
-        </div>
-
-        <template v-if="finances">
-          <section class="fin-kpis" aria-label="Indicateurs clés">
-            <div class="fin-kpi"><div class="fin-kpi-top"><span>Chiffre d'affaires</span></div><strong>{{ fmtMoney(finances.totals.revenue) }}</strong><small>Total des ventes</small></div>
-            <div class="fin-kpi accent"><div class="fin-kpi-top"><span>Commission GSA</span></div><strong>{{ fmtMoney(finances.totals.commissionGsa) }}</strong><small>Part plateforme</small></div>
-            <div class="fin-kpi"><div class="fin-kpi-top"><span>Net vendeurs</span></div><strong>{{ fmtMoney(finances.totals.netSeller) }}</strong><small>Après commission</small></div>
-            <div class="fin-kpi"><div class="fin-kpi-top"><span>Frais Stripe</span></div><strong>{{ fmtMoney(finances.totals.stripeFees) }}</strong><small>Payés par les vendeurs</small></div>
-          </section>
-
-          <section class="fin-card" aria-label="Répartition du chiffre d'affaires">
-            <div class="fin-card-head"><h3>Répartition du chiffre d'affaires</h3><span>Sur {{ fmtMoney(finances.totals.revenue) }} de ventes</span></div>
-            <div class="fin-bar"><div v-for="s in finSplit" :key="s.label" :style="{ width: s.pct + '%', background: s.color }"></div></div>
-            <div class="fin-legend">
-              <div v-for="s in finSplit" :key="s.label"><i :style="{ background: s.color }"></i><span>{{ s.label }}</span><strong>{{ fmtMoney(s.value) }}</strong><em>{{ s.pct.toFixed(1).replace('.', ',') }} %</em></div>
-            </div>
-          </section>
-
-          <section aria-label="Fiscalité par vendeur">
-            <h3 class="fin-title">Fiscalité par vendeur</h3>
-            <div class="fin-table-wrap">
-              <table v-if="finances.bySeller.length" class="fin-table" style="min-width:860px">
-                <thead><tr><th>Vendeur</th><th>Commission</th><th>Ventes</th><th class="r">CA</th><th class="r">Commission GSA</th><th class="r">Frais Stripe</th><th class="r">Net encaissé</th><th>TVA</th></tr></thead>
-                <tbody>
-                  <tr v-for="s in finances.bySeller" :key="s.sellerId">
-                    <th scope="row"><span class="fin-seller"><span class="fin-avatar" aria-hidden="true">{{ (s.sellerName || '?').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() }}</span>{{ s.sellerName }}</span></th>
-                    <td><span class="fin-pill">{{ s.commissionPercent }} %</span></td>
-                    <td>{{ s.salesCount }}</td>
-                    <td class="r">{{ fmtMoney(s.revenue) }}</td>
-                    <td class="r blue">{{ fmtMoney(s.commissionGsa) }}</td>
-                    <td class="r">{{ fmtMoney(s.stripeFees) }}</td>
-                    <td class="r strong">{{ fmtMoney(s.netAfterFees) }}</td>
-                    <td class="dim">Non applicable (art. 293 B)</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div v-else class="empty-tab">Aucun vendeur avec des ventes complétées.</div>
-            </div>
-          </section>
-
-          <section aria-label="Logs de vente">
-            <h3 class="fin-title">Logs de vente</h3>
-            <div class="fin-table-wrap">
-              <table v-if="finances.orders.length" class="fin-table" style="min-width:720px">
-                <thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Vendeur(s)</th><th class="r">Total</th><th class="r">Commission</th></tr></thead>
-                <tbody>
-                  <tr v-for="o in finances.orders" :key="o.id">
-                    <td class="dim">{{ o.id }}</td>
-                    <td>{{ new Date(o.createdAt).toLocaleDateString('fr-FR') }} {{ new Date(o.createdAt).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
-                    <td>{{ o.buyerName || o.buyerEmail || '-' }}</td>
-                    <td>{{ o.sellers || '-' }}</td>
-                    <td class="r strong">{{ fmtMoney(o.total) }}</td>
-                    <td class="r blue">{{ fmtMoney(o.platformFee) }}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div v-else class="empty-tab">Aucune vente complétée.</div>
-            </div>
-          </section>
-        </template>
-        <div v-else class="rev-loading">Chargement des finances…</div>
-      </div>
-
-      <!-- ==================== FACTURES ==================== -->
-      <div v-if="activeTab === 'invoices'" class="tab-content">
-        <div class="tab-header">
-          <h2>Factures</h2>
-          <button class="btn-primary btn-sm" @click="loadInvoices">Rafraîchir</button>
-        </div>
-        <div class="table-wrap">
-          <table v-if="invoices.length" class="admin-table">
-            <thead><tr><th>Facture</th><th>Date</th><th>Client</th><th>Vendeur(s)</th><th>Total</th><th>PDF</th></tr></thead>
-            <tbody>
-              <tr v-for="inv in invoices" :key="inv.orderId">
-                <td class="mono">{{ inv.invoiceId }}</td>
-                <td>{{ new Date(inv.date).toLocaleDateString('fr-FR') }} {{ new Date(inv.date).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}) }}</td>
-                <td>
-                  <div class="buyer-cell">
-                    <span v-if="inv.buyerName" class="buyer-name">{{ inv.buyerName }}</span>
-                    <span v-if="inv.buyerEmail" class="buyer-email">{{ inv.buyerEmail }}</span>
-                  </div>
-                </td>
-                <td>{{ inv.sellers || '-' }}</td>
-                <td class="price-cell">{{ fmtMoney(inv.total) }}</td>
-                <td>
-                  <a v-if="inv.orderItemId" class="btn-action" :href="api + '/api/invoice/' + inv.orderItemId" title="Télécharger la facture (PDF)">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  </a>
-                  <span v-else class="muted">-</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div v-else class="empty-tab">Aucune facture (aucune commande complétée).</div>
-        </div>
       </div>
 
       <!-- ==================== MAINTENANCE ==================== -->
@@ -655,6 +584,56 @@
   </div>
   <ToastNotif ref="toastRef" />
   <ConfirmModal ref="confirmRef" />
+
+  <!-- Fiche utilisateur : achats + gestion du compte -->
+  <Teleport to="body">
+    <Transition name="drop">
+      <div v-if="userModal" class="modal-overlay" @click.self="userModal = null">
+        <div class="seller-detail-modal user-modal" role="dialog" aria-label="Fiche utilisateur">
+          <div class="seller-detail-head">
+            <div class="seller-detail-avatar">
+              <img v-if="userModal.avatarUrl" :src="userModal.avatarUrl" :alt="userModal.displayName" />
+              <span v-else>{{ (userModal.displayName || userModal.email || '?')[0].toUpperCase() }}</span>
+            </div>
+            <div class="seller-detail-id">
+              <h3>{{ userModal.displayName || userModal.email }}</h3>
+              <span>{{ userModal.email }}</span>
+            </div>
+            <button class="modal-close" aria-label="Fermer" @click="userModal = null"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
+
+          <div class="seller-detail-grid">
+            <div class="seller-detail-item"><span class="dd-label">Rôle</span><strong>{{ userModal.role }}</strong></div>
+            <div class="seller-detail-item"><span class="dd-label">Inscription</span><strong>{{ userModal.createdAt ? new Date(userModal.createdAt).toLocaleDateString('fr-FR') : '-' }}</strong></div>
+            <div class="seller-detail-item"><span class="dd-label">Statut</span><strong :class="userModal.isBanned ? 'ban-state' : ''">{{ userModal.isBanned ? 'Banni' : 'Actif' }}</strong></div>
+            <div v-if="userModal.isBanned && userModal.banReason" class="seller-detail-item"><span class="dd-label">Motif</span><strong>{{ userModal.banReason }}</strong></div>
+          </div>
+
+          <div class="u-purchases">
+            <span class="dd-label">Historique des achats</span>
+            <div v-if="userPurchasesLoading" class="rev-loading">Chargement…</div>
+            <table v-else-if="userPurchases.length" class="admin-table">
+              <thead><tr><th>Date</th><th>Article</th><th>Prix payé</th></tr></thead>
+              <tbody>
+                <tr v-for="pu in userPurchases" :key="pu.id">
+                  <td>{{ new Date(pu.date).toLocaleDateString('fr-FR') }}</td>
+                  <td>{{ pu.title }}<span v-if="pu.quantity > 1" class="muted"> ×{{ pu.quantity }}</span></td>
+                  <td class="price-cell">{{ fmtMoney(pu.paid) }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div v-else class="empty-tab" style="padding:24px">Aucun achat</div>
+          </div>
+
+          <div class="seller-detail-actions">
+            <button v-if="userModal.role === 'seller'" class="btn-ghost" @click="revokeSeller(userModal)">Révoquer le rôle vendeur</button>
+            <button v-if="userModal.role !== 'admin' && !userModal.isBanned" class="btn-ghost ban-btn" @click="banUser(userModal)">Bannir l'utilisateur</button>
+            <button v-if="userModal.isBanned" class="btn-primary" @click="unbanUser(userModal)">Rétablir l'accès</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 
   <!-- Modal détail demande vendeur -->
   <Teleport to="body">
@@ -947,13 +926,10 @@ const tabs = [
   { id:'categories', label:'Catégories', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' },
   { id:'users', label:'Utilisateurs', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
   { id:'featured', label:'Mise en avant', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' },
-  { id:'pages', label:'Pages', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
   { id:'ambassadors', label:'Ambassadeurs', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' },
   { id:'sellers', label:'Vendeurs', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
   { id:'tags', label:'Tags', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>' },
   { id:'revenue', label:'Revenus', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
-  { id:'finances', label:'Finances', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
-  { id:'invoices', label:'Factures', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
   { id:'maintenance', label:'Maintenance', icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3 18l3 3 5.3-5.3a5 5 0 0 0 6.4-6.4L14 13l-3-3z"/><path d="m15 5 4 4"/></svg>' },
 ]
 
@@ -1504,6 +1480,47 @@ async function revokeSeller(u: any) {
   }
 }
 
+// Fiche utilisateur : historique des achats, bannissement
+const userModal = ref<any>(null)
+const userPurchases = ref<any[]>([])
+const userPurchasesLoading = ref(false)
+async function openUser(u: any) {
+  userModal.value = u
+  userPurchases.value = []
+  userPurchasesLoading.value = true
+  try {
+    const res = await $fetch(api + `/api/admin/users/${u.id}/purchases`, { credentials: 'include' })
+    userPurchases.value = res.purchases || []
+  } catch { userPurchases.value = [] }
+  finally { userPurchasesLoading.value = false }
+}
+async function banUser(u: any) {
+  const ok = await confirmRef.value?.ask({
+    title: 'Bannir cet utilisateur ?',
+    message: `${u.displayName || u.email} sera déconnecté immédiatement et ne pourra plus accéder à la plateforme tant que l'accès n'est pas rétabli.`,
+    confirmText: 'Bannir',
+  })
+  if (!ok) return
+  try {
+    await $fetch(api + `/api/admin/users/${u.id}/ban`, { method: 'POST', credentials: 'include', body: {} })
+    u.isBanned = true
+    toastRef.value?.show('success', 'Utilisateur banni')
+    loadUsers()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.statusMessage || e?.data?.message || 'Bannissement impossible')
+  }
+}
+async function unbanUser(u: any) {
+  try {
+    await $fetch(api + `/api/admin/users/${u.id}/unban`, { method: 'POST', credentials: 'include' })
+    u.isBanned = false
+    toastRef.value?.show('success', 'Accès rétabli')
+    loadUsers()
+  } catch (e: any) {
+    toastRef.value?.show('error', e?.data?.statusMessage || e?.data?.message || 'Rétablissement impossible')
+  }
+}
+
 // ─── Seller Requests ────────────────────────────────────
 async function loadSellerRequests() {
   try {
@@ -1547,19 +1564,48 @@ const revenueLoading = ref(false)
 // Filtre vendeur : 'all' ou id du vendeur (dropdown)
 const sellerFilter = ref<number | 'all'>('all')
 // Onglets internes de la page Revenus + recherche transverse
-const revTab = ref<'sales' | 'orders' | 'charges' | 'transfers'>('sales')
+const revTab = ref<'sales' | 'orders' | 'charges' | 'transfers' | 'payouts'>('sales')
 const revSearch = ref('')
 function revMatch(...fields: any[]) {
   const q = revSearch.value.trim().toLowerCase()
   if (!q) return true
   return fields.some((f) => String(f ?? '').toLowerCase().includes(q))
 }
+// Filtres du journal : vendeur (en-tête), client, article, mois puis jour du mois
+const revClient = ref('')
+const revArticle = ref('')
+const revMonth = ref('')
+const revDay = ref('')
+const pad2 = (n: number) => String(n).padStart(2, '0')
+const currentMonthKey = (() => { const d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) })()
+const monthLabel = computed(() => {
+  const m = revenue.value?.monthStats?.month
+  return m ? new Date(m + '-01T12:00:00').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : ''
+})
+const clientOptions = computed(() => [...new Set((revenue.value?.sales || []).map((s: any) => s.buyerName || s.buyerEmail).filter(Boolean))].sort() as string[])
+const articleOptions = computed(() => [...new Set((revenue.value?.sales || []).map((s: any) => s.title).filter(Boolean))].sort() as string[])
+const daysInRevMonth = computed(() => {
+  if (!revMonth.value) return 31
+  const [y, m] = revMonth.value.split('-').map(Number)
+  return new Date(y, m, 0).getDate()
+})
+watch(revMonth, () => { revDay.value = '' })
+function resetSalesFilters() { revClient.value = ''; revArticle.value = ''; revMonth.value = ''; revDay.value = '' }
+const invoiceUrl = (itemId: number, kind: string) => api + '/api/admin/invoices/' + itemId + '/' + kind
+const monthZipUrl = computed(() => api + '/api/admin/invoices/month?month=' + (revMonth.value || currentMonthKey))
 const filteredSales = computed(() => {
   const sales = revenue.value?.sales || []
-  return sales.filter((s: any) =>
-    (sellerFilter.value === 'all' || s.sellerId === sellerFilter.value) &&
-    revMatch(s.title, s.buyerName, s.buyerEmail, s.sellerName, s.orderId, s.id, s.transferStatus)
-  )
+  return sales.filter((s: any) => {
+    if (sellerFilter.value !== 'all' && s.sellerId !== sellerFilter.value) return false
+    if (revClient.value && (s.buyerName || s.buyerEmail) !== revClient.value) return false
+    if (revArticle.value && s.title !== revArticle.value) return false
+    if (revMonth.value) {
+      const d = new Date(s.createdAt)
+      if (d.getFullYear() + '-' + pad2(d.getMonth() + 1) !== revMonth.value) return false
+      if (revDay.value && d.getDate() !== Number(revDay.value)) return false
+    }
+    return revMatch(s.title, s.buyerName, s.buyerEmail, s.sellerName, s.orderId, s.id, s.transferStatus)
+  })
 })
 const salesTotals = computed(() => {
   const rows = filteredSales.value
@@ -1767,7 +1813,7 @@ async function loadInvoices() {
   } catch { invoices.value = [] }
 }
 
-onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests(); loadTags(); loadCategories(); loadRevenue(); loadFinances(); loadInvoices(); loadMaintenanceSettings() })
+onMounted(() => { loadProducts(); loadUsers(); loadFormData(); loadFeaturedData(); loadAmbCodes(); loadSellerRequests(); loadTags(); loadCategories(); loadRevenue(); loadMaintenanceSettings() })
 </script>
 
 <style scoped>
@@ -1998,7 +2044,10 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .badge-comm.is-default { background:rgba(255,255,255,.06);color:var(--text-secondary);font-weight:400; }
 .field-hint { display:block;margin-top:5px;font-size:.72rem;line-height:1.45;color:var(--text-muted); }
 .price-cell { font-weight:400;color:var(--text);font-size:14px; }
-.actions { display:flex;gap:6px; }
+.actions { white-space:nowrap; }
+.admin-table td.actions { display:table-cell; }
+.actions > .btn-action { display:inline-grid;vertical-align:middle;margin-right:4px; }
+.actions > .btn-action:last-child { margin-right:0; }
 .role-badge { font-size:13px;padding:2px 8px;border-radius:6px;font-weight:400;background:rgba(255,255,255,.06);color:var(--text); }
 .role-badge.admin { background:rgba(167,145,255,.14);color:#cdbfff; }
 .role-badge.seller { background:rgba(142,168,255,.12);color:var(--primary); }
@@ -2069,6 +2118,26 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .tag-add-input:focus { border-color:var(--primary); }
 .tag-badge { display:inline-block;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.06);color:var(--text);font:400 13px 'IBM Plex Mono',ui-monospace,Consolas,monospace; }
 
+/* ─── Indicateurs du mois, filtres, factures ─── */
+.month-stats { display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:16px; }
+.month-stat { display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:14px;background:var(--bg-card); }
+.month-stat.accent .rev-card-val { color:var(--primary); }
+.rev-filters { display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:16px; }
+.inv-date { display:flex;align-items:center;gap:8px;min-height:40px;padding:0 12px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:var(--bg-card);color:var(--text-secondary);font-size:14px; }
+.inv-date input,.inv-date select { border:0;background:transparent;color:var(--text);font:inherit;outline:none;color-scheme:dark; }
+.inv-chip { min-height:40px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--text-secondary);font-size:14px;cursor:pointer;font-family:inherit;transition:background-color .15s,color .15s; }
+.inv-chip:hover { background:rgba(255,255,255,.05);color:var(--text); }
+.rev-zip { margin-left:auto;text-decoration:none; }
+.inv-pill { display:inline-block;margin-right:4px;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.06);color:var(--text);font-size:12px;text-decoration:none;transition:background-color .15s; }
+.inv-pill:hover { background:rgba(142,168,255,.18);color:var(--primary); }
+.role-badge.banned { margin-left:6px;background:rgba(234,144,136,.14);color:var(--red); }
+.user-modal { max-width:620px; }
+.u-purchases { padding:0 22px 16px; }
+.u-purchases .admin-table th:first-child,.u-purchases .admin-table td:first-child { padding-left:0; }
+.u-purchases .admin-table td { height:44px; }
+.ban-state { color:var(--red); }
+.ban-btn:hover { color:var(--red); }
+
 /* ─── Revenus ─── */
 .rev-mode-badge { display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:400;color:var(--text-secondary); }.rev-mode-badge::before { content:"";width:6px;height:6px;border-radius:50%;background:#e3b565; }.rev-mode-badge.live::before { background:var(--green); }.rev-filter { min-height:40px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:var(--bg-card);color:var(--text);font-size:14px;font-weight:400;font-family:inherit;outline:none;cursor:pointer; }
 .rev-filter:focus { border-color:var(--primary); }
@@ -2088,47 +2157,7 @@ onMounted(() => { loadProducts(); loadUsers(); loadPages(); loadFormData(); load
 .rev-card-val.muted { color:var(--text-secondary); }
 .rev-card-sub { font-size:13px;color:var(--text-muted); }
 .rev-section-title { font-size:16px;font-weight:500;margin:24px 0 12px; }
-.fin { display:flex;flex-direction:column;gap:24px; }
-.fin-head { display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px; }
 
-.fin-head h2 { margin:0;font-size:24px;line-height:32px;letter-spacing:-.02em;font-weight:500; }
-.fin-head p { margin:4px 0 0;color:var(--text-secondary);font-size:14px;line-height:20px; }
-.fin-refresh { display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border:0;border-radius:10px;background:var(--text);color:#0e0f11;font-weight:500;font-size:14px;cursor:pointer;transition:background-color .15s; }
-.fin-refresh:hover { background:#fff; }
-.fin-kpis { display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px; }
-.fin-kpi { display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--border);border-radius:14px;background:var(--bg-card); }
-.fin-kpi.accent strong { color:var(--primary); }
-.fin-kpi-top { display:flex;align-items:center;justify-content:space-between;color:var(--text-secondary);font-size:14px; }
-.fin-kpi-top i { display:none; }
-.fin-kpi strong { font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:36px;color:var(--text);font-variant-numeric:tabular-nums; }
-.fin-kpi small { color:var(--text-muted);font-size:13px; }
-.fin-card { display:flex;flex-direction:column;gap:16px;padding:20px 24px;border:1px solid var(--border);border-radius:14px;background:var(--bg-card); }
-.fin-card-head { display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px; }
-.fin-card-head h3 { margin:0;font-size:16px;font-weight:500; }
-.fin-card-head span { color:var(--text-muted);font-size:13px; }
-.fin-bar { display:flex;gap:3px;height:12px;border-radius:999px;overflow:hidden; }
-.fin-bar div { border-radius:4px; }
-.fin-legend { display:flex;flex-wrap:wrap;gap:12px 32px; }
-.fin-legend div { display:flex;align-items:center;gap:10px;font-size:.88rem; }
-.fin-legend i { width:10px;height:10px;border-radius:3px; }
-.fin-legend span { color:var(--text-secondary); }
-.fin-legend em { color:var(--text-muted);font-style:normal; }
-.fin-title { margin:0 0 12px;font-size:16px;font-weight:500; }
-.fin-table-wrap { overflow-x:auto;border:1px solid var(--border);border-radius:14px;background:var(--bg-card); }
-.fin-table { width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums; }
-.fin-table th { padding:12px;text-align:left;color:var(--text-muted);font-size:12px;font-weight:500; }
-.fin-table td, .fin-table tbody th { padding:12px;font-size:14px;color:var(--text);font-weight:400;height:56px; }
-.fin-table th:first-child, .fin-table td:first-child { padding-left:20px; }
-.fin-table th:last-child, .fin-table td:last-child { padding-right:20px; }
-.fin-table tbody tr { border-top:1px solid rgba(255,255,255,.06); }
-.fin-table tbody tr:hover { background:rgba(255,255,255,.025); }
-.fin-table .r { text-align:right;font-variant-numeric:tabular-nums; }
-.fin-table .blue { color:var(--primary); }
-.fin-table .strong { font-weight:500; }
-.fin-table .dim { color:var(--text-muted);font-size:13px; }
-.fin-seller { display:flex;align-items:center;gap:12px;font-weight:500; }
-.fin-avatar { width:32px;height:32px;display:grid;place-items:center;border-radius:8px;background:var(--bg-surface);border:1px solid var(--border);color:var(--text-secondary);font-size:12px;font-weight:500; }
-.fin-pill { padding:2px 8px;border-radius:6px;background:rgba(142,168,255,.12);color:var(--primary);font-size:13px;font-weight:500; }
 
 .rev-subtabs { display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px;margin:24px 0 16px;padding:3px;border:1px solid var(--border);border-radius:10px;background:var(--bg-card); }
 .rev-subtab { display:flex;align-items:center;gap:8px;min-height:34px;padding:0 14px;border-radius:8px;border:0;background:transparent;color:var(--text-secondary);font-size:14px;font-weight:400;cursor:pointer;transition:background-color .15s,color .15s;font-family:inherit; }
