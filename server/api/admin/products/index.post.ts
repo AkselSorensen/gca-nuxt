@@ -1,4 +1,5 @@
 // POST /api/admin/products - création (réplique du monolithe)
+import { sanitizeHtml, htmlToText } from '../../../../utils/sanitizeHtml'
 import { defineEventHandler, readBody, createError } from 'h3'
 import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'
@@ -35,7 +36,7 @@ export default defineEventHandler(async (event) => {
     ? null
     : Math.min(100, Math.max(0, rawCommission))
 
-  if (!title || !shortDescription || !description || !installation || !categorySlug || !sellerSlug) {
+  if (!title || !shortDescription || !htmlToText(description) || !htmlToText(installation) || !categorySlug || !sellerSlug) {
     throw createError({ statusCode: 400, statusMessage: 'Missing required product fields' })
   }
 
@@ -82,8 +83,8 @@ export default defineEventHandler(async (event) => {
         String(title).trim(),
         `${slugify(title)}-${Date.now()}`,
         String(shortDescription).trim(),
-        String(description).trim(),
-        String(installation).trim(),
+        sanitizeHtml(String(description).trim()),
+        sanitizeHtml(String(installation).trim()),
         Number(discountPercent || 0) > 0 ? Number(price || 0) * (1 - Number(discountPercent || 0) / 100) : Number(price || 0),
         Number(price || 0),
         platform || "Garry's Mod",

@@ -15,6 +15,8 @@ export default defineEventHandler(async (event) => {
           p.short_description,
           p.description,
           p.installation,
+          p.platform,
+          p.video_url,
           p.price,
           p.old_price,
           p.discount_percent,

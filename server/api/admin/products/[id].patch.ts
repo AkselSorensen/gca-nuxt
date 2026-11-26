@@ -4,6 +4,7 @@ import { requireAdmin } from '../../../utils/auth'
 import { query } from '../../../services/db'
 import { uploadImageToR2 } from '../../../services/r2'
 import { purgeRouteCache } from '../../../utils/cache'
+import { sanitizeHtml } from '../../../../utils/sanitizeHtml'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -46,8 +47,8 @@ export default defineEventHandler(async (event) => {
       values.push(value)
     }
     if (shortDescription !== undefined) { updates.push(`short_description = $${idx++}`); values.push(String(shortDescription).trim()) }
-    if (description !== undefined) { updates.push(`description = $${idx++}`); values.push(String(description).trim()) }
-    if (installation !== undefined) { updates.push(`installation = $${idx++}`); values.push(String(installation).trim()) }
+    if (description !== undefined) { updates.push(`description = $${idx++}`); values.push(sanitizeHtml(String(description).trim())) }
+    if (installation !== undefined) { updates.push(`installation = $${idx++}`); values.push(sanitizeHtml(String(installation).trim())) }
     if (categoryId !== null) {
       updates.push(`category_id = $${idx++}`); values.push(categoryId)
       updates.push(`category = $${idx++}`); values.push(categoryName)

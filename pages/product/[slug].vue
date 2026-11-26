@@ -205,7 +205,7 @@ const truncateText = (s: string, max: number) => {
 }
 
 const seoTitle = computed(() => (product.value?.title ? product.value.title + ' - GSA Store' : 'GSA Store'))
-const seoDescription = computed(() => truncateText(product.value?.shortDescription || product.value?.description || '', 150))
+const seoDescription = computed(() => truncateText(htmlToText(product.value?.shortDescription || product.value?.description || ''), 150))
 const seoImage = computed(() => {
   const url = product.value?.media?.[0]?.url || ''
   if (url.startsWith('http') || url.startsWith('data:')) return url
@@ -350,8 +350,8 @@ const productTags = computed(() => {
   return []
 })
 
-const descriptionHtml = computed(() => product.value?.description || product.value?.shortDescription || t('product.no_description'))
-const installationHtml = computed(() => product.value?.installation || '')
+const descriptionHtml = computed(() => sanitizeHtml(product.value?.description || product.value?.shortDescription || t('product.no_description')))
+const installationHtml = computed(() => sanitizeHtml(product.value?.installation || ''))
 
 const tabs = computed(() => {
   const t: { id: string; label: string }[] = [
@@ -603,6 +603,10 @@ onMounted(async () => {
 .desc-text ul { padding-left:20px; }
 .desc-text li { margin-bottom:6px; }
 .desc-text strong { color:var(--text); }
+.desc-text u { text-underline-offset:3px; }
+.desc-text ol { padding-left:22px; }
+.desc-text blockquote { margin:0 0 12px;padding:4px 14px;border-left:3px solid var(--border);color:var(--text-muted); }
+.desc-text a { color:var(--primary);text-decoration:underline; }
 .desc-text code { padding:2px 6px;border-radius:4px;background:var(--bg-surface);font-size:.85rem; }
 
 .features-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:24px;padding-top:24px;border-top:1px solid var(--border); }

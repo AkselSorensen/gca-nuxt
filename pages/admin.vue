@@ -745,8 +745,8 @@
           <div class="form-grid-2">
             <div class="field"><label>Titre *</label><input v-model="productForm.title" type="text" placeholder="Pack Bâtiments..." /></div>
             <div class="field"><label>Description courte *</label><input v-model="productForm.shortDescription" type="text" placeholder="Courte description..." /></div>
-            <div class="field field-full"><label>Description longue *</label><textarea v-model="productForm.description" rows="4" placeholder="Description détaillée du produit..."></textarea></div>
-            <div class="field field-full"><label>Installation *</label><textarea v-model="productForm.installation" rows="2" placeholder="Instructions d'installation..."></textarea></div>
+            <div class="field field-full"><label>Description longue *</label><RichTextEditor v-model="productForm.description" label="Description longue" placeholder="Description détaillée du produit..." :min-height="160" /></div>
+            <div class="field field-full"><label>Guide d'installation *</label><RichTextEditor v-model="productForm.installation" label="Guide d'installation" placeholder="Instructions d'installation..." :min-height="120" /></div>
           </div>
         </div>
 
@@ -1211,7 +1211,7 @@ function editProduct(p: any) {
     price: Number(p.old_price || p.price || 0),
     discountPercent: Number(p.discount_percent || 0),
     platform: p.platform || "Garry's Mod",
-    videoUrl: p.video_url || '',
+    videoUrl: p.video_url || p.videoUrl || '',
     tags: (p.tags || []).join(', '),
     thumbnail: '',
     isHidden: Boolean(p.is_hidden),
@@ -1380,6 +1380,7 @@ function formatSize(bytes: number) {
 async function saveProduct() {
   if (saving.value) return // anti double-clic (évite les doublons de fichiers)
   if (!productForm.title || !productForm.price) return toastRef.value?.show('error', 'Titre et prix requis')
+  if (!htmlToText(productForm.description) || !htmlToText(productForm.installation)) return toastRef.value?.show('error', 'La description et le guide d\'installation sont requis')
   const isEdit = !!editingId.value
   saving.value = true
   try {
