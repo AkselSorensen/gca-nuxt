@@ -181,12 +181,12 @@ const categories = computed(() => catData.value || [])
 // SEO : chaque catégorie (?c=slug) a son titre, sa description et sa canonique
 const seoRoute = useRoute()
 const activeCat = computed(() => (categories.value as any[]).find((c: any) => c.slug === seoRoute.query.c))
-const catTitle = computed(() => activeCat.value ? activeCat.value.name + " pour Garry's Mod - Catalogue GSA" : 'Catalogue - GSA Store')
+const catTitle = computed(() => activeCat.value ? activeCat.value.name + " - Catalogue GSA" : 'Catalogue - GSA Store')
 const catDesc = computed(() => activeCat.value
   ? (activeCat.value.description
-      ? activeCat.value.name + ' : ' + activeCat.value.description + ". Assets premium vérifiés pour Garry's Mod, prêts à déployer."
-      : 'Découvrez les assets ' + activeCat.value.name + " pour Garry's Mod sur GSA Store, vérifiés par notre équipe.")
-  : "Parcourez le catalogue GSA : HUD, mapping, particules, animations, UI et maps pour Garry's Mod.")
+      ? activeCat.value.name + ' : ' + activeCat.value.description + ". Assets premium vérifiés, prêts à déployer."
+      : 'Découvrez les assets ' + activeCat.value.name + " sur GSA Store, vérifiés par notre équipe.")
+  : "Parcourez le catalogue GSA : HUD, mapping, particules, animations, UI et maps.")
 const catUrl = computed(() => 'https://gsa-store.fr/catalogue' + (activeCat.value ? '?c=' + activeCat.value.slug : ''))
 useSeoMeta({
   title: catTitle,

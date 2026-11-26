@@ -25,7 +25,7 @@ const props = defineProps<{ title: string; subtitle?: string; content: string }>
 const seoRoute = useRoute()
 useSeoMeta({
   title: () => props.title + ' - GSA Store',
-  description: () => (props.subtitle ? props.title + ' - ' + props.subtitle : props.title) + ' de GSA Store, marketplace d\'assets pour Garry\'s Mod',
+  description: () => (props.subtitle ? props.title + ' - ' + props.subtitle : props.title) + ' de GSA Store, marketplace d\'assets',
   ogTitle: () => props.title + ' - GSA Store',
   ogType: 'article',
 })

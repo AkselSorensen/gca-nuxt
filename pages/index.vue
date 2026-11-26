@@ -116,11 +116,11 @@
 useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/' }] })
 useSeoMeta({
   title: 'GSA Store - Des assets premium, prêts à déployer.',
-  description: 'Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer sur votre serveur Garry\'s Mod.',
+  description: 'Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer.',
   ogType: 'website',
-  ogTitle: 'Des assets premium pour Garry\'s Mod, prêts à déployer',
-  ogDescription: 'Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer sur votre serveur Garry\'s Mod.',
-  ogImage: 'https://gsa-store.fr/og-share.png',
+  ogTitle: 'Des assets premium, prêts à déployer',
+  ogDescription: 'Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer.',
+  ogImage: 'https://gsa-store.fr/og-share-v2.png',
   ogUrl: 'https://gsa-store.fr/',
   twitterCard: 'summary_large_image',
 })
