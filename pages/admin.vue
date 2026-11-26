@@ -1397,23 +1397,18 @@ async function saveProduct() {
     // Upload fichier produit vers R2 si un fichier a été sélectionné
     const productId = res?.id || res?.productId || res?.product?.id || editingId.value
     if (uploadFile.value && productId) {
-      const reader = new FileReader()
-      const base64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => {
-          const dataUrl = reader.result as string
-          resolve(dataUrl.split(',')[1]) // Remove data:...;base64, prefix
-        }
-        reader.onerror = reject
-        reader.readAsDataURL(uploadFile.value)
-      })
-
-      await $fetch(api + '/api/admin/products/' + productId + '/upload', { credentials: 'include',
+      // Envoi binaire direct (le navigateur lit le fichier en flux, pas de base64 ni de copie en mémoire)
+      const res2 = await fetch(api + '/api/admin/products/' + productId + '/upload-stream?filename=' + encodeURIComponent(uploadFileName.value), {
         method: 'POST',
-        body: {
-          filename: uploadFileName.value,
-          data_base64: base64
-        }
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/octet-stream', 'X-File-Type': uploadFile.value.type || 'application/octet-stream' },
+        body: uploadFile.value,
       })
+      if (!res2.ok) {
+        let msg = ''
+        try { msg = (await res2.json())?.statusMessage || '' } catch { /* réponse non JSON (proxy) */ }
+        throw new Error(msg || (res2.status === 502 || res2.status === 504 ? 'Le serveur n\'a pas répondu (fichier trop lourd ou serveur redémarré) - réessayez' : 'Envoi du fichier impossible (erreur ' + res2.status + ')'))
+      }
     }
 
     editingId.value = null

@@ -15,6 +15,18 @@ export const r2Client = R2_ENDPOINT && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY
     })
   : null
 
+// Client dédié aux envois en flux (gros fichiers) : pas de somme de contrôle ajoutée automatiquement,
+// R2 ne gère pas les en-têtes de checksum en pied de flux.
+export const r2Streaming = R2_ENDPOINT && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY
+  ? new S3Client({
+      region: 'auto',
+      endpoint: R2_ENDPOINT,
+      credentials: { accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY },
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
+    } as any)
+  : null
+
 export { GetObjectCommand, PutObjectCommand, DeleteObjectCommand, R2_BUCKET }
 
 export async function r2SignedUrl(storagePath: string, expiresIn = 3600): Promise<string> {
