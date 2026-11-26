@@ -125,20 +125,36 @@
           </div>
 
           <!-- Seller card -->
-          <NuxtLink :to="'/seller/' + (product.sellerSlug || product.seller)" class="seller-card">
+          <NuxtLink :to="'/seller/' + (product.sellerSlug || product.seller)" class="seller-card" :aria-label="tr('Voir la boutique de ', 'View the shop of ') + sellerName">
             <div class="seller-avatar">
               <img v-if="product.sellerAvatar" :src="product.sellerAvatar" :alt="sellerName" />
               <span v-else>{{ (sellerName?.[0] || 'V').toUpperCase() }}</span>
             </div>
             <div class="seller-info">
-              <strong class="seller-name">{{ sellerName }} <svg v-if="product.verifiedSeller" width="14" height="14" viewBox="0 0 24 24" fill="#2f7df6"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9" stroke="#fff" stroke-width="2" fill="none"/></svg></strong>
-              <span class="seller-label">{{ t('product.verified') }}</span>
+              <div class="seller-line">
+                <strong class="seller-name">{{ sellerName }}</strong>
+                <svg v-if="product.verifiedSeller" class="seller-check" width="16" height="16" viewBox="0 0 24 24" fill="#2f7df6" role="img" :aria-label="t('product.verified')"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="seller-label">{{ t('product.verified') }}</span>
+              </div>
+              <div class="seller-line seller-rating">
+                <span class="stars" role="img" :aria-label="product.sellerRating ? tr('Note de ', 'Rated ') + Number(product.sellerRating).toFixed(1) + tr(' sur 5', ' out of 5') : tr('Pas encore de note', 'No rating yet')">
+                  <svg v-for="n in 5" :key="'b' + n" class="star" :style="{ left: (n - 1) * 18 + 'px' }" viewBox="0 0 24 24" fill="#2a3446"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2 2 9.3l6.9-1z"/></svg>
+                  <span v-if="product.sellerRating" class="stars-fill" :style="{ width: Math.round((Number(product.sellerRating) / 5) * 88) + 'px' }">
+                    <svg v-for="n in 5" :key="'f' + n" class="star" :style="{ left: (n - 1) * 18 + 'px' }" viewBox="0 0 24 24" fill="#f5b342"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2 2 9.3l6.9-1z"/></svg>
+                  </span>
+                </span>
+                <template v-if="product.sellerRating">
+                  <strong class="seller-score">{{ Number(product.sellerRating).toFixed(1).replace('.', ',') }}</strong>
+                  <span class="seller-muted">({{ product.sellerReviewCount || 0 }} {{ (product.sellerReviewCount || 0) > 1 ? tr('avis', 'reviews') : tr('avis', 'review') }})</span>
+                </template>
+                <span v-else class="seller-muted">{{ tr("Pas encore d'avis", 'No reviews yet') }}</span>
+                <span class="seller-dot">·</span>
+                <span class="seller-count">{{ sellerProductCount }} {{ sellerProductCount > 1 ? tr('produits', 'products') : tr('produit', 'product') }}</span>
+              </div>
             </div>
-            <div class="seller-stats">
-              <span>{{ sellerProductCount }} {{ sellerProductCount > 1 ? tr('produits', 'products') : tr('produit', 'product') }}</span>
-              <span>{{ product.sellerRating ? Number(product.sellerRating).toFixed(1) + ' ★' : '' }}</span>
-            </div>
-            <svg class="seller-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            <span class="seller-cta">{{ tr('Voir la boutique', 'View shop') }}
+              <span class="seller-go"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </span>
           </NuxtLink>
         </div>
       </div>
@@ -573,17 +589,6 @@ onMounted(async () => {
 .badge-item svg { color:var(--green);flex-shrink:0; }
 
 /* Seller card */
-.seller-card { display:grid;grid-template-columns:48px 1fr auto;gap:10px;padding:14px 16px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);text-decoration:none;color:inherit;transition:border-color .2s,background .2s; }
-.seller-card:hover { border-color:rgba(47,125,246,0.4);background:rgba(47,125,246,0.03); }
-.seller-arrow { align-self:center;color:var(--text-muted);transition:transform .2s,color .2s; }
-.seller-card:hover .seller-arrow { transform:translateX(3px);color:var(--primary); }
-.seller-avatar { width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-size:1rem;font-weight:800;grid-row:span 2;overflow:hidden; }
-.seller-avatar img { width:100%;height:100%;object-fit:cover; }
-.seller-info { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
-.seller-name { font-size:.88rem;font-weight:700;display:flex;align-items:center;gap:4px; }
-.seller-name svg { flex-shrink:0; }
-.seller-label { font-size:.72rem;color:var(--text-muted);font-weight:500; }
-.seller-stats { display:flex;gap:12px;font-size:.78rem;color:var(--text-secondary); }
 
 /* Tabs */
 .product-tabs { margin-top:8px; }
@@ -620,4 +625,27 @@ onMounted(async () => {
 .loading-page { display:grid;place-items:center;min-height:60vh; }
 .loader { width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
+.seller-card { display:flex;align-items:center;gap:16px;padding:16px 20px;border-radius:14px;border:1px solid var(--border);background:var(--bg-card);text-decoration:none;color:inherit;transition:border-color .15s,background-color .15s; }
+.seller-card:hover { border-color:rgba(47,125,246,.55);background:rgba(47,125,246,.04); }
+.seller-card:focus-visible { outline:2px solid var(--primary);outline-offset:2px; }
+.seller-avatar { width:56px;height:56px;flex:none;border-radius:50%;background:var(--bg-surface);border:2px solid rgba(255,255,255,.1);display:grid;place-items:center;color:#fff;font-size:1.2rem;font-weight:700;overflow:hidden; }
+.seller-avatar img { width:100%;height:100%;object-fit:cover; }
+.seller-info { display:flex;flex-direction:column;gap:6px;min-width:0; }
+.seller-line { display:flex;align-items:center;flex-wrap:wrap;gap:8px; }
+.seller-name { font-size:1rem;font-weight:600; }
+.seller-check { flex-shrink:0; }
+.seller-label { font-size:.78rem;color:var(--text-muted); }
+.stars { position:relative;display:inline-flex;width:88px;height:16px;flex:none; }
+.stars .star { position:absolute;top:0;width:16px;height:16px; }
+.stars-fill { position:absolute;left:0;top:0;height:16px;overflow:hidden; }
+.stars-fill .star { position:absolute;top:0; }
+.seller-score { font-size:.85rem;font-weight:600; }
+.seller-muted { font-size:.8rem;color:var(--text-muted); }
+.seller-dot { color:var(--text-muted); }
+.seller-count { font-size:.8rem;color:var(--text-secondary); }
+.seller-cta { display:flex;align-items:center;gap:10px;margin-left:auto;color:var(--text-secondary);font-size:.82rem;font-weight:500;white-space:nowrap;transition:color .15s; }
+.seller-go { width:40px;height:40px;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(255,255,255,.14);color:var(--text);transition:background-color .15s,border-color .15s,transform .15s; }
+.seller-card:hover .seller-cta { color:var(--text); }
+.seller-card:hover .seller-go { background:var(--primary);border-color:var(--primary);color:#fff;transform:translateX(2px); }
+@media (max-width:560px) { .seller-card { flex-wrap:wrap; } .seller-cta { margin-left:72px; } }
 </style>
