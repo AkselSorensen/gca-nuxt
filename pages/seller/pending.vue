@@ -5,21 +5,22 @@
         <div class="pending-icon">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
         </div>
-        <h1>Demande envoyée !</h1>
-        <p>Votre demande de compte vendeur a bien été reçue.</p>
+        <h1>{{ tr(`Demande envoyée !`, `Request sent!`) }}</h1>
+        <p>{{ tr(`Votre demande de compte vendeur a bien été reçue.`, `Your seller account request has been received.`) }}</p>
         <div class="pending-info">
-          <div class="info-row"><span>Statut</span><span class="badge-pending">En attente de validation</span></div>
+          <div class="info-row"><span>{{ tr(`Statut`, `Status`) }}</span><span class="badge-pending">{{ tr(`En attente de validation`, `Pending approval`) }}</span></div>
         </div>
         <p class="pending-note">
-          L'équipe GSA va examiner votre demande sous 24-48h. Vous recevrez une confirmation dès que votre compte sera activé.
+          {{ tr(`L'équipe GSA va examiner votre demande sous 24-48h. Vous recevrez une confirmation dès que votre compte sera activé.`, `The GSA team will review your request within 24-48h. You will receive a confirmation as soon as your account is activated.`) }}
         </p>
-        <NuxtLink to="/" class="btn-home">Retour à l'accueil</NuxtLink>
+        <NuxtLink to="/" class="btn-home">{{ tr(`Retour à l'accueil`, `Back to home`) }}</NuxtLink>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+const { tr } = useLang()
 useSeoMeta({ robots: 'noindex, nofollow' })
 definePageMeta({ layout: 'default' })
 const pageRef = ref<HTMLElement | null>(null)

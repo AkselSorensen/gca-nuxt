@@ -37,9 +37,9 @@
           </div>
         </div>
         <p class="rev-comment">{{ review.comment }}</p>
-        <button v-if="isAdmin && !review.mine" type="button" class="rev-mod-delete" :disabled="deleting" title="Supprimer cet avis (admin)" @click="removeReview(review.id, true)">
+        <button v-if="isAdmin && !review.mine" type="button" class="rev-mod-delete" :disabled="deleting" :title="tr(`Supprimer cet avis (admin)`, `Delete this review (admin)`)" @click="removeReview(review.id, true)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          Supprimer
+          {{ tr(`Supprimer`, `Delete`) }}
         </button>
       </div>
       <p v-if="!reviews.length" class="reviews-empty">{{ t('product.reviews_empty') }}</p>
@@ -64,8 +64,8 @@
         <!-- Avis déjà laissé : on ne le propose plus, on propose de le modifier -->
         <div v-if="myReview && !editing" class="review-cta done">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>Vous avez déjà laissé un avis sur ce produit.</span>
-          <button type="button" class="cta-link" @click="editing = true">Modifier</button>
+          <span>{{ tr(`Vous avez déjà laissé un avis sur ce produit.`, `You have already left a review on this product.`) }}</span>
+          <button type="button" class="cta-link" @click="editing = true">{{ tr(`Modifier`, `Edit`) }}</button>
           <button type="button" class="cta-link danger" :disabled="deleting" @click="removeReview()">{{ t('product.reviews_delete') }}</button>
         </div>
         <form v-else class="review-form" @submit.prevent="submit">
@@ -103,7 +103,7 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ (e: 'updated'): void }>()
 
-const { t, locale } = useLang()
+const { t, locale, tr } = useLang()
 const { user } = useAuth()
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
@@ -184,7 +184,7 @@ async function removeReview(id?: number, adminMode = false) {
   if (!target || deleting.value) return
   const ok = await confirmRef.value?.ask({
     title: adminMode ? 'Supprimer cet avis' : t('product.reviews_delete_confirm_title'),
-    message: adminMode ? "Cet avis sera définitivement supprimé et la note du produit recalculée." : t('product.reviews_delete_confirm'),
+    message: adminMode ? tr("Cet avis sera définitivement supprimé et la note du produit recalculée.", "This review will be permanently deleted and the product rating recalculated.") : t('product.reviews_delete_confirm'),
     confirmText: t('product.reviews_delete'),
     danger: true,
   })

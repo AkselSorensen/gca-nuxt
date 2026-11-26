@@ -77,9 +77,10 @@
 
 <script setup lang="ts">
 useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/contact' }] })
+const { tr } = useLang()
 useSeoMeta({
-  title: 'Contact - GSA Store',
-  description: 'Contactez l\'équipe GSA Store : support, questions, prestations.',
+  title: () => 'Contact - GSA Store',
+  description: () => tr('Contactez l\'équipe GSA Store : support, questions, prestations.', 'Contact the GSA Store team: support, questions, services.'),
   ogType: 'website',
   
 })
@@ -105,14 +106,14 @@ async function submit() {
     })
     if (res?.delivered === false) {
       success.value = true
-      successMsg.value = 'Message enregistré - la configuration email sera bientôt active. Rejoignez le Discord pour une réponse immédiate.'
+      successMsg.value = tr("Message enregistré - la configuration email sera bientôt active. Rejoignez le Discord pour une réponse immédiate.", "Message saved - email delivery will be active soon. Join the Discord for an immediate answer.")
     } else {
       success.value = true
-      successMsg.value = 'Votre message a bien été envoyé ! Nous vous répondrons sous 24-48h.'
+      successMsg.value = tr("Votre message a bien été envoyé ! Nous vous répondrons sous 24-48h.", "Your message has been sent! We will reply within 24-48h.")
     }
     form.name = ''; form.email = ''; form.subject = ''; form.message = ''
   } catch (e: any) {
-    error.value = e?.data?.statusMessage || 'Une erreur est survenue. Réessayez ou passez par Discord.'
+    error.value = e?.data?.statusMessage || tr("Une erreur est survenue. Réessayez ou passez par Discord.", "Something went wrong. Please try again or reach us on Discord.")
   } finally {
     sending.value = false
   }

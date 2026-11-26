@@ -16,16 +16,16 @@
         <!-- Left: Gallery -->
         <div class="product-gallery anim-left">
           <div class="gallery-main">
-            <iframe v-if="showVideo && videoPlaying && videoEmbedUrl" :src="videoEmbedUrl + '?autoplay=1&rel=0&playsinline=1'" class="yt-iframe" title="Vidéo du produit" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <iframe v-if="showVideo && videoPlaying && videoEmbedUrl" :src="videoEmbedUrl + '?autoplay=1&rel=0&playsinline=1'" class="yt-iframe" :title="tr(`Vidéo du produit`, `Product video`)" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             <div v-if="videoPlaying && videoEmbedUrl" class="video-fallback">
               <span v-if="videoError">{{ t('product.video_error') }}</span>
               <a :href="'https://www.youtube.com/watch?v=' + videoWatchId" target="_blank" rel="noopener">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                Ouvrir sur YouTube
+                {{ tr(`Ouvrir sur YouTube`, `Open on YouTube`) }}
               </a>
             </div>
             <div v-else-if="showVideo && videoThumbUrl" class="video-preview" @click="showVideo = true; videoPlaying = true">
-              <img :src="videoThumbUrl" :alt="'Vidéo - ' + product.title" />
+              <img :src="videoThumbUrl" :alt="tr('Vidéo', 'Video') + ' - ' + product.title" />
               <div class="video-play">
                 <!-- Bouton lecture style YouTube : rectangle arrondi rouge + triangle blanc -->
                 <span class="yt-play-btn">
@@ -36,7 +36,7 @@
             <img v-if="currentImg && !(showVideo && videoThumbUrl)" :src="currentImg" :alt="product.title" :class="{ 'has-video': product.videoUrl }" @click="product.videoUrl && videoEmbedUrl ? (showVideo = true, videoPlaying = true) : null" />
             <span v-if="currentImg && product.videoUrl && !(showVideo && videoThumbUrl)" class="video-cta" @click="showVideo = true; videoPlaying = true">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-              Voir la vidéo
+              {{ tr(`Voir la vidéo`, `Watch the video`) }}
             </span>
             <img v-if="currentImg && !(showVideo && videoThumbUrl)" :src="currentImg" alt="" class="gallery-blur" aria-hidden="true" />
             <div v-else class="gallery-empty"><div class="loader"></div></div>
@@ -44,7 +44,7 @@
           </div>
           <div v-if="images.length > 1 || product.videoUrl" class="gallery-thumbs">
             <button v-if="product.videoUrl" class="thumb-btn thumb-video" :class="{ active: showVideo }" @click="showVideo = true; videoPlaying = false">
-              <img v-if="videoThumbUrl" :src="videoThumbUrl" :alt="'Vidéo'">
+              <img v-if="videoThumbUrl" :src="videoThumbUrl" :alt="tr('Vidéo', 'Video')">
               <span v-if="videoThumbUrl" class="yt-badge yt-badge-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span>
               <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
             </button>
@@ -70,11 +70,11 @@
             </div>
             <div class="stat-chip" v-if="product.sales">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-              {{ product.sales }}+ ventes
+              {{ product.sales }}+ {{ tr('ventes', 'sales') }}
             </div>
             <div class="stat-chip">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              {{ product.createdAt ? new Date(product.createdAt).toLocaleDateString('fr-FR', {month:'short',year:'numeric'}) : 'Récent' }}
+              {{ product.createdAt ? new Date(product.createdAt).toLocaleDateString(locale === 'en' ? 'en-GB' : 'fr-FR', {month:'short',year:'numeric'}) : tr('Récent', 'New') }}
             </div>
           </div>
 
@@ -104,7 +104,7 @@
           </div>
           <div v-else-if="isOwnProduct" class="own-product-note">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
-            C'est votre produit - vous ne pouvez pas l'acheter.
+            {{ tr(`C'est votre produit - vous ne pouvez pas l'acheter.`, `This is your product - you cannot buy it.`) }}
           </div>
           <div v-else class="info-actions">
             <button class="btn-cart-add" @click="addToCart">
@@ -135,7 +135,7 @@
               <span class="seller-label">{{ t('product.verified') }}</span>
             </div>
             <div class="seller-stats">
-              <span>{{ sellerProductCount }} {{ sellerProductCount > 1 ? 'produits' : 'produit' }}</span>
+              <span>{{ sellerProductCount }} {{ sellerProductCount > 1 ? tr('produits', 'products') : tr('produit', 'product') }}</span>
               <span>{{ product.sellerRating ? Number(product.sellerRating).toFixed(1) + ' ★' : '' }}</span>
             </div>
             <svg class="seller-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
@@ -179,7 +179,7 @@
 </template>
 
 <script setup lang="ts">
-const { t } = useLang()
+const { t, tr, locale } = useLang()
 
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin

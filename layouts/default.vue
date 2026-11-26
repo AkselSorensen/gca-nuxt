@@ -10,14 +10,15 @@
 
 <script setup lang="ts">
 // ─── Meta SEO par défaut du site (les pages les écrasent via useSeoMeta) ───
+const { tr } = useLang()
 useHead({
-  title: 'GSA Store - Des assets premium, prêts à déployer.',
+  title: () => tr('GSA Store - Des assets premium, prêts à déployer.', 'GSA Store - Premium assets, ready to deploy.'),
   meta: [
-    { name: 'description', content: "Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l'équipe GSA, prêts à déployer." },
-    { property: 'og:title', content: "Des assets premium, prêts à déployer" },
-    { property: 'og:description', content: "Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l'équipe GSA, prêts à déployer." },
+    { name: 'description', content: () => tr("Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l'équipe GSA, prêts à déployer.", "Mapping, particles, HUD, animations and UI: premium assets verified by the GSA team, ready to deploy.") },
+    { property: 'og:title', content: () => tr("Des assets premium, prêts à déployer", "Premium assets, ready to deploy") },
+    { property: 'og:description', content: () => tr("Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l'équipe GSA, prêts à déployer.", "Mapping, particles, HUD, animations and UI: premium assets verified by the GSA team, ready to deploy.") },
     { property: 'og:site_name', content: 'GSA Store' },
-    { property: 'og:locale', content: 'fr_FR' },
+    { property: 'og:locale', content: () => (tr('fr', 'en') === 'en' ? 'en_GB' : 'fr_FR') },
     { property: 'og:type', content: 'website' },
     { property: 'og:url', content: 'https://gsa-store.fr' },
     { property: 'og:image', content: 'https://gsa-store.fr/og-share-v2.png' },

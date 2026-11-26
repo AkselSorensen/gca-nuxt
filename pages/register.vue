@@ -12,7 +12,7 @@
         </div>
         <div class="option-card" :class="{ active: accountType === 'seller' }" @click="accountType = 'seller'">
           <div class="opt-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
-          <div><strong>Vendeur</strong><span>{{ t('register.seller_sub') }}</span></div>
+          <div><strong>{{ tr(`Vendeur`, `Seller`) }}</strong><span>{{ t('register.seller_sub') }}</span></div>
         </div>
       </div>
 
@@ -21,17 +21,17 @@
         <div class="join-icon">
           <IconDiscord :size="30" />
         </div>
-        <h2>Rejoignez le serveur Discord GSA</h2>
-        <p>Pour vous inscrire, vous devez être membre du serveur Discord officiel GSA.</p>
+        <h2>{{ tr(`Rejoignez le serveur Discord GSA`, `Join the GSA Discord server`) }}</h2>
+        <p>{{ tr(`Pour vous inscrire, vous devez être membre du serveur Discord officiel GSA.`, `To sign up, you must be a member of the official GSA Discord server.`) }}</p>
         <div v-if="discordAttempted" class="join-error">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Vous n'avez pas encore rejoint le serveur Discord. Cliquez sur « Rejoindre le serveur Discord » ci-dessous, acceptez l'invitation, puis revenez ici.
+          {{ tr(`Vous n'avez pas encore rejoint le serveur Discord. Cliquez sur « Rejoindre le serveur Discord » ci-dessous, acceptez l'invitation, puis revenez ici.`, `You have not joined the Discord server yet. Click "Join the Discord server" below, accept the invitation, then come back here.`) }}
         </div>
         <a href="https://discord.gg/KDsEzGRnKs" target="_blank" rel="noopener" class="btn-join" @click="joinDiscord">
           <IconDiscord :size="18" />
-          Rejoindre le serveur Discord
+          {{ tr(`Rejoindre le serveur Discord`, `Join the Discord server`) }}
         </a>
-        <button class="btn-retry" @click="registerDiscord">Je suis membre, m'inscrire</button>
+        <button class="btn-retry" @click="registerDiscord">{{ tr(`Je suis membre, m'inscrire`, `I am a member, sign me up`) }}</button>
       </div>
 
       <!-- Bouton Discord principal -->
@@ -39,28 +39,28 @@
         <div class="verify-icon">
           <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
         </div>
-        <h2>Vérifiez votre email</h2>
-        <p class="verify-sub">Un code de validation a été envoyé à <strong>{{ registeredEmail }}</strong>.</p>
+        <h2>{{ tr(`Vérifiez votre email`, `Check your email`) }}</h2>
+        <p class="verify-sub">{{ tr(`Un code de validation a été envoyé à`, `A verification code has been sent to`) }} <strong>{{ registeredEmail }}</strong>.</p>
         <div v-if="devCode" class="verify-devcode">
-          <span>Mode démo (email non configuré) - votre code :</span>
+          <span>{{ tr(`Mode démo (email non configuré) - votre code :`, `Demo mode (email not configured) - your code:`) }}</span>
           <strong>{{ devCode }}</strong>
         </div>
         <div class="field anim-up">
-          <label>Code de validation</label>
+          <label>{{ tr(`Code de validation`, `Verification code`) }}</label>
           <input v-model="verifyCode" type="text" inputmode="numeric" placeholder="000000" maxlength="6" class="verify-input" @keyup.enter="verifyEmail" />
         </div>
         <p v-if="verifyError" class="auth-error anim-fade">{{ verifyError }}</p>
         <button class="btn-submit" :disabled="verifying" @click="verifyEmail">
-          {{ verifying ? 'Vérification...' : 'Valider mon email' }}
+          {{ verifying ? tr('Vérification...', 'Verifying...') : tr('Valider mon email', 'Confirm my email') }}
         </button>
       </div>
 
       <div class="auth-form discord-register">
         <button class="btn-discord-main anim-up" @click="onDiscordRegister">
           <IconDiscord :size="20" />
-          {{ accountType === 'seller' ? 'S\'inscrire en tant que vendeur avec Discord' : 'S\'inscrire avec Discord' }}
+          {{ accountType === 'seller' ? tr('S\'inscrire en tant que vendeur avec Discord', 'Sign up as a seller with Discord') : tr('S\'inscrire avec Discord', 'Sign up with Discord') }}
         </button>
-        <p class="discord-note anim-fade">Vous devez être membre du serveur Discord GSA pour accéder à la plateforme.</p>
+        <p class="discord-note anim-fade">{{ tr(`Vous devez être membre du serveur Discord GSA pour accéder à la plateforme.`, `You must be a member of the GSA Discord server to access the platform.`) }}</p>
         <p class="auth-footer anim-fade">{{ t('register.has_account') }} <NuxtLink :to="route.query.redirect ? '/login?redirect=' + encodeURIComponent(String(route.query.redirect)) : '/login'">{{ t('register.login_link') }}</NuxtLink></p>
       </div>
     </div>
@@ -70,11 +70,11 @@
       <div v-if="showTerms" class="modal-overlay" @click.self="showTerms = false">
         <div class="modal-card anim-scale" @click.stop>
           <div class="modal-header">
-            <h2>{{ accountType === 'seller' ? 'Contrat vendeur' : 'Conditions générales' }}</h2>
+            <h2>{{ accountType === 'seller' ? tr('Contrat vendeur', 'Seller contract') : tr('Conditions générales', 'General terms') }}</h2>
             <button class="modal-close" @click="showTerms = false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
           <div ref="termsScrollRef" class="terms-scroll" @scroll="onTermsScroll">
-            <div v-if="accountType === 'seller'" class="terms-content">
+            <div v-if="accountType === 'seller' && locale !== 'en'" class="terms-content">
               <h3>Préambule</h3>
               <p>GSA est une plateforme numérique spécialisée dans la distribution, la valorisation et la commercialisation de ressources numériques destinées à la création de projets vidéoludiques. GSA exerce une activité hybride comprenant une activité de marketplace mettant en relation vendeurs et acheteurs, une activité de prestation de services liés à la présentation, la sélection et la promotion des contenus, et une activité de création et de fourniture de prestations professionnelles réalisées directement par GSA.</p>
               <p>Le présent contrat régit les relations entre <strong>GSA Store</strong> (ci-après « GSA » ou « la Plateforme ») et tout créateur inscrit en qualité de vendeur (ci-après « le Vendeur »). En créant un compte vendeur, le Vendeur accepte sans réserve l'intégralité des présentes conditions ainsi que les Fondations Juridiques de GSA.</p>
@@ -110,7 +110,7 @@
               <p>Les documents contractuels applicables sont : 1. Mentions légales ; 2. Conditions Générales d'Utilisation ; 3. Conditions Générales de Vente ; 4. Licence GSA ; 5. Contrat vendeur (présent contrat) ; 6. Politiques complémentaires. En cas de contradiction, le document spécifique prévaut sur le document général. En cas de manquement grave aux présentes conditions, GSA se réserve le droit de suspendre ou supprimer le compte Vendeur. Le droit applicable est le droit français.</p>
             </div>
 
-            <div v-else class="terms-content">
+            <div v-else-if="locale !== 'en'" class="terms-content">
               <h3>1. Conditions générales de vente (CGV)</h3>
               <p>Les présentes CGV régissent les achats effectués sur la Plateforme GSA Store. Toute commande implique l'acceptation des présentes conditions. Les prix sont affichés en euros, TTC. La Plateforme se réserve le droit de modifier ses prix à tout moment, les produits étant facturés sur la base du tarif en vigueur au moment de la commande.</p>
 
@@ -138,13 +138,77 @@
               <h3>7. Responsabilité et litiges</h3>
               <p>La Plateforme agit comme intermédiaire technique entre vendeurs et acheteurs. En cas de litige, une solution amiable sera recherchée en priorité. Le droit applicable est le droit français.</p>
             </div>
+            <div v-else-if="accountType === 'seller'" class="terms-content">
+              <h3>Preamble</h3>
+              <p>GSA is a digital platform specialised in the distribution, promotion and sale of digital resources intended for the creation of video game projects. GSA carries out a hybrid activity comprising a marketplace connecting sellers and buyers, a service activity related to the presentation, selection and promotion of content, and an activity of creating and providing professional services carried out directly by GSA.</p>
+              <p>This contract governs the relationship between <strong>GSA Store</strong> (hereinafter "GSA" or "the Platform") and any creator registered as a seller (hereinafter "the Seller"). By creating a seller account, the Seller fully accepts these terms as well as GSA's Legal Foundations.</p>
+
+              <h3>Article 1 - Definitions</h3>
+              <p>The terms used in this contract have the meaning given in GSA's Legal Foundations (version 1.0.0):</p>
+              <ul>
+                <li><strong>Digital product</strong>: any intangible content offered for sale (3D models, textures, environments, maps, visual effects, interfaces, sounds, animations, game engine resources...);</li>
+                <li><strong>GSA Validation</strong>: an internal human review carried out before publication - a quality control service that is neither an absolute technical certification, nor a guarantee against any defect, nor a guarantee of compatibility;</li>
+                <li><strong>GSA Presentation</strong>: thumbnails, screenshots, videos, descriptions and promotional texts prepared by GSA, protected by copyright;</li>
+                <li><strong>Commission</strong>: remuneration received by GSA, contractually defined with each Seller.</li>
+              </ul>
+
+              <h3>Article 2 - Nature of GSA's role</h3>
+              <p>GSA acts as a platform operator connecting sellers and buyers. Unless stated otherwise, GSA is neither the author of the content offered by Sellers, nor the holder of the rights attached to that content, nor the developer of products sold by third parties. Obligations relating to the content sold remain the responsibility of the Seller concerned.</p>
+
+              <h3>Article 3 - Seller obligations</h3>
+              <p>The Seller remains responsible for:</p>
+              <ul>
+                <li>holding the rights attached to the content offered (original content or content made with the express permission of the rights holders);</li>
+                <li>the legal compliance of the products and compliance with applicable third-party licences;</li>
+                <li>the accuracy of the information provided (descriptions, images, documentation);</li>
+                <li>not publishing content that is contrary to the law, to the rights of third parties or to public decency.</li>
+              </ul>
+
+              <h3>Article 4 - Commission and payments</h3>
+              <p>The Platform takes a commission of <strong>25%</strong> on the price of each sale (20% for partner sellers), which pays in particular for access to the platform, visibility, GSA Validation, GSA Presentation, technical management and first-level support. Payments are processed exclusively through Stripe: the Seller must have an active Stripe Connect account to receive funds. The net amount, after deduction of the commission, is transferred within the timeframe set by Stripe (generally 2 to 7 business days). Stripe processing fees (1.5% + €0.25 per transaction) remain at the Platform's expense.</p>
+
+              <h3>Article 5 - Intellectual property and sales licence</h3>
+              <p>The Seller keeps all intellectual property rights over their creations. They grant GSA a non-exclusive licence allowing it to display, store and distribute the creations strictly for the purpose of the sale. The buyer acquires a GSA Licence: non-exclusive, personal, non-transferable, without transfer of ownership and without any right of redistribution. In particular, the following are prohibited unless authorised: reproduction, redistribution, resale, public availability and unauthorised commercial use of the content.</p>
+
+              <h3>Article 6 - Contractual hierarchy</h3>
+              <p>The applicable contractual documents are: 1. Legal notice; 2. Terms of Use; 3. Terms of Sale; 4. GSA Licence; 5. Seller contract (this contract); 6. Additional policies. In case of contradiction, the specific document prevails over the general one. In case of serious breach of these terms, GSA reserves the right to suspend or delete the Seller account. French law applies.</p>
+            </div>
+
+            <div v-else class="terms-content">
+              <h3>1. Terms of Sale</h3>
+              <p>These Terms of Sale govern purchases made on the GSA Store Platform. Every order implies acceptance of these terms. Prices are displayed in euros, including tax. The Platform reserves the right to change its prices at any time; products are invoiced at the price in force when the order is placed.</p>
+
+              <h3>2. Terms of Use</h3>
+              <p>By using the Platform, you agree to:</p>
+              <ul>
+                <li>Provide accurate information when creating your account;</li>
+                <li>Not infringe creators' rights (no redistribution, copying or resale of downloaded creations);</li>
+                <li>Not publish illegal, fraudulent or malicious content;</li>
+                <li>Not circumvent the Platform's payment or protection systems.</li>
+              </ul>
+
+              <h3>3. Payment and delivery</h3>
+              <p>Payments are secured and processed through Stripe. Once the payment is validated, access to the download of the creation is immediate in your "My downloads" area. If a payment has been made but not confirmed, an automatic check is carried out and the product is unlocked as soon as it is confirmed.</p>
+
+              <h3>4. Right of withdrawal and refunds</h3>
+              <p>In accordance with article L221-28 of the French Consumer Code, the right of withdrawal does not apply to digital content supplied immediately and downloaded. However, if a product is non-compliant or does not work, a refund may be granted within 14 days after review of the request. Contact support through the seller or the Platform.</p>
+
+              <h3>5. Intellectual property</h3>
+              <p>Creations remain the property of their authors. The purchase grants a personal, non-transferable and non-exclusive licence of use. Any redistribution, resale or copying of the downloaded content is prohibited.</p>
+
+              <h3>6. Data protection</h3>
+              <p>Your personal data is processed in accordance with the GDPR. It is used to manage your account, your orders and the customer relationship, and is never sold to third parties.</p>
+
+              <h3>7. Liability and disputes</h3>
+              <p>The Platform acts as a technical intermediary between sellers and buyers. In case of dispute, an amicable solution will be sought first. French law applies.</p>
+            </div>
             <p style="margin-top:20px;padding:16px;background:rgba(47,125,246,0.06);border-radius:8px;border:1px solid rgba(47,125,246,0.15);text-align:center;">
-              Scrollez jusqu'en bas pour accepter les conditions.
+              {{ tr(`Scrollez jusqu'en bas pour accepter les conditions.`, `Scroll to the bottom to accept the terms.`) }}
             </p>
           </div>
           <div class="modal-footer">
             <div class="doc-list">
-              <span class="doc-list-title">Documents à accepter ({{ termsDocs.length }}) :</span>
+              <span class="doc-list-title">{{ tr(`Documents à accepter`, `Documents to accept`) }} ({{ termsDocs.length }}):</span>
               <NuxtLink v-for="d in termsDocs" :key="d.path" :to="d.path" target="_blank" class="doc-link">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 {{ d.label }}
@@ -152,9 +216,9 @@
             </div>
             <label class="terms-check" :class="{ disabled: !termsScrolled }">
               <input type="checkbox" v-model="termsAccepted" :disabled="!termsScrolled" />
-              <span>J'ai lu et j'accepte l'ensemble des documents ci-dessus.</span>
+              <span>{{ tr(`J'ai lu et j'accepte l'ensemble des documents ci-dessus.`, `I have read and accept all of the documents above.`) }}</span>
             </label>
-            <button class="btn-accept" :disabled="!termsAccepted" @click="confirmTerms">Confirmer et continuer</button>
+            <button class="btn-accept" :disabled="!termsAccepted" @click="confirmTerms">{{ tr(`Confirmer et continuer`, `Confirm and continue`) }}</button>
           </div>
         </div>
       </div>
@@ -164,14 +228,15 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
+const { tr: trSeo } = useLang()
 useSeoMeta({
-  title: 'Inscription - GSA Store',
-  description: 'Créez votre compte GSA Store : acheteurs et vendeurs d\'assets premium.',
+  title: () => trSeo('Inscription - GSA Store', 'Sign up - GSA Store'),
+  description: () => trSeo('Créez votre compte GSA Store : acheteurs et vendeurs d\'assets premium.', 'Create your GSA Store account: buyers and sellers of premium assets.'),
   ogType: 'website',
   robots: 'noindex, nofollow',
 })
 const { register } = useAuth()
-const { t } = useLang()
+const { t, tr, locale } = useLang()
 const pageRef = ref<HTMLElement | null>(null)
 
 // Déjà connecté → pas de page d'inscription
@@ -201,16 +266,16 @@ const api = config.public.apiOrigin
 const showTerms = ref(false)
 const termsAccepted = ref(false)
 
-const buyerDocs = [
-  { label: 'Mentions légales', path: '/mentions-legales' },
-  { label: 'Conditions Générales d\'Utilisation (CGU)', path: '/cgu' },
-  { label: 'Politique de confidentialité des données', path: '/confidentialite' },
-  { label: 'Politique des cookies', path: '/cookies' },
-  { label: 'Politique de rétractation', path: '/retractation' },
-  { label: 'Conditions Générales de Vente (CGV)', path: '/cgv' },
-]
-const sellerExtraDoc = { label: 'Contrat Vendeur', path: '/contrat-vendeur' }
-const termsDocs = computed(() => accountType.value === 'seller' ? [...buyerDocs, sellerExtraDoc] : buyerDocs)
+const buyerDocs = computed(() => [
+  { label: tr('Mentions légales', 'Legal notice'), path: '/mentions-legales' },
+  { label: tr('Conditions Générales d\'Utilisation (CGU)', 'Terms of Use'), path: '/cgu' },
+  { label: tr('Politique de confidentialité des données', 'Privacy policy'), path: '/confidentialite' },
+  { label: tr('Politique des cookies', 'Cookie policy'), path: '/cookies' },
+  { label: tr('Politique de rétractation', 'Withdrawal policy'), path: '/retractation' },
+  { label: tr('Conditions Générales de Vente (CGV)', 'Terms of Sale'), path: '/cgv' },
+])
+const sellerExtraDoc = computed(() => ({ label: tr('Contrat Vendeur', 'Seller Contract'), path: '/contrat-vendeur' }))
+const termsDocs = computed(() => accountType.value === 'seller' ? [...buyerDocs.value, sellerExtraDoc.value] : buyerDocs.value)
 const termsScrolled = ref(false)
 
 function onTermsScroll() {
@@ -273,12 +338,12 @@ async function handleRegister() {
       setTimeout(() => navigateTo('/'), 1500)
     }
   } catch (e: any) {
-    error.value = e.data?.message || e.message || "Erreur"
+    error.value = e.data?.message || e.message || tr('Erreur', 'Error')
   } finally { submitting.value = false }
 }
 
 async function verifyEmail() {
-  if (!verifyCode.value.trim()) { verifyError.value = 'Entrez le code reçu.'; return }
+  if (!verifyCode.value.trim()) { verifyError.value = tr('Entrez le code reçu.', 'Enter the code you received.'); return }
   verifying.value = true
   verifyError.value = ''
   try {
@@ -293,7 +358,7 @@ async function verifyEmail() {
       navigateTo('/')
     }
   } catch (e: any) {
-    verifyError.value = e.data?.message || e.message || 'Code invalide'
+    verifyError.value = e.data?.message || e.message || tr('Code invalide', 'Invalid code')
   } finally { verifying.value = false }
 }
 

@@ -16,16 +16,16 @@
             <p v-if="seller.bio" class="sp-bio">{{ seller.bio }}</p>
             <button v-if="isOwner && !editingBio" class="sp-btn sp-btn-ghost sp-bio-edit" @click="startEditBio">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              Modifier la description
+              {{ tr(`Modifier la description`, `Edit description`) }}
             </button>
             <div class="sp-actions">
               <a v-if="seller.discordId" :href="'https://discord.com/users/' + seller.discordId" target="_blank" rel="noopener" class="sp-btn sp-btn-primary">
                 <IconDiscord :size="16" />
-                Contacter sur Discord
+                {{ tr(`Contacter sur Discord`, `Contact on Discord`) }}
               </a>
               <button class="sp-btn sp-btn-ghost" @click="shareProfile">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                Partager
+                {{ tr(`Partager`, `Share`) }}
               </button>
             </div>
           </div>
@@ -38,17 +38,17 @@
             <div class="sp-stat">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
               <div class="sp-stat-val">{{ totalSales }}</div>
-              <div class="sp-stat-lbl">Ventes</div>
+              <div class="sp-stat-lbl">{{ tr(`Ventes`, `Sales`) }}</div>
             </div>
             <div class="sp-stat">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               <div class="sp-stat-val">{{ avgRating }}</div>
-              <div class="sp-stat-lbl">Note</div>
+              <div class="sp-stat-lbl">{{ tr(`Note`, `Rating`) }}</div>
             </div>
             <div class="sp-stat">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
               <div class="sp-stat-val">{{ totalReviews }}</div>
-              <div class="sp-stat-lbl">Avis</div>
+              <div class="sp-stat-lbl">{{ tr(`Avis`, `Reviews`) }}</div>
             </div>
           </div>
         </div>
@@ -59,24 +59,24 @@
       <!-- Sidebar -->
       <aside class="sp-sidebar anim-left">
         <div class="sp-card">
-          <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> À propos</h3>
+          <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> {{ tr(`À propos`, `About`) }}</h3>
           <template v-if="isOwner && editingBio">
-            <textarea v-model="bioDraft" rows="5" class="bio-edit-area" placeholder="Décrivez votre boutique..."></textarea>
+            <textarea v-model="bioDraft" rows="5" class="bio-edit-area" :placeholder="tr(`Décrivez votre boutique...`, `Describe your shop...`)"></textarea>
             <div class="bio-edit-actions">
-              <button class="sp-btn sp-btn-primary" :disabled="bioSaving" @click="saveBio">{{ bioSaving ? 'Enregistrement…' : 'Enregistrer' }}</button>
-              <button class="sp-btn sp-btn-ghost" @click="cancelEditBio">Annuler</button>
+              <button class="sp-btn sp-btn-primary" :disabled="bioSaving" @click="saveBio">{{ bioSaving ? tr('Enregistrement…', 'Saving…') : tr('Enregistrer', 'Save') }}</button>
+              <button class="sp-btn sp-btn-ghost" @click="cancelEditBio">{{ tr(`Annuler`, `Cancel`) }}</button>
             </div>
           </template>
-          <p v-else>{{ seller.bio || 'Aucune description fournie.' }}</p>
+          <p v-else>{{ seller.bio || tr('Aucune description fournie.', 'No description provided.') }}</p>
           <span v-if="bioMsg" class="bio-edit-msg">{{ bioMsg }}</span>
         </div>
 
         <div class="sp-card">
-          <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Détails</h3>
+          <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> {{ tr(`Détails`, `Details`) }}</h3>
           <div class="sp-details">
             <div class="sp-detail"><span class="dl-label">{{ t('seller.member_since') }}</span><span>{{ formatDate(seller.joinedAt) }}</span></div>
             <div v-if="seller.discordTag || seller.displayName" class="sp-detail">
-              <span class="dl-label">Contact Discord</span>
+              <span class="dl-label">{{ tr(`Contact Discord`, `Discord contact`) }}</span>
               <span class="discord-contact">
                 <IconDiscord :size="14" />
                 {{ seller.discordTag || seller.displayName }}
@@ -91,7 +91,7 @@
         <div class="sp-products-header">
           <h2>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-            {{ products.length }} {{ products.length > 1 ? 'produits' : 'produit' }}
+            {{ products.length }} {{ products.length > 1 ? tr('produits', 'products') : tr('produit', 'product') }}
           </h2>
         </div>
 
@@ -106,7 +106,7 @@
               <div class="sp-pc-img">
                 <img :src="p.thumbnail || '/placeholder.svg'" :alt="p.title" />
                 <div v-if="p.discountPercent > 0" class="sp-pc-discount">−{{ p.discountPercent }}%</div>
-                <div v-if="p.isTrending" class="sp-pc-trending">TENDANCE</div>
+                <div v-if="p.isTrending" class="sp-pc-trending">{{ tr(`TENDANCE`, `TRENDING`) }}</div>
               </div>
               <div class="sp-pc-body">
                 <h3>{{ p.title }}</h3>
@@ -132,11 +132,11 @@
           <div class="sp-products-header">
             <h2>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-              Avis ({{ reviews.length }})
+              {{ tr('Avis', 'Reviews') }} ({{ reviews.length }})
             </h2>
           </div>
           <div v-if="!reviews.length" class="sp-empty">
-            <p>Aucun avis pour le moment.</p>
+            <p>{{ tr(`Aucun avis pour le moment.`, `No reviews yet.`) }}</p>
           </div>
           <div v-else class="sp-reviews-list">
             <div v-for="r in visibleReviews" :key="r.id" class="sp-review">
@@ -147,7 +147,7 @@
                 </div>
                 <div class="sp-review-user">
                   <strong>{{ r.reviewerName }}</strong>
-                  <span class="sp-review-product">sur {{ r.productTitle }}</span>
+                  <span class="sp-review-product">{{ tr(`sur`, `on`) }} {{ r.productTitle }}</span>
                 </div>
                 <div class="sp-review-stars">
                   <span v-for="n in 5" :key="n" :class="{ on: n <= r.rating }">★</span>
@@ -157,7 +157,7 @@
               <p v-if="r.comment" class="sp-review-comment">{{ r.comment }}</p>
             </div>
             <button v-if="visibleReviews.length < reviews.length" class="sp-more-btn" @click="reviewsPage++">
-              Afficher plus d'avis ({{ reviews.length - visibleReviews.length }} restants)
+              {{ tr(`Afficher plus d'avis`, `Show more reviews`) }} ({{ reviews.length - visibleReviews.length }} {{ tr(`restants`, `left`) }})
             </button>
           </div>
         </div>
@@ -170,7 +170,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'default' })
 
-const { t } = useLang()
+const { t, tr, locale } = useLang()
 
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
@@ -246,7 +246,7 @@ const truncateText = (s: string, max: number) => {
 
 const sellerName = computed(() => seller.value?.displayName || 'Vendeur')
 const seoTitle = computed(() => sellerName.value + ' - Vendeur GSA Store')
-const seoDescription = computed(() => truncateText(seller.value?.bio || 'Découvrez les créations de ' + sellerName.value + ' sur GSA Store.', 150))
+const seoDescription = computed(() => truncateText(seller.value?.bio || tr('Découvrez les créations de ', 'Discover the creations of ') + sellerName.value + tr(' sur GSA Store.', ' on GSA Store.'), 150))
 
 useSeoMeta({
   title: seoTitle,
@@ -296,7 +296,7 @@ function formatDate(dateStr: string) {
   try {
     const d = new Date(dateStr)
     if (isNaN(d.getTime())) return '-'
-    return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+    return d.toLocaleDateString(locale.value === 'en' ? 'en-GB' : 'fr-FR', { month: 'long', year: 'numeric' })
   } catch { return '-' }
 }
 

@@ -1,20 +1,21 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
+const { tr: trSeo } = useLang()
 useSeoMeta({
   title: 'Connexion - GSA Store',
-  description: 'Connectez-vous à GSA Store pour accéder à votre compte, vos téléchargements et vos avantages clients.',
+  description: () => trSeo('Connectez-vous à GSA Store pour accéder à votre compte, vos téléchargements et vos avantages clients.', 'Sign in to GSA Store to access your account, your downloads and your customer perks.'),
   ogType: 'website',
   robots: 'noindex, nofollow',
 })
 const { login, user, checkAuth } = useAuth()
-const { t } = useLang()
+const { t, tr } = useLang()
 const route = useRoute()
 // ?admin=1 (bouton de l'écran de maintenance) → uniquement le formulaire admin
 const adminOnly = route.query.admin === '1'
 const tab = ref(adminOnly ? 'admin' : 'user')
 const email = ref('')
 const password = ref('')
-const error = ref(route.query.error === 'banned' ? 'Votre compte a été suspendu. Contactez le support.' : '')
+const error = ref(route.query.error === 'banned' ? tr("Votre compte a été suspendu. Contactez le support.", "Your account has been suspended. Please contact support.") : '')
 const adminSession = computed(() => adminOnly && user.value?.role === 'admin')
 const submitting = ref(false)
 const pageRef = ref<HTMLElement | null>(null)
@@ -130,8 +131,8 @@ onMounted(async () => {
       <!-- Admin Login -->
       <form v-if="tab === 'admin'" @submit.prevent="handleLogin" class="auth-form">
         <div v-if="adminSession" class="admin-notice anim-left">
-          <span>{{ 'Session administrateur ouverte : ' + (user?.displayName || user?.email || '') }}</span>
-          <button type="button" class="btn-submit btn-admin" style="margin-top:10px" @click="navigateTo('/admin')">Ouvrir l'administration</button>
+          <span>{{ tr('Session administrateur ouverte : ', 'Admin session open: ') + (user?.displayName || user?.email || '') }}</span>
+          <button type="button" class="btn-submit btn-admin" style="margin-top:10px" @click="navigateTo('/admin')">{{ tr(`Ouvrir l'administration`, `Open the admin panel`) }}</button>
         </div>
         <div class="admin-notice anim-left">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>

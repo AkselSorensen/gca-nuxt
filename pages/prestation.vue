@@ -3,7 +3,7 @@
     <div class="container">
       <div class="page-header anim-up">
         <h1>{{ t('prestation.title') }}</h1>
-        <p>Game Design & Modélisation 3D</p>
+        <p>{{ tr(`Game Design & Modélisation 3D`, `Game Design & 3D Modeling`) }}</p>
       </div>
       <div class="content-grid anim-card">
         <!-- Game Design -->
@@ -48,9 +48,10 @@
 
 <script setup lang="ts">
 useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/prestation' }] })
+const { tr } = useLang()
 useSeoMeta({
-  title: 'Prestations - Game Design & Modélisation 3D - GSA Store',
-  description: 'Prestations GSA : game design et modélisation 3D pour vos projets.',
+  title: () => tr('Prestations - Game Design & Modélisation 3D - GSA Store', 'Services - Game Design & 3D Modeling - GSA Store'),
+  description: () => tr('Prestations GSA : game design et modélisation 3D pour vos projets.', 'GSA services: game design and 3D modeling for your projects.'),
   ogType: 'website',
   
 })

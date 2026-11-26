@@ -129,7 +129,7 @@
 useSeoMeta({ robots: 'noindex, nofollow' })
 definePageMeta({ layout: 'default' })
 
-const { t } = useLang()
+const { t, tr, locale } = useLang()
 
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
@@ -238,7 +238,7 @@ function downloadInvoice(orderItemId: number) {
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('fr-FR', {
+  return new Date(dateStr).toLocaleDateString(locale.value === 'en' ? 'en-GB' : 'fr-FR', {
     day: 'numeric', month: 'long', year: 'numeric'
   })
 }
@@ -307,7 +307,7 @@ onMounted(async () => {
       }
     }
   } catch (confirmErr) {
-    error.value = 'Erreur lors de la confirmation. Rafraîchissez la page.'
+    error.value = tr("Erreur lors de la confirmation. Rafraîchissez la page.", "Confirmation failed. Please refresh the page.")
     loading.value = false
   }
 

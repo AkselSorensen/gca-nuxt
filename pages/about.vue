@@ -114,9 +114,10 @@
 
 <script setup lang="ts">
 useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/about' }] })
+const { tr } = useLang()
 useSeoMeta({
-  title: 'À propos - GSA Store',
-  description: 'GSA, pas une boutique. Un standard. Découvrez notre vision de la marketplace.',
+  title: () => tr('À propos - GSA Store', 'About - GSA Store'),
+  description: () => tr('GSA, pas une boutique. Un standard. Découvrez notre vision de la marketplace.', 'GSA, not a shop. A standard. Discover our vision of the marketplace.'),
   ogType: 'website',
   
 })

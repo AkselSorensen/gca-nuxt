@@ -2,41 +2,41 @@
   <div v-if="((maintenance.enabled && !isAdminSession) || route.query.maintenancePreview === '1') && route.path !== '/admin' && !(route.path === '/login' && route.query.admin === '1')" class="maintenance-screen">
     <div class="maintenance-noise"></div>
     <header class="maintenance-topbar">
-      <NuxtLink to="/" class="maintenance-brand" aria-label="GSA, accueil"><img src="/logo.png" alt="GSA" class="maintenance-logo" /><small>MARKETPLACE</small></NuxtLink>
+      <NuxtLink to="/" class="maintenance-brand" :aria-label="tr(`GSA, accueil`, `GSA, home`)"><img src="/logo.png" alt="GSA" class="maintenance-logo" /><small>MARKETPLACE</small></NuxtLink>
       <div class="maintenance-actions">
-        <div class="maintenance-live"><span></span> Intervention en cours</div>
-        <a href="/login?admin=1" class="maintenance-admin-btn">Connexion admin</a>
+        <div class="maintenance-live"><span></span> {{ tr(`Intervention en cours`, `Work in progress`) }}</div>
+        <a href="/login?admin=1" class="maintenance-admin-btn">{{ tr(`Connexion admin`, `Admin login`) }}</a>
       </div>
     </header>
     <main class="maintenance-main">
       <section class="maintenance-copy">
-        <div class="maintenance-eyebrow"><span class="eyebrow-line"></span> UNE PETITE PAUSE POUR MIEUX REVENIR</div>
-        <h1>On améliore<br />votre <span>terrain de jeu.</span></h1>
-        <p class="maintenance-description">{{ maintenance.message || 'Le site est temporairement indisponible afin d’effectuer quelques améliorations. Merci de votre patience.' }}</p>
+        <div class="maintenance-eyebrow"><span class="eyebrow-line"></span> {{ tr(`UNE PETITE PAUSE POUR MIEUX REVENIR`, `A SHORT BREAK TO COME BACK STRONGER`) }}</div>
+        <h1>{{ tr(`On améliore`, `We are upgrading`) }}<br />{{ tr(`votre`, `your`) }} <span>{{ tr(`terrain de jeu.`, `playground.`) }}</span></h1>
+        <p class="maintenance-description">{{ maintenanceText }}</p>
         <div class="maintenance-status">
           <div class="status-icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3 18l3 3 5.3-5.3a5 5 0 0 0 6.4-6.4L14 13l-3-3 3.7-3.7Z"/><path d="m15.5 5.5 3 3"/></svg></div>
-          <div><strong>Nous sommes sur le coup</strong><span>Le site sera de retour dès que possible.</span></div>
+          <div><strong>{{ tr(`Nous sommes sur le coup`, `We are on it`) }}</strong><span>{{ tr(`Le site sera de retour dès que possible.`, `The site will be back as soon as possible.`) }}</span></div>
           <div class="status-pulse"><i></i><i></i><i></i></div>
         </div>
-        <div class="maintenance-footnote"><span class="footnote-star">✳</span> Merci de votre patience, on ne sera pas longs.</div>
+        <div class="maintenance-footnote"><span class="footnote-star">✳</span> {{ tr(`Merci de votre patience, on ne sera pas longs.`, `Thank you for your patience, we will not be long.`) }}</div>
       </section>
-      <section class="maintenance-art" aria-label="Illustration abstraite de maintenance">
+      <section class="maintenance-art" :aria-label="tr(`Illustration abstraite de maintenance`, `Abstract maintenance illustration`)">
         <div class="art-grid"></div>
         <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-orbit orbit-three"></div>
         <div class="art-core"><div class="core-glow"></div><img src="/logo.png" alt="GSA" class="core-logo" /><span class="core-caption">GSA<br />SYSTEMS</span></div>
-        <div class="float-chip chip-top"><span class="chip-spark">✦</span> UPGRADING EXPERIENCE</div>
-        <div class="float-chip chip-bottom"><span class="chip-dot"></span> ONLINE AGAIN SOON</div>
+        <div class="float-chip chip-top"><span class="chip-spark">✦</span> {{ tr(`AMÉLIORATION EN COURS`, `UPGRADING EXPERIENCE`) }}</div>
+        <div class="float-chip chip-bottom"><span class="chip-dot"></span> {{ tr(`BIENTÔT DE RETOUR`, `ONLINE AGAIN SOON`) }}</div>
         <div class="art-cross cross-a">+</div><div class="art-cross cross-b">+</div>
         <div class="art-coordinates">48°51' N<br />02°21' E</div>
       </section>
     </main>
-    <a href="/login?admin=1" class="maintenance-admin-btn-mobile"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Connexion admin</a>
-    <footer class="maintenance-footer"><span>© {{ new Date().getFullYear() }} GSA Marketplace</span><span class="footer-center"><i></i> Amélioration de la plateforme</span><span>À très vite <b>↗</b></span></footer>
+    <a href="/login?admin=1" class="maintenance-admin-btn-mobile"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>{{ tr(`Connexion admin`, `Admin login`) }}</a>
+    <footer class="maintenance-footer"><span>© {{ new Date().getFullYear() }} GSA Marketplace</span><span class="footer-center"><i></i> {{ tr(`Amélioration de la plateforme`, `Platform improvements`) }}</span><span>{{ tr(`À très vite`, `See you soon`) }} <b>↗</b></span></footer>
   </div>
   <template v-else>
     <div v-if="maintenance.enabled && isAdminSession" class="maintenance-admin-bar" role="status">
-      <span>Maintenance activée : les visiteurs voient la page d'attente, vous voyez tout le site car vous êtes connecté en admin</span>
-      <a href="/admin">Ouvrir l'administration</a>
+      <span>{{ tr(`Maintenance activée : les visiteurs voient la page d'attente, vous voyez tout le site car vous êtes connecté en admin`, `Maintenance is on: visitors see the waiting page, you see the whole site because you are signed in as admin`) }}</span>
+      <a href="/admin">{{ tr(`Ouvrir l'administration`, `Open the admin panel`) }}</a>
     </div>
     <NuxtLayout>
       <NuxtPage />
@@ -46,6 +46,15 @@
 
 <script setup lang="ts">
 const route = useRoute()
+const { locale, tr } = useLang()
+const FR_MAINTENANCE_DEFAULT = 'Le site est temporairement indisponible afin d’effectuer quelques améliorations. Merci de votre patience.'
+const maintenanceText = computed(() => {
+  const m = maintenance.value.message
+  return !m || m === FR_MAINTENANCE_DEFAULT
+    ? tr(FR_MAINTENANCE_DEFAULT, 'The site is temporarily unavailable while we make a few improvements. Thank you for your patience.')
+    : m
+})
+useHead({ htmlAttrs: { lang: () => locale.value } })
 const { settings: maintenance, refresh } = useMaintenance()
 await refresh()
 

@@ -24,7 +24,7 @@
         <aside class="mp-sidebar anim-left">
           <div class="sidebar-header">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
-            Filtres
+            {{ tr(`Filtres`, `Filters`) }}
             <button class="sidebar-close" @click="sidebarOpen = false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
 
@@ -75,7 +75,7 @@
         <!-- Mobile filter toggle -->
         <button class="filter-toggle" @click="sidebarOpen = !sidebarOpen">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
-          Filtres
+          {{ tr(`Filtres`, `Filters`) }}
           <span v-if="activeFilterCount" class="filter-badge">{{ activeFilterCount }}</span>
         </button>
 
@@ -117,12 +117,12 @@
         <div class="sidebar-mobile">
           <div class="sidebar-header">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
-            Filtres
+            {{ tr(`Filtres`, `Filters`) }}
             <button class="sidebar-close" @click="sidebarOpen = false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
           <div class="sidebar-scroll">
             <div class="filter-group">
-              <h4 class="filter-title">Trier par</h4>
+              <h4 class="filter-title">{{ tr(`Trier par`, `Sort by`) }}</h4>
               <label v-for="opt in sortOptions" :key="opt.value" class="radio-row" :class="{ active: filters.sort === opt.value }">
                 <input type="radio" v-model="filters.sort" :value="opt.value" />
                 <span class="radio-icon" v-html="opt.icon"></span>
@@ -130,13 +130,13 @@
               </label>
             </div>
             <div class="filter-group">
-              <h4 class="filter-title">Plateforme</h4>
+              <h4 class="filter-title">{{ tr(`Plateforme`, `Platform`) }}</h4>
               <label v-for="pf in platformOptions" :key="pf" class="toggle-row" :class="{ active: filters.platforms.includes(pf) }">
                 <input type="checkbox" :checked="filters.platforms.includes(pf)" @change="togglePlatform(pf)" /><span class="check-box"></span> {{ pf }}
               </label>
             </div>
             <div class="filter-group">
-              <h4 class="filter-title">Prix max.</h4>
+              <h4 class="filter-title">{{ tr(`Prix max.`, `Max price`) }}</h4>
               <div class="price-slider-wrap">
                 <input type="range" min="0" max="1000" step="5" v-model.number="filters.priceMax" class="single-range" />
                 <div class="price-labels"><span class="price-val">{{ filters.priceMax }}€</span><span>0€ à 1000€</span></div>
@@ -144,18 +144,18 @@
             </div>
             <div class="filter-group">
               <h4 class="filter-title">Options</h4>
-              <label class="toggle-row"><input type="checkbox" v-model="filters.onSale" /><span class="check-box"></span> En soldes</label>
-              <label class="toggle-row"><input type="checkbox" v-model="filters.trending" /><span class="check-box"></span> Tendance</label>
+              <label class="toggle-row"><input type="checkbox" v-model="filters.onSale" /><span class="check-box"></span> {{ tr(`En soldes`, `On sale`) }}</label>
+              <label class="toggle-row"><input type="checkbox" v-model="filters.trending" /><span class="check-box"></span> {{ tr(`Tendance`, `Trending`) }}</label>
             </div>
             <div class="filter-group">
-              <h4 class="filter-title">Note minimale</h4>
+              <h4 class="filter-title">{{ tr(`Note minimale`, `Minimum rating`) }}</h4>
               <label v-for="r in ratingOptions" :key="r" class="radio-row" :class="{ active: filters.minRating === r }">
                 <input type="radio" v-model="filters.minRating" :value="r" />
                 <span>{{ r === 0 ? t('catalogue.any_rating') : r + '+' }}</span>
               </label>
             </div>
             <div style="display:grid;gap:8px;padding:16px;">
-              <button class="btn-reset" @click="clearFilters">Réinitialiser</button>
+              <button class="btn-reset" @click="clearFilters">{{ tr(`Réinitialiser`, `Reset`) }}</button>
             </div>
           </div>
         </div>
@@ -166,7 +166,7 @@
 
 <script setup lang="ts">
 const config = useRuntimeConfig()
-const { t } = useLang()
+const { t, tr } = useLang()
 const api = config.public.apiOrigin
 
 const { data: prodData } = await useFetch(api + '/api/products?limit=100')
@@ -181,12 +181,12 @@ const categories = computed(() => catData.value || [])
 // SEO : chaque catégorie (?c=slug) a son titre, sa description et sa canonique
 const seoRoute = useRoute()
 const activeCat = computed(() => (categories.value as any[]).find((c: any) => c.slug === seoRoute.query.c))
-const catTitle = computed(() => activeCat.value ? activeCat.value.name + " - Catalogue GSA" : 'Catalogue - GSA Store')
+const catTitle = computed(() => activeCat.value ? activeCat.value.name + tr(" - Catalogue GSA", " - GSA Catalog") : tr('Catalogue - GSA Store', 'Catalog - GSA Store'))
 const catDesc = computed(() => activeCat.value
   ? (activeCat.value.description
-      ? activeCat.value.name + ' : ' + activeCat.value.description + ". Assets premium vérifiés, prêts à déployer."
-      : 'Découvrez les assets ' + activeCat.value.name + " sur GSA Store, vérifiés par notre équipe.")
-  : "Parcourez le catalogue GSA : HUD, mapping, particules, animations, UI et maps.")
+      ? activeCat.value.name + ' : ' + activeCat.value.description + tr(". Assets premium vérifiés, prêts à déployer.", ". Verified premium assets, ready to deploy.")
+      : tr('Découvrez les assets ', 'Discover the ') + activeCat.value.name + tr(" sur GSA Store, vérifiés par notre équipe.", " assets on GSA Store, verified by our team."))
+  : tr("Parcourez le catalogue GSA : HUD, mapping, particules, animations, UI et maps.", "Browse the GSA catalog: HUD, mapping, particles, animations, UI and maps."))
 const catUrl = computed(() => 'https://gsa-store.fr/catalogue' + (activeCat.value ? '?c=' + activeCat.value.slug : ''))
 useSeoMeta({
   title: catTitle,

@@ -1102,28 +1102,26 @@ const messages: Record<Locale, Record<string, string>> = {
 
 }
 
-const locale = ref<Locale>('fr')
-
-function initLocale() {
-  // Langue anglaise masquée (décision user) : le site s'affiche toujours en FR
-  locale.value = 'fr'
-  if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem(LOCALE_KEY)
-    if (saved === 'fr') {
-      locale.value = 'fr'
-    }
-  }
-}
-
-function setLocale(l: Locale) {
-  locale.value = 'fr'
-  localStorage.setItem(LOCALE_KEY, 'fr')
-}
-
-function t(key: string, fallback?: string): string {
-  return messages[locale.value]?.[key] ?? fallback ?? key
-}
-
+/**
+ * Langue du site : cookie `gsa-locale` ('fr' par défaut, 'en').
+ * Le cookie est lu côté serveur, donc la page est déjà rendue dans la bonne langue (pas de clignotement).
+ * t('cle') : texte du dictionnaire ; tr('français', 'english') : texte propre à un seul endroit.
+ */
 export function useLang() {
-  return { locale, labels, flagEmoji, initLocale, setLocale, t }
+  const cookie = useCookie<string>(LOCALE_KEY, { default: () => 'fr', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax', path: '/' })
+  const locale = computed<Locale>({
+    get: () => (cookie.value === 'en' ? 'en' : 'fr'),
+    set: (v) => { cookie.value = v === 'en' ? 'en' : 'fr' },
+  })
+
+  function initLocale() { /* la langue vient du cookie : rien à initialiser */ }
+  function setLocale(l: Locale) { locale.value = l }
+  function t(key: string, fallback?: string): string {
+    return messages[locale.value]?.[key] ?? fallback ?? key
+  }
+  function tr(fr: string, en: string): string {
+    return locale.value === 'en' ? en : fr
+  }
+
+  return { locale, labels, flagEmoji, initLocale, setLocale, t, tr }
 }

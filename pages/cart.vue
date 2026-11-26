@@ -8,9 +8,9 @@
 
       <!-- Steps -->
       <div class="steps anim-up">
-        <div class="step active"><span class="step-num">1</span> Panier</div>
+        <div class="step active"><span class="step-num">1</span> {{ tr(`Panier`, `Cart`) }}</div>
         <div class="step-line"></div>
-        <div class="step"><span class="step-num">2</span> Paiement</div>
+        <div class="step"><span class="step-num">2</span> {{ tr(`Paiement`, `Payment`) }}</div>
         <div class="step-line"></div>
         <div class="step"><span class="step-num">3</span> {{ t('cart.step3') }}</div>
       </div>
@@ -34,14 +34,14 @@
 
       <div class="cart-layout" v-if="items.length && !checkoutSuccess">
         <div class="cart-items anim-left">
-          <h2>Votre panier ({{ items.length }})</h2>
+          <h2>{{ tr(`Votre panier`, `Your cart`) }} ({{ items.length }})</h2>
           <div v-for="(item, i) in items" :key="item.id || i" class="cart-item">
             <NuxtLink :to="'/product/' + item.slug" class="cart-item-img">
               <img :src="item.thumbnail || item.media?.[0]?.thumbnail || item.media?.[0]?.url || '/placeholder.svg'" :alt="item.title" />
             </NuxtLink>
             <div class="cart-item-info">
               <NuxtLink :to="'/product/' + item.slug" class="cart-item-title">{{ item.title }}</NuxtLink>
-              <span class="cart-item-seller">{{ item.sellerName || item.seller || 'Vendeur' }}</span>
+              <span class="cart-item-seller">{{ item.sellerName || item.seller || tr('Vendeur', 'Seller') }}</span>
             </div>
             <div class="cart-item-price">
               <strong>{{ Number(item.price).toFixed(2) }}€<span v-if="item.quantity > 1" class="qty-mark"> ×{{ item.quantity }}</span></strong>
@@ -58,13 +58,13 @@
           <div v-if="promoDiscount > 0" class="summary-row promo-valid"><span>{{ t('cart.discount') }}</span><span>-{{ promoDiscount.toFixed(2) }}€</span></div>
           <div class="summary-total"><span>{{ t('cart.total') }}</span><strong>{{ total.toFixed(2) }}€</strong></div>
           <div class="promo-row">
-            <input v-model="promoCode" placeholder="Code promo" class="promo-input" :class="{ error: promoStatus === 'error', valid: promoStatus === 'valid' }" />
-            <button class="promo-btn" :disabled="promoStatus === 'loading'" @click="applyPromo">{{ promoStatus === 'loading' ? '…' : 'Appliquer' }}</button>
+            <input v-model="promoCode" :placeholder="tr(`Code promo`, `Promo code`)" class="promo-input" :class="{ error: promoStatus === 'error', valid: promoStatus === 'valid' }" />
+            <button class="promo-btn" :disabled="promoStatus === 'loading'" @click="applyPromo">{{ promoStatus === 'loading' ? '…' : tr('Appliquer', 'Apply') }}</button>
           </div>
           <p v-if="promoMsg" class="promo-msg" :class="promoStatus">{{ promoMsg }}</p>
           <button class="btn-checkout" :disabled="checkingOut" @click="checkout">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 1.693 0 3.033.642 3.964 1.219l.295-1.812c-.789-.537-2.303-1.088-4.105-1.088-2.645 0-4.475 1.356-4.475 3.562 0 2.248 1.928 3.21 4.344 4.033 2.154.734 3.226 1.342 3.226 2.416 0 .86-.695 1.446-2.077 1.446-1.909 0-3.548-.791-4.399-1.454l-.325 1.845c.902.66 2.663 1.283 4.794 1.283 2.995 0 4.81-1.522 4.81-3.799 0-2.318-1.798-3.246-4.212-4.077zM3.575 16.138V7.828h-1.78v9.489h4.916v-1.179H3.575zM20.205 16.138c.627 0 1.196-.049 1.795-.182v-1.702c-.53.144-1.066.218-1.605.218-2.636 0-4.259-1.67-4.259-4.211 0-2.43 1.691-4.256 4.135-4.256.614 0 1.195.127 1.795.327V4.584c-.583-.17-1.17-.249-1.795-.249-3.523 0-6.124 2.518-6.124 6.072 0 3.538 2.527 5.731 6.058 5.731z"/></svg>
-            {{ checkingOut ? 'Redirection…' : 'Payer ' + total.toFixed(2) + '€' }}
+            {{ checkingOut ? tr('Redirection…', 'Redirecting…') : tr('Payer ', 'Pay ') + total.toFixed(2) + '€' }}
           </button>
           <p v-if="checkoutError" class="checkout-error">{{ checkoutError }}</p>
         </div>
@@ -104,7 +104,7 @@
 
 <script setup lang="ts">
 useSeoMeta({ robots: 'noindex, nofollow' })
-const { t } = useLang()
+const { t, tr } = useLang()
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
 
@@ -185,7 +185,7 @@ async function checkout() {
       }
     })
     if (res.url) window.location.href = res.url
-    else checkoutError.value = 'Aucune URL de paiement reçue'
+    else checkoutError.value = tr("Aucune URL de paiement reçue", "No payment URL received")
   } catch (e: any) {
     checkoutError.value = e?.data?.message || e?.message || 'Erreur lors du paiement'
     console.error('Checkout error:', e?.data || e)

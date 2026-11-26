@@ -54,7 +54,7 @@ export default defineNuxtConfig({
     '/': { swr: false },
     '/catalogue': { swr: false },
     '/product/**': { swr: false },
-    '/about': { swr: 3600 },
-    '/prestation': { swr: 3600 }
+    '/about': { swr: false },
+    '/prestation': { swr: false }
   }
 })

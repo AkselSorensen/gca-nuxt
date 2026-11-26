@@ -87,8 +87,8 @@
             </div>
 
             <div class="cookie-actions">
-              <button class="btn-accept" @click="acceptAll">Tout accepter</button>
-              <button class="btn-refuse" @click="refuseAll">Tout refuser</button>
+              <button class="btn-accept" @click="acceptAll">{{ tr(`Tout accepter`, `Accept all`) }}</button>
+              <button class="btn-refuse" @click="refuseAll">{{ tr(`Tout refuser`, `Reject all`) }}</button>
               <button class="btn-save" @click="savePrefs">{{ t('cookie.save') }}</button>
             </div>
           </template>

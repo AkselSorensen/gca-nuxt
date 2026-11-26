@@ -2,7 +2,7 @@
   <div ref="pageRef" class="seller-account-page">
     <div class="container">
       <div class="page-header anim-up">
-        <h1>Mon compte vendeur</h1>
+        <h1>{{ tr(`Mon compte vendeur`, `My seller account`) }}</h1>
         <p>{{ t('seller.subtitle') }}</p>
         <div class="tabs">
           <button class="tab-btn" :class="{ active: activeTab === 'account' }" @click="activeTab = 'account'">
@@ -15,7 +15,7 @@
           </button>
           <button class="tab-btn" :class="{ active: activeTab === 'invoices' }" @click="activeTab = 'invoices'; loadSellerInvoices()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            Factures
+            {{ tr(`Factures`, `Invoices`) }}
           </button>
         </div>
       </div>
@@ -28,7 +28,7 @@
             <h2>{{ t('seller.profile') }}</h2>
           </div>
           <div class="acard-body">
-            <div class="field"><label>Nom de la boutique</label><input v-model="profile.shopName" type="text" /></div>
+            <div class="field"><label>{{ tr(`Nom de la boutique`, `Shop name`) }}</label><input v-model="profile.shopName" type="text" /></div>
             <div class="field"><label>{{ t('seller.bio') }}</label><textarea v-model="profile.bio" rows="3" :placeholder="t('seller.bio_ph')"></textarea></div>
             <button class="btn-save" @click="saveProfile">{{ t('seller.save') }}</button>
             <span v-if="profileMsg" class="msg">{{ profileMsg }}</span>
@@ -93,11 +93,11 @@
             <a v-else class="btn-stripe" :class="{ disabled: stripeLoading }" @click.prevent="connectStripe">
               <svg v-if="stripeLoading" class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
               <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 1.693 0 3.033.642 3.964 1.219l.295-1.812c-.789-.537-2.303-1.088-4.105-1.088-2.645 0-4.475 1.356-4.475 3.562 0 2.248 1.928 3.21 4.344 4.033 2.154.734 3.226 1.342 3.226 2.416 0 .86-.695 1.446-2.077 1.446-1.909 0-3.548-.791-4.399-1.454l-.325 1.845c.902.66 2.663 1.283 4.794 1.283 2.995 0 4.81-1.522 4.81-3.799 0-2.318-1.798-3.246-4.212-4.077zM3.575 16.138V7.828h-1.78v9.489h4.916v-1.179H3.575zM20.205 16.138c.627 0 1.196-.049 1.795-.182v-1.702c-.53.144-1.066.218-1.605.218-2.636 0-4.259-1.67-4.259-4.211 0-2.43 1.691-4.256 4.135-4.256.614 0 1.195.127 1.795.327V4.584c-.583-.17-1.17-.249-1.795-.249-3.523 0-6.124 2.518-6.124 6.072 0 3.538 2.527 5.731 6.058 5.731z"/></svg>
-              {{ stripeLoading ? 'Redirection…' : (stripeHasAccount ? t('seller.resume_onboarding') : t('seller.connect_stripe')) }}
+              {{ stripeLoading ? tr('Redirection…', 'Redirecting…') : (stripeHasAccount ? t('seller.resume_onboarding') : t('seller.connect_stripe')) }}
             </a>
             <p v-if="stripeError" class="stripe-error">{{ stripeError }}</p>
             <p v-if="!stripeLinked && stripeStatus === 'unlinked' && stripeHasAccount && stripeDetails" class="stripe-detail">
-              charges: {{ stripeDetails.charges ? '✓' : '✗' }} · payouts: {{ stripeDetails.payouts ? '✓' : '✗' }} · détails: {{ stripeDetails.details ? '✓' : '✗' }}
+              charges: {{ stripeDetails.charges ? '✓' : '✗' }} · payouts: {{ stripeDetails.payouts ? '✓' : '✗' }} · {{ tr('détails', 'details') }}: {{ stripeDetails.details ? '✓' : '✗' }}
             </p>
           </div>
         </div>
@@ -106,13 +106,13 @@
         <div class="acard anim-card">
           <div class="acard-header">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            <h2>Statistiques</h2>
+            <h2>{{ tr(`Statistiques`, `Statistics`) }}</h2>
           </div>
           <div class="acard-body stats-grid">
-            <div class="stat-item"><span class="stat-val">{{ stats.products }}</span><span class="stat-lbl">Produits</span></div>
-            <div class="stat-item"><span class="stat-val">{{ stats.sales }}</span><span class="stat-lbl">Ventes</span></div>
-            <div class="stat-item"><span class="stat-val">{{ fmtMoney(stats.revenue) }}</span><span class="stat-lbl">Revenus</span></div>
-            <div class="stat-item"><span class="stat-val">{{ stats.rating }}</span><span class="stat-lbl">Note</span></div>
+            <div class="stat-item"><span class="stat-val">{{ stats.products }}</span><span class="stat-lbl">{{ tr(`Produits`, `Products`) }}</span></div>
+            <div class="stat-item"><span class="stat-val">{{ stats.sales }}</span><span class="stat-lbl">{{ tr(`Ventes`, `Sales`) }}</span></div>
+            <div class="stat-item"><span class="stat-val">{{ fmtMoney(stats.revenue) }}</span><span class="stat-lbl">{{ tr(`Revenus`, `Earnings`) }}</span></div>
+            <div class="stat-item"><span class="stat-val">{{ stats.rating }}</span><span class="stat-lbl">{{ tr(`Note`, `Rating`) }}</span></div>
           </div>
         </div>
       </div>
@@ -121,20 +121,20 @@
       <div v-else-if="activeTab === 'revenue'" class="revenue-panel">
         <div class="rev-header">
           <div class="rev-title">
-            <h2>Revenus</h2>
+            <h2>{{ tr(`Revenus`, `Earnings`) }}</h2>
             <span v-if="revenue" class="rev-mode-badge" :class="revenue.stripeLinked ? 'test' : ''">
-              {{ revenue.stripeLinked ? '● STRIPE CONNECTÉ' : '● NON LIÉ' }}
+              {{ revenue.stripeLinked ? tr('● STRIPE CONNECTÉ', '● STRIPE CONNECTED') : tr('● NON LIÉ', '● NOT LINKED') }}
             </span>
             <span v-if="revenue?.accountId" class="rev-account-id">{{ revenue.accountId }}</span>
           </div>
-          <button class="rev-refresh" @click="loadRevenue" title="Rafraîchir">
+          <button class="rev-refresh" @click="loadRevenue" :title="tr(`Rafraîchir`, `Refresh`)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           </button>
         </div>
 
         <div v-if="revenueLoading" class="rev-loading">
           <svg class="spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-          Chargement des revenus…
+          {{ tr(`Chargement des revenus…`, `Loading earnings…`) }}
         </div>
 
         <div v-else-if="revenueError" class="rev-error">{{ revenueError }}</div>
@@ -144,52 +144,52 @@
           <div v-if="!revenue.stripeLinked" class="rev-unlinked">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             <div>
-              <strong>Connectez votre compte Stripe</strong>
-              <p>Vos revenus (solde, transferts, paiements) s'afficheront ici une fois Stripe Connect lié.</p>
+              <strong>{{ tr(`Connectez votre compte Stripe`, `Connect your Stripe account`) }}</strong>
+              <p>{{ tr(`Vos revenus (solde, transferts, paiements) s'afficheront ici une fois Stripe Connect lié.`, `Your earnings (balance, transfers, payouts) will appear here once Stripe Connect is linked.`) }}</p>
             </div>
-            <button class="btn-stripe" @click="connectStripe">Connecter Stripe</button>
+            <button class="btn-stripe" @click="connectStripe">{{ tr(`Connecter Stripe`, `Connect Stripe`) }}</button>
           </div>
 
           <template v-else>
             <!-- Cartes stats -->
             <div class="rev-cards">
               <div class="rev-card">
-                <span class="rev-card-lbl">Solde disponible</span>
+                <span class="rev-card-lbl">{{ tr(`Solde disponible`, `Available balance`) }}</span>
                 <strong class="rev-card-val">{{ fmtMoney(revenue.balance?.available?.[0]?.amount) }}</strong>
                 <span class="rev-card-sub">{{ revenue.balance?.available?.[0]?.currency?.toUpperCase() || 'EUR' }}</span>
               </div>
               <div class="rev-card">
-                <span class="rev-card-lbl">En attente</span>
+                <span class="rev-card-lbl">{{ tr(`En attente`, `Pending`) }}</span>
                 <strong class="rev-card-val muted">{{ fmtMoney(revenue.balance?.pending?.[0]?.amount) }}</strong>
                 <span class="rev-card-sub">{{ revenue.balance?.pending?.[0]?.currency?.toUpperCase() || 'EUR' }}</span>
               </div>
               <div class="rev-card">
-                <span class="rev-card-lbl">Ventes totales</span>
+                <span class="rev-card-lbl">{{ tr(`Ventes totales`, `Total sales`) }}</span>
                 <strong class="rev-card-val">{{ fmtMoney(revenue.stats?.salesTotal) }}</strong>
-                <span class="rev-card-sub">{{ revenue.stats?.ordersCount || 0 }} commande(s)</span>
+                <span class="rev-card-sub">{{ revenue.stats?.ordersCount || 0 }} {{ tr('commande(s)', 'order(s)') }}</span>
               </div>
               <div class="rev-card">
-                <span class="rev-card-lbl">Commission plateforme ({{ revenue.platformPercent ?? 25 }}%)</span>
+                <span class="rev-card-lbl">{{ tr('Commission plateforme', 'Platform commission') }} ({{ revenue.platformPercent ?? 25 }}%)</span>
                 <strong class="rev-card-val muted">{{ fmtMoney(revenue.stats?.platformFees) }}</strong>
-                <span class="rev-card-sub">prélevée sur chaque vente</span>
+                <span class="rev-card-sub">{{ tr(`prélevée sur chaque vente`, `taken on each sale`) }}</span>
               </div>
               <div class="rev-card accent">
-                <span class="rev-card-lbl">Net vendeur</span>
+                <span class="rev-card-lbl">{{ tr(`Net vendeur`, `Seller net`) }}</span>
                 <strong class="rev-card-val">{{ fmtMoney(revenue.stats?.sellerNet) }}</strong>
-                <span class="rev-card-sub">après commission</span>
+                <span class="rev-card-sub">{{ tr(`après commission`, `after commission`) }}</span>
               </div>
               <div class="rev-card">
-                <span class="rev-card-lbl">Paiements reçus</span>
+                <span class="rev-card-lbl">{{ tr(`Paiements reçus`, `Payouts received`) }}</span>
                 <strong class="rev-card-val">{{ revenue.payouts?.length || 0 }}</strong>
-                <span class="rev-card-sub">{{ revenue.payoutsEnabled ? 'encaissement actif' : 'encaissement inactif' }}</span>
+                <span class="rev-card-sub">{{ revenue.payoutsEnabled ? tr('encaissement actif', 'payouts enabled') : tr('encaissement inactif', 'payouts disabled') }}</span>
               </div>
             </div>
 
             <!-- Ventes récentes -->
             <div class="rev-table-wrap" v-if="revenue.sales?.length">
-              <h3>Ventes récentes</h3>
+              <h3>{{ tr(`Ventes récentes`, `Recent sales`) }}</h3>
               <table class="rev-table">
-                <thead><tr><th>Date</th><th>Produit</th><th>Client</th><th>Prix</th><th>Commission</th><th>Net vendeur</th></tr></thead>
+                <thead><tr><th>Date</th><th>{{ tr(`Produit`, `Product`) }}</th><th>Client</th><th>{{ tr(`Prix`, `Price`) }}</th><th>Commission</th><th>{{ tr(`Net vendeur`, `Seller net`) }}</th></tr></thead>
                 <tbody>
                   <tr v-for="(s, i) in revenue.sales" :key="i">
                     <td>{{ fmtDate(s.date) }}</td>
@@ -205,9 +205,9 @@
 
             <!-- Transferts Stripe -->
             <div class="rev-table-wrap" v-if="revenue.transfers?.length">
-              <h3>Transferts Stripe</h3>
+              <h3>{{ tr(`Transferts Stripe`, `Stripe transfers`) }}</h3>
               <table class="rev-table">
-                <thead><tr><th>Date</th><th>Transfert</th><th>Montant</th><th>Statut</th></tr></thead>
+                <thead><tr><th>Date</th><th>{{ tr(`Transfert`, `Transfer`) }}</th><th>{{ tr(`Montant`, `Amount`) }}</th><th>{{ tr(`Statut`, `Status`) }}</th></tr></thead>
                 <tbody>
                   <tr v-for="t in revenue.transfers" :key="t.id">
                     <td>{{ fmtDate(t.created) }}</td>
@@ -221,9 +221,9 @@
 
             <!-- Payouts -->
             <div class="rev-table-wrap" v-if="revenue.payouts?.length">
-              <h3>Paiements vers votre banque</h3>
+              <h3>{{ tr(`Paiements vers votre banque`, `Payouts to your bank`) }}</h3>
               <table class="rev-table">
-                <thead><tr><th>Date</th><th>Payout</th><th>Montant</th><th>Statut</th></tr></thead>
+                <thead><tr><th>Date</th><th>Payout</th><th>{{ tr(`Montant`, `Amount`) }}</th><th>{{ tr(`Statut`, `Status`) }}</th></tr></thead>
                 <tbody>
                   <tr v-for="p in revenue.payouts" :key="p.id">
                     <td>{{ fmtDate(p.created) }}</td>
@@ -236,7 +236,7 @@
             </div>
 
             <div v-if="!revenue.sales?.length && !revenue.transfers?.length && !revenue.payouts?.length" class="rev-empty">
-              Aucune vente ou transfert pour le moment.
+              {{ tr(`Aucune vente ou transfert pour le moment.`, `No sale or transfer yet.`) }}
             </div>
           </template>
         </template>
@@ -245,14 +245,14 @@
       <!-- ═══ Onglet Factures ═══ -->
       <div v-else-if="activeTab === 'invoices'" class="revenue-panel">
         <div class="rev-header">
-          <div class="rev-title"><h2>Factures</h2></div>
-          <button class="rev-refresh" @click="loadSellerInvoices" title="Rafraîchir">
+          <div class="rev-title"><h2>{{ tr(`Factures`, `Invoices`) }}</h2></div>
+          <button class="rev-refresh" @click="loadSellerInvoices" :title="tr(`Rafraîchir`, `Refresh`)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           </button>
         </div>
         <div class="rev-table-wrap">
           <table v-if="sellerInvoices.length" class="rev-table">
-            <thead><tr><th>Facture</th><th>Date</th><th>Produit</th><th>Client</th><th>Prix</th><th>Net vendeur</th><th>PDF</th></tr></thead>
+            <thead><tr><th>{{ tr(`Facture`, `Invoice`) }}</th><th>Date</th><th>{{ tr(`Produit`, `Product`) }}</th><th>Client</th><th>{{ tr(`Prix`, `Price`) }}</th><th>{{ tr(`Net vendeur`, `Seller net`) }}</th><th>PDF</th></tr></thead>
             <tbody>
               <tr v-for="inv in sellerInvoices" :key="inv.orderItemId">
                 <td class="mono">{{ inv.invoiceId }}</td>
@@ -262,14 +262,14 @@
                 <td>{{ fmtMoney(inv.itemPrice * inv.itemQuantity) }}</td>
                 <td class="rev-net">+{{ fmtMoney(inv.sellerNet) }}</td>
                 <td>
-                  <a class="inv-dl" :href="api + '/api/invoice/' + inv.orderItemId" title="Télécharger la facture (PDF)">
+                  <a class="inv-dl" :href="api + '/api/invoice/' + inv.orderItemId" :title="tr(`Télécharger la facture (PDF)`, `Download the invoice (PDF)`)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   </a>
                 </td>
               </tr>
             </tbody>
           </table>
-          <div v-else class="rev-unlinked">Aucune facture pour vos ventes (commandes complétées uniquement).</div>
+          <div v-else class="rev-unlinked">{{ tr(`Aucune facture pour vos ventes (commandes complétées uniquement).`, `No invoice for your sales (completed orders only).`) }}</div>
         </div>
       </div>
     </div>
@@ -279,7 +279,7 @@
 <script setup lang="ts">
 useSeoMeta({ robots: 'noindex, nofollow' })
 definePageMeta({ layout: 'default' })
-const { t } = useLang()
+const { t, tr, locale } = useLang()
 
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
@@ -340,7 +340,7 @@ function saveProfile() {
     setTimeout(() => profileMsg.value = '', 3000)
   }).catch((e: any) => {
     console.error('[seller] saveProfile échoué:', e)
-    profileMsg.value = e?.data?.statusMessage || e?.data?.message || 'Erreur lors de la sauvegarde'
+    profileMsg.value = e?.data?.statusMessage || e?.data?.message || tr("Erreur lors de la sauvegarde", "Save failed")
   })
 }
 
@@ -371,7 +371,7 @@ async function checkStripeConnect() {
     stripeStatus.value = 'unlinked'
     stripeMsg.value = e?.name === 'AbortError'
       ? t('seller.stripe_timeout')
-      : 'Erreur: ' + (e?.data?.message || e?.message || 'vérification impossible')
+      : tr('Erreur: ', 'Error: ') + (e?.data?.message || e?.message || tr('vérification impossible', 'verification failed'))
   } finally {
     clearTimeout(timer)
   }
@@ -392,10 +392,10 @@ async function connectStripe() {
     } else if (res.url) {
       window.location.href = res.url
     } else {
-      stripeError.value = 'Réponse inattendue du serveur'
+      stripeError.value = tr("Réponse inattendue du serveur", "Unexpected server response")
     }
   } catch (e: any) {
-    stripeError.value = e?.data?.message || e?.message || 'Erreur de connexion Stripe'
+    stripeError.value = e?.data?.message || e?.message || tr("Erreur de connexion Stripe", "Stripe connection error")
   } finally {
     stripeLoading.value = false
   }
@@ -421,7 +421,7 @@ async function linkStripeAccount(accountId: string) {
       stripeMsg.value = t('seller.stripe_onboarding_hint')
     }
   } catch (e: any) {
-    stripeError.value = e?.data?.message || e?.message || 'Erreur lors de la liaison Stripe'
+    stripeError.value = e?.data?.message || e?.message || tr("Erreur lors de la liaison Stripe", "Error while linking Stripe")
     checkStripeConnect()
   }
 }
@@ -431,7 +431,7 @@ async function openStripeDashboard() {
     const res = await $fetch(api + '/api/stripe/dashboard', { method: 'POST', credentials: 'include' })
     if (res.url) window.open(res.url, '_blank')
   } catch (e: any) {
-    stripeError.value = e?.data?.message || 'Erreur dashboard Stripe'
+    stripeError.value = e?.data?.message || tr("Erreur dashboard Stripe", "Stripe dashboard error")
   }
 }
 
@@ -470,20 +470,20 @@ async function loadRevenue() {
   try {
     revenue.value = await $fetch(api + '/api/seller/revenue', { credentials: 'include' })
   } catch (e: any) {
-    revenueError.value = e?.data?.message || e?.message || 'Erreur de chargement des revenus'
+    revenueError.value = e?.data?.message || e?.message || tr("Erreur de chargement des revenus", "Failed to load earnings")
   } finally {
     revenueLoading.value = false
   }
 }
 
 function fmtMoney(v: number | null | undefined) {
-  return (v ?? 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+  return (v ?? 0).toLocaleString(locale.value === 'en' ? 'en-GB' : 'fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 }
 
 function fmtDate(ts: number | string | null | undefined) {
   if (!ts) return '-'
   const d = typeof ts === 'number' ? new Date(ts) : new Date(ts)
-  return d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString(locale.value === 'en' ? 'en-GB' : 'fr-FR') + ' ' + d.toLocaleTimeString(locale.value === 'en' ? 'en-GB' : 'fr-FR', { hour: '2-digit', minute: '2-digit' })
 }
 
 onMounted(async () => {

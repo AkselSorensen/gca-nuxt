@@ -19,7 +19,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/><path d="M4.6 15a1.65 1.65 0 0 0-.33 1.82l-.06.06a2 2 0 1 0 2.83 2.83l.06-.06a1.65 1.65 0 0 1 1.82-.33"/><path d="M14 2h-4v4a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V2z"/></svg>
           </div>
           <div class="cat-info">
-            <span class="cat-name">Tout voir</span>
+            <span class="cat-name">{{ tr(`Tout voir`, `View all`) }}</span>
             <span class="cat-count">{{ t('home.browse_catalog') }}</span>
           </div>
         </NuxtLink>
@@ -61,8 +61,8 @@
             </div>
           </div>
         </div>
-        <button class="carousel-arrow carousel-arrow-left" @click="slideCarousel('comm',1)" aria-label="Précédent"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
-        <button class="carousel-arrow carousel-arrow-right" @click="slideCarousel('comm',-1)" aria-label="Suivant"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <button class="carousel-arrow carousel-arrow-left" @click="slideCarousel('comm',1)" :aria-label="tr(`Précédent`, `Previous`)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="carousel-arrow carousel-arrow-right" @click="slideCarousel('comm',-1)" :aria-label="tr(`Suivant`, `Next`)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>
     </div></section>
 
@@ -100,12 +100,12 @@
             </div>
           </div>
         </div>
-        <button class="carousel-arrow carousel-arrow-left" @click="slideCarousel('collab',1)" aria-label="Précédent"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
-        <button class="carousel-arrow carousel-arrow-right" @click="slideCarousel('collab',-1)" aria-label="Suivant"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <button class="carousel-arrow carousel-arrow-left" @click="slideCarousel('collab',1)" :aria-label="tr(`Précédent`, `Previous`)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="carousel-arrow carousel-arrow-right" @click="slideCarousel('collab',-1)" :aria-label="tr(`Suivant`, `Next`)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>
       <p class="collab-discord">
-        <a v-if="state.discordInvite" :href="state.discordInvite" target="_blank" rel="noopener">Retrouvez vos avantages clients sur le discord</a>
-        <span v-else>Retrouvez vos avantages clients sur le discord</span>
+        <a v-if="state.discordInvite" :href="state.discordInvite" target="_blank" rel="noopener">{{ tr(`Retrouvez vos avantages clients sur le discord`, `Find your customer perks on our Discord`) }}</a>
+        <span v-else>{{ tr(`Retrouvez vos avantages clients sur le discord`, `Find your customer perks on our Discord`) }}</span>
       </p>
     </div></section>
 
@@ -114,12 +114,13 @@
 
 <script setup lang="ts">
 useHead({ link: [{ rel: 'canonical', href: 'https://gsa-store.fr/' }] })
+const { tr } = useLang()
 useSeoMeta({
-  title: 'GSA Store - Des assets premium, prêts à déployer.',
-  description: 'Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer.',
+  title: () => tr('GSA Store - Des assets premium, prêts à déployer.', 'GSA Store - Premium assets, ready to deploy.'),
+  description: () => tr('Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer.', 'Mapping, particles, HUD, animations and UI: premium assets verified by the GSA team, ready to deploy.'),
   ogType: 'website',
-  ogTitle: 'Des assets premium, prêts à déployer',
-  ogDescription: 'Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer.',
+  ogTitle: () => tr('Des assets premium, prêts à déployer', 'Premium assets, ready to deploy'),
+  ogDescription: () => tr('Mapping, particules, HUD, animations et UI : des assets premium vérifiés par l\'équipe GSA, prêts à déployer.', 'Mapping, particles, HUD, animations and UI: premium assets verified by the GSA team, ready to deploy.'),
   ogImage: 'https://gsa-store.fr/og-share-v2.png',
   ogUrl: 'https://gsa-store.fr/',
   twitterCard: 'summary_large_image',

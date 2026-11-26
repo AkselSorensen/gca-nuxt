@@ -2,8 +2,8 @@
   <div ref="pageRef" class="profile-page">
     <div class="container">
       <div class="page-header anim-up">
-        <h1>Mon profil</h1>
-        <p>Gérez vos informations personnelles, vos comptes liés et votre statut vendeur.</p>
+        <h1>{{ tr(`Mon profil`, `My profile`) }}</h1>
+        <p>{{ tr(`Gérez vos informations personnelles, vos comptes liés et votre statut vendeur.`, `Manage your personal information, linked accounts and seller status.`) }}</p>
       </div>
 
       <div class="profile-grid">
@@ -11,7 +11,7 @@
         <div class="pcard anim-card">
           <div class="pcard-header">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <h2>Informations personnelles</h2>
+            <h2>{{ tr(`Informations personnelles`, `Personal information`) }}</h2>
           </div>
           <div class="pcard-body">
             <div class="avatar-preview">
@@ -25,7 +25,7 @@
               </div>
             </div>
             <div class="field">
-              <label>Nom d'affichage</label>
+              <label>{{ tr(`Nom d'affichage`, `Display name`) }}</label>
               <input v-model="form.displayName" type="text" />
             </div>
             <div class="field">
@@ -33,7 +33,7 @@
               <input v-model="form.email" type="email" />
             </div>
             <button class="btn-save" :disabled="saving" @click="saveProfile">
-              {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
+              {{ saving ? tr('Enregistrement...', 'Saving...') : tr('Enregistrer', 'Save') }}
             </button>
             <span v-if="profileMsg" class="msg" :class="{ err: profileError }">{{ profileMsg }}</span>
           </div>
@@ -43,7 +43,7 @@
         <div class="pcard anim-card">
           <div class="pcard-header">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            <h2>Comptes liés</h2>
+            <h2>{{ tr(`Comptes liés`, `Linked accounts`) }}</h2>
           </div>
           <div class="pcard-body link-body">
             <div class="link-item" :class="{ linked: user?.discordId }">
@@ -52,17 +52,17 @@
               </div>
               <div class="link-meta">
                 <strong>Discord</strong>
-                <span class="link-status" :class="{ on: user?.discordId }">{{ user?.discordId ? 'Connecté' : 'Non connecté' }}</span>
-                <p class="link-desc">Associez votre compte Discord pour la vérification et la communauté.</p>
+                <span class="link-status" :class="{ on: user?.discordId }">{{ user?.discordId ? tr('Connecté', 'Connected') : tr('Non connecté', 'Not connected') }}</span>
+                <p class="link-desc">{{ tr(`Associez votre compte Discord pour la vérification et la communauté.`, `Link your Discord account for verification and the community.`) }}</p>
               </div>
               <div class="link-actions">
                 <button v-if="user?.discordId" class="btn-link-ghost" @click="copyId(user.discordId)">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  {{ copied ? 'Copié !' : 'Copier l\'ID' }}
+                  {{ copied ? tr('Copié !', 'Copied!') : tr('Copier l\'ID', 'Copy ID') }}
                 </button>
                 <button v-else class="btn-link-brand btn-discord-brand" @click="linkDiscord">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Lier
+                  {{ tr(`Lier`, `Link`) }}
                 </button>
               </div>
             </div>
@@ -73,20 +73,20 @@
         <div v-if="isSeller" class="pcard anim-card stripe-card">
           <div class="pcard-header">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            <h2>Paiements Stripe</h2>
+            <h2>{{ tr(`Paiements Stripe`, `Stripe payments`) }}</h2>
           </div>
           <div class="pcard-body">
             <div v-if="stripeStatus === 'linked'" class="seller-approved">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
               <div>
-                <strong>Compte Stripe connecté</strong>
-                <span>Vos revenus sont transférés sur ce compte.</span>
+                <strong>{{ tr(`Compte Stripe connecté`, `Stripe account connected`) }}</strong>
+                <span>{{ tr(`Vos revenus sont transférés sur ce compte.`, `Your earnings are transferred to this account.`) }}</span>
               </div>
             </div>
             <template v-else>
-              <p class="seller-hint">Pour recevoir vos revenus, associez votre compte Stripe. Vous serez redirigé vers Stripe pour finaliser l'onboarding.</p>
+              <p class="seller-hint">{{ tr(`Pour recevoir vos revenus, associez votre compte Stripe. Vous serez redirigé vers Stripe pour finaliser l'onboarding.`, `To receive your earnings, link your Stripe account. You will be redirected to Stripe to complete onboarding.`) }}</p>
               <button class="btn-save" :disabled="stripeLoading" @click="connectStripe">
-                {{ stripeLoading ? 'Redirection...' : 'Lier mon compte Stripe' }}
+                {{ stripeLoading ? tr('Redirection...', 'Redirecting...') : tr('Lier mon compte Stripe', 'Link my Stripe account') }}
               </button>
               <span v-if="stripeMsg" class="msg" :class="{ err: stripeError }">{{ stripeMsg }}</span>
             </template>
@@ -97,7 +97,7 @@
         <div class="pcard anim-card seller-card">
           <div class="pcard-header">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-            <h2>Statut vendeur</h2>
+            <h2>{{ tr(`Statut vendeur`, `Seller status`) }}</h2>
           </div>
           <div class="pcard-body">
             <!-- Déjà vendeur -->
@@ -105,11 +105,11 @@
               <div class="seller-approved">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                 <div>
-                  <strong>Votre compte vendeur est actif</strong>
-                  <span>Vous pouvez gérer votre boutique et vos revenus.</span>
+                  <strong>{{ tr(`Votre compte vendeur est actif`, `Your seller account is active`) }}</strong>
+                  <span>{{ tr(`Vous pouvez gérer votre boutique et vos revenus.`, `You can manage your shop and your earnings.`) }}</span>
                 </div>
               </div>
-              <NuxtLink to="/seller/account" class="btn-save">Accéder à mon espace vendeur</NuxtLink>
+              <NuxtLink to="/seller/account" class="btn-save">{{ tr(`Accéder à mon espace vendeur`, `Go to my seller area`) }}</NuxtLink>
             </template>
 
             <!-- En attente -->
@@ -117,8 +117,8 @@
               <div class="seller-pending">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f5b342" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 <div>
-                  <strong>Demande en attente de validation</strong>
-                  <span>L'équipe GSA examine votre demande sous 24-48h. Vous serez notifié dès l'activation.</span>
+                  <strong>{{ tr(`Demande en attente de validation`, `Request pending approval`) }}</strong>
+                  <span>{{ tr(`L'équipe GSA examine votre demande sous 24-48h. Vous serez notifié dès l'activation.`, `The GSA team is reviewing your request within 24-48h. You will be notified as soon as it is activated.`) }}</span>
                 </div>
               </div>
             </template>
@@ -128,47 +128,47 @@
               <div class="seller-rejected">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                 <div>
-                  <strong>Demande refusée</strong>
-                  <span>Votre demande a été refusée. Vous pouvez soumettre une nouvelle demande.</span>
+                  <strong>{{ tr(`Demande refusée`, `Request declined`) }}</strong>
+                  <span>{{ tr(`Votre demande a été refusée. Vous pouvez soumettre une nouvelle demande.`, `Your request was declined. You can submit a new request.`) }}</span>
                 </div>
               </div>
               <form class="seller-form" @submit.prevent="submitSellerRequest">
-                <div class="field"><label>Nom de la boutique</label><input v-model="sellerForm.shopName" type="text" required /></div>
-                <div class="field"><label>Description / Bio</label><textarea v-model="sellerForm.bio" rows="3" placeholder="Présentez votre travail, vos créations..."></textarea></div>
+                <div class="field"><label>{{ tr(`Nom de la boutique`, `Shop name`) }}</label><input v-model="sellerForm.shopName" type="text" required /></div>
+                <div class="field"><label>{{ tr(`Description / Bio`, `Description / Bio`) }}</label><textarea v-model="sellerForm.bio" rows="3" :placeholder="tr(`Présentez votre travail, vos créations...`, `Present your work and your creations...`)"></textarea></div>
                 <div class="field"><label>Discord</label>
                   <div v-if="user?.discordTag" class="discord-linked">
                     <IconDiscord :size="16" />
-                    <span>Discord lié - <strong>{{ user.discordTag }}</strong></span>
+                    <span>{{ tr(`Discord lié`, `Discord linked`) }} - <strong>{{ user.discordTag }}</strong></span>
                   </div>
                   <button v-else type="button" class="btn-discord-link" @click="linkDiscord">
                     <IconDiscord :size="16" />
-                    Lier mon compte Discord
+                    {{ tr(`Lier mon compte Discord`, `Link my Discord account`) }}
                   </button>
                 </div>
                 <button class="btn-save" type="submit" :disabled="sellerSending">
-                  {{ sellerSending ? 'Envoi...' : 'Envoyer la demande' }}
+                  {{ sellerSending ? tr('Envoi...', 'Sending...') : tr('Envoyer la demande', 'Send request') }}
                 </button>
               </form>
             </template>
 
             <!-- Jamais demandé -->
             <template v-else>
-              <p class="seller-hint">Vendez vos créations sur GSA Store : scripts, modèles, maps et plus. Rejoignez les créateurs de la marketplace.</p>
+              <p class="seller-hint">{{ tr(`Vendez vos créations sur GSA Store : scripts, modèles, maps et plus. Rejoignez les créateurs de la marketplace.`, `Sell your creations on GSA Store: scripts, models, maps and more. Join the marketplace creators.`) }}</p>
               <form class="seller-form" @submit.prevent="submitSellerRequest">
-                <div class="field"><label>Nom de la boutique</label><input v-model="sellerForm.shopName" type="text" required placeholder="Ma boutique" /></div>
-                <div class="field"><label>Description / Bio</label><textarea v-model="sellerForm.bio" rows="3" placeholder="Présentez votre travail, vos créations..."></textarea></div>
+                <div class="field"><label>{{ tr(`Nom de la boutique`, `Shop name`) }}</label><input v-model="sellerForm.shopName" type="text" required :placeholder="tr(`Ma boutique`, `My shop`)" /></div>
+                <div class="field"><label>{{ tr(`Description / Bio`, `Description / Bio`) }}</label><textarea v-model="sellerForm.bio" rows="3" :placeholder="tr(`Présentez votre travail, vos créations...`, `Present your work and your creations...`)"></textarea></div>
                 <div class="field"><label>Discord</label>
                   <div v-if="user?.discordTag" class="discord-linked">
                     <IconDiscord :size="16" />
-                    <span>Discord lié - <strong>{{ user.discordTag }}</strong></span>
+                    <span>{{ tr(`Discord lié`, `Discord linked`) }} - <strong>{{ user.discordTag }}</strong></span>
                   </div>
                   <button v-else type="button" class="btn-discord-link" @click="linkDiscord">
                     <IconDiscord :size="16" />
-                    Lier mon compte Discord
+                    {{ tr(`Lier mon compte Discord`, `Link my Discord account`) }}
                   </button>
                 </div>
                 <button class="btn-save" type="submit" :disabled="sellerSending">
-                  {{ sellerSending ? 'Envoi...' : 'Devenir vendeur' }}
+                  {{ sellerSending ? tr('Envoi...', 'Sending...') : tr('Devenir vendeur', 'Become a seller') }}
                 </button>
               </form>
             </template>
@@ -184,6 +184,7 @@
 <script setup lang="ts">
 useSeoMeta({ robots: 'noindex, nofollow' })
 definePageMeta({ layout: 'default' })
+const { t, tr } = useLang()
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
 const pageRef = ref<HTMLElement | null>(null)
@@ -230,14 +231,14 @@ async function checkStripeConnect() {
     const res = await $fetch(api + '/api/stripe/connect/status', { credentials: 'include' })
     if (res.connected) {
       stripeStatus.value = 'linked'
-      stripeMsg.value = 'Compte Stripe connecté ✓'
+      stripeMsg.value = tr("Compte Stripe connecté ✓", "Stripe account connected ✓")
     } else {
       stripeStatus.value = 'unlinked'
       stripeMsg.value = ''
     }
   } catch (e: any) {
     stripeStatus.value = 'unlinked'
-    stripeMsg.value = 'Erreur: ' + (e?.data?.message || e?.message || 'vérification impossible')
+    stripeMsg.value = tr('Erreur: ', 'Error: ') + (e?.data?.message || e?.message || tr('vérification impossible', 'verification failed'))
     stripeError.value = true
   }
 }
@@ -254,7 +255,7 @@ async function connectStripe() {
     } else if (res.url) {
       window.location.href = res.url
     } else {
-      stripeMsg.value = 'Réponse inattendue du serveur'
+      stripeMsg.value = tr("Réponse inattendue du serveur", "Unexpected server response")
       stripeError.value = true
     }
   } catch (e: any) {
@@ -275,10 +276,10 @@ async function saveProfile() {
       body: { displayName: form.displayName, email: form.email },
     })
     if (user.value) user.value = res.user
-    profileMsg.value = 'Profil mis à jour ✓'
+    profileMsg.value = tr("Profil mis à jour ✓", "Profile updated ✓")
   } catch (e: any) {
     profileError.value = true
-    profileMsg.value = e?.data?.message || e?.message || 'Erreur lors de la mise à jour'
+    profileMsg.value = e?.data?.message || e?.message || tr("Erreur lors de la mise à jour", "Update failed")
   } finally {
     saving.value = false
     setTimeout(() => (profileMsg.value = ''), 3500)
@@ -294,7 +295,7 @@ async function submitSellerRequest() {
       credentials: 'include',
       body: { shopName: sellerForm.shopName, bio: sellerForm.bio, discordTag: sellerForm.discordTag },
     })
-    sellerMsg.value = res.message || 'Demande envoyée !'
+    sellerMsg.value = res.message || tr("Demande envoyée !", "Request sent!")
     if (user.value) user.value = { ...user.value, sellerStatus: 'pending' }
   } catch (e: any) {
     sellerError.value = true

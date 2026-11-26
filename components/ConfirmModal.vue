@@ -9,7 +9,7 @@
         <p>{{ message }}</p>
       </div>
       <div class="modal-actions">
-        <button class="btn-cancel" @click="cancel">Annuler</button>
+        <button class="btn-cancel" @click="cancel">{{ tr(`Annuler`, `Cancel`) }}</button>
         <button class="btn-confirm" :class="{ danger: danger }" @click="confirm">{{ confirmText }}</button>
       </div>
     </div>
@@ -18,18 +18,19 @@
 
 <script setup lang="ts">
 const visible = ref(false)
-const title = ref('Confirmer')
+const { tr } = useLang()
+const title = ref(tr('Confirmer', 'Confirm'))
 const message = ref('')
-const confirmText = ref('Confirmer')
+const confirmText = ref(tr('Confirmer', 'Confirm'))
 const danger = ref(false)
 const overlayRef = ref<HTMLElement | null>(null)
 const cardRef = ref<HTMLElement | null>(null)
 let resolvePromise: ((v: boolean) => void) | null = null
 
 function ask(opts: { title?: string; message: string; confirmText?: string; danger?: boolean }): Promise<boolean> {
-  title.value = opts.title || 'Confirmer'
+  title.value = opts.title || tr('Confirmer', 'Confirm')
   message.value = opts.message
-  confirmText.value = opts.confirmText || 'Confirmer'
+  confirmText.value = opts.confirmText || tr('Confirmer', 'Confirm')
   danger.value = opts.danger || false
   visible.value = true
   nextTick(() => animateIn())
