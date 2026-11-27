@@ -108,12 +108,16 @@ export default defineEventHandler(async (event) => {
     }
 
     if (thumbnail) {
-      await query('DELETE FROM product_media WHERE product_id = $1 AND sort_order = 0', [productId])
+      // remplace seulement l'image principale (la plus ancienne de rang 0), jamais la galerie
+      await query(
+        'DELETE FROM product_media WHERE id = (SELECT id FROM product_media WHERE product_id = $1 AND sort_order = 0 ORDER BY id ASC LIMIT 1)',
+        [productId]
+      )
       if (String(thumbnail).startsWith('data:')) {
         // Image base64 → R2 (plus de stockage lourd en DB), fallback DB si R2 KO
         try {
           const mime = String(thumbnail).match(/^data:([^;,]+)/)?.[1] || 'image/jpeg'
-          await uploadImageToR2(productId, String(thumbnail), mime)
+          await uploadImageToR2(productId, String(thumbnail), mime, true)
         } catch (e) {
           console.error('[admin] R2 upload thumbnail failed, fallback DB:', e)
           await query(

@@ -36,7 +36,8 @@ export async function r2SignedUrl(storagePath: string, expiresIn = 3600): Promis
 // Upload une image (data URL base64) vers R2 + crée la row product_media.
 // Retourne { mediaId, url: /api/media/:id, key, size }.
 // L'URL publique reste /api/media/:id (proxy R2 avec cache navigateur 7j).
-export async function uploadImageToR2(productId: number, dataUrl: string, mime = 'image/jpeg') {
+// main = true : image mise en avant (rang 0). Sinon : image de galerie, rang = dernier rang + 1.
+export async function uploadImageToR2(productId: number, dataUrl: string, mime = 'image/jpeg', main = false) {
   if (!r2Client) throw new Error('R2 non configuré')
   const base64 = String(dataUrl).replace(/^data:[^;,]+;base64,/, '')
   const buffer = Buffer.from(base64, 'base64')
@@ -45,10 +46,15 @@ export async function uploadImageToR2(productId: number, dataUrl: string, mime =
   await r2Client.send(new PutObjectCommand({ Bucket: R2_BUCKET, Key: key, Body: buffer, ContentType: mime || 'image/jpeg' }))
 
   const { query } = await import('./db')
+  let sortOrder = 0
+  if (!main) {
+    const next = await query('SELECT COALESCE(MAX(sort_order), 0) + 1 AS next FROM product_media WHERE product_id = $1', [productId])
+    sortOrder = Math.max(1, Number(next.rows[0].next))
+  }
   const inserted = await query(
     `INSERT INTO product_media (product_id, media_type, url, thumbnail_url, storage_path, sort_order)
-     VALUES ($1, 'image', $2, $2, $3, 0) RETURNING id`,
-    [productId, '/api/media/placeholder', key]
+     VALUES ($1, 'image', $2, $2, $3, $4) RETURNING id`,
+    [productId, '/api/media/placeholder', key, sortOrder]
   )
   const mediaId = inserted.rows[0].id
   await query('UPDATE product_media SET url = $1, thumbnail_url = $1 WHERE id = $2', [`/api/media/${mediaId}`, mediaId])

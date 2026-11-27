@@ -102,7 +102,7 @@ export default defineEventHandler(async (event) => {
         // Image base64 → R2 (plus de stockage lourd en DB), fallback DB si R2 KO
         try {
           const mime = String(thumbnail).match(/^data:([^;,]+)/)?.[1] || 'image/jpeg'
-          await uploadImageToR2(inserted.rows[0].id, String(thumbnail), mime)
+          await uploadImageToR2(inserted.rows[0].id, String(thumbnail), mime, true)
         } catch (e) {
           console.error('[admin] R2 upload thumbnail failed, fallback DB:', e)
           await query(
