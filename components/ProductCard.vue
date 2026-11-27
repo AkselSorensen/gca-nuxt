@@ -1,7 +1,7 @@
 <template>
   <article class="product-card">
     <NuxtLink class="card-media" :to="'/product/' + product.slug">
-      <img :src="mediaSrc(thumb, 480)" :srcset="mediaSrcset(thumb, [320, 480, 640])" sizes="(max-width: 640px) 90vw, 320px" :alt="product.title" width="480" height="300" loading="lazy" decoding="async" />
+      <img :src="mediaSrc(thumb, 640)" :srcset="mediaSrcset(thumb, [640, 1280])" sizes="(max-width: 640px) 100vw, 400px" :alt="product.title" width="480" height="300" loading="lazy" decoding="async" />
       <div v-if="product.discountPercent > 0" class="discount-badge">-{{ product.discountPercent }}%</div>
     </NuxtLink>
     <div class="card-body">

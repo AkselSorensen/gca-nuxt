@@ -86,7 +86,7 @@
           <div v-else class="mp-grid">
             <article v-for="(p, i) in visibleProducts" :key="p.id" class="mp-card" :style="{ animationDelay: (i % 12) * 0.04 + 's' }">
               <a :href="'/product/' + p.slug" class="card-img">
-                <img :src="mediaSrc(p.thumbnail || p.media?.[0]?.thumbnail || p.media?.[0]?.url || '', 160)" :alt="p.title" width="160" height="100" loading="lazy" decoding="async" />
+                <img :src="mediaSrc(p.thumbnail || p.media?.[0]?.thumbnail || p.media?.[0]?.url || '', 320)" :alt="p.title" width="160" height="100" loading="lazy" decoding="async" />
                 <div v-if="p.discountPercent > 0" class="badge-sale">−{{ p.discountPercent }}%</div>
                 <div v-if="p.isNew || p.is_new" class="badge-new">{{ t('cat.new') }}</div>
               </a>
