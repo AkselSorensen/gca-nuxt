@@ -2,6 +2,7 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import { query } from '../../services/db'
 import { getSessionUser } from '../../utils/auth'
+import { purgeRouteCache } from '../../utils/cache'
 
 export default defineEventHandler(async (event) => {
   const user = await getSessionUser(event)
@@ -37,6 +38,7 @@ export default defineEventHandler(async (event) => {
     [user.id]
   )
   const row = fresh.rows[0]
+  await purgeRouteCache() // le profil public (mis en cache 60 s) doit refléter la nouvelle bio tout de suite
   return {
     ok: true,
     sellerDescription: row.seller_description || '',

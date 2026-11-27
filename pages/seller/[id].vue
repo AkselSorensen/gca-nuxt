@@ -218,19 +218,21 @@ async function saveBio() {
   }
 }
 
-const raw = ref<any>(null)
-const fetchError = ref<any>(null)
-// Fetch manuel dans onMounted : plus fiable que useFetch(lazy) qui restait vide côté client
+// Chargé côté serveur (les données arrivent avec la page, plus de loader au clic) ; repli en navigateur si besoin
+const { data: sellerData, error: sellerError } = await useFetch(api + '/api/sellers/' + sellerSlug, { key: 'seller-' + sellerSlug, credentials: 'include' })
+const raw = ref<any>(sellerData.value || null)
+const fetchError = ref<any>(raw.value ? null : sellerError.value)
 async function loadSeller() {
   try {
     const res = await $fetch(api + '/api/sellers/' + sellerSlug, { credentials: 'include' })
     raw.value = res
+    fetchError.value = null
   } catch (e: any) {
     fetchError.value = e
   }
 }
 onMounted(async () => {
-  loadSeller()
+  if (!raw.value) loadSeller()
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
   if (gsap) pageEntrance(gsap, pageRef.value)
