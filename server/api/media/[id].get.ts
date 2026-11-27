@@ -12,7 +12,7 @@ import { query } from '../../services/db'
 import { r2Client, GetObjectCommand, PutObjectCommand, R2_BUCKET } from '../../services/r2'
 
 const ALLOWED_WIDTHS = [160, 320, 480, 640, 1280]
-const CACHE_MAX_BYTES = 64 * 1024 * 1024
+const CACHE_MAX_BYTES = 192 * 1024 * 1024
 type Entry = { buf: Buffer; type: string; etag: string }
 const cache = new Map<string, Entry>()
 let cacheBytes = 0
@@ -44,11 +44,11 @@ async function getSharp() {
   return sharpMod
 }
 
-function send(event: any, e: Entry) {
+function send(event: any, e: Entry, noVary = false) {
   setResponseHeader(event, 'Content-Type', e.type)
   setResponseHeader(event, 'Cache-Control', 'public, max-age=31536000, immutable')
   setResponseHeader(event, 'ETag', e.etag)
-  setResponseHeader(event, 'Vary', 'Accept')
+  if (!noVary) setResponseHeader(event, 'Vary', 'Accept')
   if (getRequestHeader(event, 'if-none-match') === e.etag) {
     setResponseStatus(event, 304)
     return ''
@@ -58,15 +58,18 @@ function send(event: any, e: Entry) {
 }
 
 export default defineEventHandler(async (event) => {
-  const mediaId = Number(getRouterParam(event, 'id'))
+  // `/api/media/76.webp?w=640` : l'extension permet à Cloudflare de mettre l'image en cache (il ignore les URLs sans extension)
+  const rawId = String(getRouterParam(event, 'id') || '')
+  const explicitWebp = /\.webp$/i.test(rawId)
+  const mediaId = Number(rawId.replace(/\.webp$/i, ''))
   if (Number.isNaN(mediaId)) throw createError({ statusCode: 400, statusMessage: 'Invalid media id' })
 
   const width = snapWidth(getQuery(event).w)
-  const wantsWebp = /image\/webp/.test(String(getRequestHeader(event, 'accept') || ''))
+  const wantsWebp = explicitWebp || /image\/webp/.test(String(getRequestHeader(event, 'accept') || ''))
   const variant = width ? `${mediaId}:${width}:${wantsWebp ? 'w' : 'j'}` : `${mediaId}:orig`
 
   const hit = cache.get(variant)
-  if (hit) return send(event, hit)
+  if (hit) return send(event, hit, explicitWebp)
 
   const result = await query('SELECT url, media_type, storage_path FROM product_media WHERE id = $1', [mediaId])
   if (!result.rowCount) throw createError({ statusCode: 404, statusMessage: 'Media not found' })
@@ -84,7 +87,7 @@ export default defineEventHandler(async (event) => {
       const vb = Buffer.from(await v.Body!.transformToByteArray())
       const ve: Entry = { buf: vb, type: 'image/webp', etag: '"' + createHash('sha1').update(variant).update(String(vb.length)).digest('hex').slice(0, 20) + '"' }
       remember(variant, ve)
-      return send(event, ve)
+      return send(event, ve, explicitWebp)
     } catch { /* pas encore générée : on la crée ci-dessous */ }
   }
 
@@ -131,5 +134,5 @@ export default defineEventHandler(async (event) => {
 
   const entry: Entry = { buf: out, type, etag: '"' + createHash('sha1').update(variant).update(String(out.length)).digest('hex').slice(0, 20) + '"' }
   remember(variant, entry)
-  return send(event, entry)
+  return send(event, entry, explicitWebp)
 })

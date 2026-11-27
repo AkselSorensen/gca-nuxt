@@ -1,5 +1,5 @@
-import { warmPublic } from '../utils/warm'
+import { warmPublic, warmMedia } from '../utils/warm'
 
 export default defineNitroPlugin(() => {
-  setTimeout(() => { warmPublic().catch(() => {}) }, 10000)
+  setTimeout(() => { warmPublic().then(() => warmMedia()).catch(() => {}) }, 10000)
 })
