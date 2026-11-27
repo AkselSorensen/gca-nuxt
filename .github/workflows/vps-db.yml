@@ -11,6 +11,7 @@ on:
         type: choice
         options:
           - status        # état du serveur et de la sauvegarde (lecture seule)
+          - diag          # charge du processeur et journaux du site (lecture seule)
           - setup         # crée POSTGRES_PASSWORD dans .env et démarre la base locale
           - migrate       # copie Supabase -> VPS et affiche les nombres de lignes (n'arrête rien)
           - switch        # le site utilise la base du VPS (sauvegarde .env avant)
@@ -47,6 +48,11 @@ jobs:
                 grep -c '^POSTGRES_PASSWORD=.' .env || true
                 grep -o '^DATABASE_URL=[a-z]*://[^:]*:' .env | sed 's/:$//' || true
                 docker compose logs --tail 15 backup 2>/dev/null || true
+                ;;
+              diag)
+                for i in 1 2 3; do docker stats --no-stream --format '{{.Name}} cpu={{.CPUPerc}} mem={{.MemUsage}}'; sleep 3; done
+                docker compose exec -T app sh -c 'top -b -n 1 | head -15' || true
+                docker compose logs --tail 60 app
                 ;;
               setup)
                 if ! grep -q '^POSTGRES_PASSWORD=.' .env; then
