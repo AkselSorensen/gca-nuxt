@@ -18,7 +18,7 @@ export async function ensureVariants(storagePath: string): Promise<number> {
   if (!missing.length) return 0
 
   let sharp: any
-  try { sharp = (await import('sharp')).default } catch { return 0 }
+  try { sharp = (await import('sharp')).default; sharp.concurrency(1) } catch { return 0 }
   const obj = await r2Client.send(new GetObjectCommand({ Bucket: R2_BUCKET, Key: storagePath }))
   const original = Buffer.from(await obj.Body!.transformToByteArray())
   if (obj.ContentType && !/^image\/(jpeg|png|webp|avif|tiff)/.test(obj.ContentType)) return 0 // gif/svg/vidéo : laissés tels quels

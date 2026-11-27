@@ -60,7 +60,8 @@ export async function uploadImageToR2(productId: number, dataUrl: string, mime =
   await query('UPDATE product_media SET url = $1, thumbnail_url = $1 WHERE id = $2', [`/api/media/${mediaId}`, mediaId])
 
   // Miniatures prêtes dès l'envoi (en arrière-plan) : le premier visiteur n'attend pas leur création
-  import('../utils/mediaVariants').then((m) => m.ensureVariants(key)).catch((e) => console.warn('[miniatures] échec :', e?.message || e))
+  // Décalé de 4 s : la réponse et le rafraîchissement de l'admin passent d'abord, sans concurrence de calcul
+  new Promise((r) => setTimeout(r, 4000)).then(() => import('../utils/mediaVariants')).then((m) => m.ensureVariants(key)).catch((e) => console.warn('[miniatures] échec :', e?.message || e))
 
   return { mediaId, url: `/api/media/${mediaId}`, key, size: buffer.length }
 }

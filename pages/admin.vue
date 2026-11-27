@@ -1391,8 +1391,8 @@ async function saveProduct() {
       extraImages: pendingMedia.value,
     }
     const res = isEdit
-      ? await $fetch(api + '/api/admin/products/' + editingId.value, { credentials: 'include', method:'PATCH', body: payload })
-      : await $fetch(api + '/api/admin/products', { credentials: 'include', method:'POST', body: payload })
+      ? await $fetch(api + '/api/admin/products/' + editingId.value, { credentials: 'include', method:'PATCH', body: payload, timeout: 45000 })
+      : await $fetch(api + '/api/admin/products', { credentials: 'include', method:'POST', body: payload, timeout: 45000 })
 
     // Upload fichier produit vers R2 si un fichier a été sélectionné
     const productId = res?.id || res?.productId || res?.product?.id || editingId.value

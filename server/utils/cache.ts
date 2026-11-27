@@ -15,6 +15,8 @@ export async function purgeRouteCache(): Promise<number> {
     await Promise.all(fnKeys.map((k: string) => storage.removeItem(k)))
     const total = keys.length + fnKeys.length
     if (total) console.log('[cache] purge SWR :', total, 'entrée(s)')
+    // Recharge les caches tout de suite : le prochain visiteur ne subit pas le recalcul
+    setTimeout(() => { import('./warm').then((m) => m.warmPublic()).catch(() => {}) }, 300)
     return total
   } catch (e: any) {
     console.warn('[cache] purge impossible:', e?.message || e)
