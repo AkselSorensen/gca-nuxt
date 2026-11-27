@@ -1,0 +1,82 @@
+name: VPS base de données
+
+# À lancer à la main (Actions → « VPS base de données » → Run workflow).
+# Permet de gérer la migration Supabase → PostgreSQL du VPS sans connexion SSH depuis ton PC.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action à exécuter"
+        required: true
+        type: choice
+        options:
+          - status        # état du serveur et de la sauvegarde (lecture seule)
+          - setup         # crée POSTGRES_PASSWORD dans .env et démarre la base locale
+          - migrate       # copie Supabase -> VPS et affiche les nombres de lignes (n'arrête rien)
+          - switch        # le site utilise la base du VPS (sauvegarde .env avant)
+          - rollback      # le site revient sur Supabase
+
+concurrency:
+  group: vps-db
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exécution sur le VPS
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          ACTION: ${{ inputs.action }}
+          OLD_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+        with:
+          host: ${{ secrets.OVH_HOST }}
+          username: gsa
+          key: ${{ secrets.OVH_SSH_KEY }}
+          envs: ACTION,OLD_URL
+          command_timeout: 30m
+          script: |
+            set -e
+            cd /opt/gsa
+            git pull origin main
+            case "$ACTION" in
+              status)
+                nproc; free -m; uptime
+                docker compose ps
+                docker stats --no-stream
+                grep -c '^POSTGRES_PASSWORD=.' .env || true
+                grep -o '^DATABASE_URL=[a-z]*://[^:]*:' .env | sed 's/:$//' || true
+                docker compose logs --tail 15 backup 2>/dev/null || true
+                ;;
+              setup)
+                if ! grep -q '^POSTGRES_PASSWORD=.' .env; then
+                  echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)" >> .env
+                  echo "POSTGRES_PASSWORD créé dans .env"
+                fi
+                docker compose up -d db
+                docker compose ps db
+                ;;
+              migrate)
+                [ -n "$OLD_URL" ] || { echo "Secret SUPABASE_DATABASE_URL manquant"; exit 1; }
+                OLD_URL="$OLD_URL" sh scripts/migrate-to-vps-db.sh
+                ;;
+              switch)
+                PW=$(grep '^POSTGRES_PASSWORD=' .env | cut -d= -f2-)
+                [ -n "$PW" ] || { echo "Lance d'abord « setup »"; exit 1; }
+                cp .env .env.supabase.bak
+                if grep -q '^DATABASE_URL=' .env; then
+                  sed -i "s|^DATABASE_URL=.*|DATABASE_URL=postgresql://gsa:${PW}@db:5432/gsa|" .env
+                else
+                  echo "DATABASE_URL=postgresql://gsa:${PW}@db:5432/gsa" >> .env
+                fi
+                docker compose up -d --force-recreate app
+                docker compose up -d backup
+                echo "Site basculé sur la base du VPS. Ancien .env : /opt/gsa/.env.supabase.bak"
+                ;;
+              rollback)
+                [ -f .env.supabase.bak ] || { echo "Pas de .env.supabase.bak : rien à restaurer"; exit 1; }
+                cp .env.supabase.bak .env
+                docker compose up -d --force-recreate app
+                echo "Site revenu sur Supabase."
+                ;;
+            esac

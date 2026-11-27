@@ -4,6 +4,14 @@ Le code et le `docker-compose.yml` sont prêts : la base (`db`) et la sauvegarde
 
 Tout se fait sur le VPS, dans `/opt/gsa` (`ssh gsa@TON_IP`). Compter 20 minutes, dont 1 à 2 minutes de coupure.
 
+## Sans connexion SSH : depuis GitHub
+Si tu ne peux pas te connecter au VPS depuis ton PC, tout peut se lancer depuis GitHub (le secret SSH du déploiement est déjà enregistré) :
+1. Dépôt GitHub → **Settings → Secrets and variables → Actions → New repository secret** : nom `SUPABASE_DATABASE_URL`, valeur = l'URL Supabase (avec `?sslmode=require`).
+2. **Actions → « VPS base de données » → Run workflow**, puis, dans cet ordre : `status`, `setup`, `migrate` (compare les nombres de lignes dans les logs).
+3. Mettre le site en maintenance, relancer `migrate`, puis `switch`, vérifier le site et désactiver la maintenance.
+4. `rollback` remet le site sur Supabase en cas de problème.
+
+
 ## 1. Préparer
 1. Pousser le code, attendre la fin du déploiement, puis sur le VPS : `cd /opt/gsa && git pull origin main`.
 2. Ajouter un mot de passe pour la base dans `.env` (une longue valeur aléatoire, sans espace ni `@` `:` `/` `#`) :
