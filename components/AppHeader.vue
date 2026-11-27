@@ -2,7 +2,7 @@
   <header class="site-header">
     <div class="container header-inner">
       <NuxtLink to="/" class="logo">
-        <img src="/logo.png" alt="GSA" class="logo-img" />
+        <img src="/logo-sm.webp" alt="GSA" class="logo-img" width="54" height="36" decoding="async" />
       </NuxtLink>
       <nav class="nav-links">
         <NuxtLink to="/" class="nav-link">{{ t('nav.home') }}</NuxtLink>

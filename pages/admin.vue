@@ -1292,12 +1292,11 @@ function handleThumbUpload(e: any) {
   const file = e.target?.files?.[0] || e.dataTransfer?.files?.[0]
   if (!file) return
   if (file.size > 8*1024*1024) return toastRef.value?.show('error', 'Max 8 Mo')
-  const reader = new FileReader()
-  reader.onload = () => {
-    uploadThumb.value = reader.result as string
-    productForm.thumbnail = reader.result as string
-  }
-  reader.readAsDataURL(file)
+  // Compressée dans le navigateur (max 1600 px) : un envoi de 8 Mo en base64 saturait le serveur (502)
+  compressImage(file, 1600, 0.82).then((data) => {
+    uploadThumb.value = data
+    productForm.thumbnail = data
+  }).catch(() => toastRef.value?.show('error', 'Image illisible'))
 }
 function removeThumb() { uploadThumb.value = ''; productForm.thumbnail = '' }
 

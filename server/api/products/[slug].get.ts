@@ -16,7 +16,8 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Product not found' })
     }
 
-    await query('UPDATE products SET views = views + 1, updated_at = NOW() WHERE id = $1', [product.id])
+    // Compteur de vues : en arrière-plan (on n'attend pas) et sans toucher à updated_at
+    query('UPDATE products SET views = views + 1 WHERE id = $1', [product.id]).catch(() => {})
     product.views += 1
 
     // Indique si l'utilisateur connecté possède déjà ce produit (pour éviter le rachat)

@@ -3,15 +3,18 @@
 // pas utilisé par la home - le header lit /api/me côté client).
 import { defineEventHandler, createError, setResponseHeader } from 'h3'
 import { query } from '../services/db'
-import { getSessionUser, getSessionLocale } from '../utils/auth'
+import { getSessionLocale } from '../utils/auth'
+import { memo } from '../utils/memo'
 
 const DISCORD_INVITE = 'https://discord.gg/KDsEzGRnKs'
 
 export default defineEventHandler(async (event) => {
   setResponseHeader(event, 'Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=300')
   try {
-    const [sessionUser, locale] = await Promise.all([getSessionUser(event), getSessionLocale(event)])
+    const locale = await getSessionLocale(event)
 
+    // Données publiques identiques pour tous les visiteurs : mémorisées 60 s (vidées à chaque modif admin)
+    const data = await memo('bootstrap', 60_000, async () => {
     const [categories, trending, discounts, featured, stats] = await Promise.all([
       query(`SELECT c.name, c.slug, c.description,
         (SELECT COUNT(DISTINCT p2.id) FROM products p2
@@ -172,7 +175,6 @@ export default defineEventHandler(async (event) => {
     }
 
     return {
-      locale,
       user: null, // jamais d'utilisateur dans le cache CDN - le header lit /api/me
       categories: categories.rows,
       trending: trending.rows.map(thumb),
@@ -189,6 +191,8 @@ export default defineEventHandler(async (event) => {
       communities: ['Nexus RP', 'Helios City', 'Sector 12', 'NovaLife', 'Blackridge RP'],
       discordInvite: DISCORD_INVITE,
     }
+    })
+    return { ...data, locale }
   } catch (error) {
     console.error('Bootstrap error:', error)
     throw createError({ statusCode: 500, statusMessage: 'Unable to load homepage data' })

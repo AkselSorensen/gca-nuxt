@@ -12,6 +12,10 @@ const { Pool } = pg
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
+  max: 10,
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 10_000,
+  keepAlive: true,
 })
 
 export async function query(text: string, params: any[] = []) {

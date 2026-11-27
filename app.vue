@@ -2,7 +2,7 @@
   <div v-if="((maintenance.enabled && !isAdminSession) || route.query.maintenancePreview === '1') && route.path !== '/admin' && !(route.path === '/login' && route.query.admin === '1')" class="maintenance-screen">
     <div class="maintenance-noise"></div>
     <header class="maintenance-topbar">
-      <NuxtLink to="/" class="maintenance-brand" :aria-label="tr(`GSA, accueil`, `GSA, home`)"><img src="/logo.png" alt="GSA" class="maintenance-logo" /><small>MARKETPLACE</small></NuxtLink>
+      <NuxtLink to="/" class="maintenance-brand" :aria-label="tr(`GSA, accueil`, `GSA, home`)"><img src="/logo-sm.webp" alt="GSA" class="maintenance-logo" width="69" height="46" decoding="async" /><small>MARKETPLACE</small></NuxtLink>
       <div class="maintenance-actions">
         <div class="maintenance-live"><span></span> {{ tr(`Intervention en cours`, `Work in progress`) }}</div>
         <a href="/login?admin=1" class="maintenance-admin-btn">{{ tr(`Connexion admin`, `Admin login`) }}</a>
@@ -23,7 +23,7 @@
       <section class="maintenance-art" :aria-label="tr(`Illustration abstraite de maintenance`, `Abstract maintenance illustration`)">
         <div class="art-grid"></div>
         <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-orbit orbit-three"></div>
-        <div class="art-core"><div class="core-glow"></div><img src="/logo.png" alt="GSA" class="core-logo" /><span class="core-caption">GSA<br />SYSTEMS</span></div>
+        <div class="art-core"><div class="core-glow"></div><img src="/logo-md.webp" alt="GSA" class="core-logo" decoding="async" /><span class="core-caption">GSA<br />SYSTEMS</span></div>
         <div class="float-chip chip-top"><span class="chip-spark">✦</span> {{ tr(`AMÉLIORATION EN COURS`, `UPGRADING EXPERIENCE`) }}</div>
         <div class="float-chip chip-bottom"><span class="chip-dot"></span> {{ tr(`BIENTÔT DE RETOUR`, `ONLINE AGAIN SOON`) }}</div>
         <div class="art-cross cross-a">+</div><div class="art-cross cross-b">+</div>

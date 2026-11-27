@@ -37,7 +37,7 @@
           <h2>{{ tr(`Votre panier`, `Your cart`) }} ({{ items.length }})</h2>
           <div v-for="(item, i) in items" :key="item.id || i" class="cart-item">
             <NuxtLink :to="'/product/' + item.slug" class="cart-item-img">
-              <img :src="item.thumbnail || item.media?.[0]?.thumbnail || item.media?.[0]?.url || '/placeholder.svg'" :alt="item.title" />
+              <img :src="mediaSrc(item.thumbnail || item.media?.[0]?.thumbnail || item.media?.[0]?.url || '/placeholder.svg', 160)" :alt="item.title" width="160" height="100" loading="lazy" decoding="async" />
             </NuxtLink>
             <div class="cart-item-info">
               <NuxtLink :to="'/product/' + item.slug" class="cart-item-title">{{ item.title }}</NuxtLink>

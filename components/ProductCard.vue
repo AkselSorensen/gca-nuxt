@@ -1,7 +1,7 @@
 <template>
   <article class="product-card">
     <NuxtLink class="card-media" :to="'/product/' + product.slug">
-      <img :src="thumb" :alt="product.title" loading="lazy" />
+      <img :src="mediaSrc(thumb, 480)" :srcset="mediaSrcset(thumb, [320, 480, 640])" sizes="(max-width: 640px) 90vw, 320px" :alt="product.title" width="480" height="300" loading="lazy" decoding="async" />
       <div v-if="product.discountPercent > 0" class="discount-badge">-{{ product.discountPercent }}%</div>
     </NuxtLink>
     <div class="card-body">
@@ -29,7 +29,7 @@ const thumb = computed(() => props.product.thumbnail || props.product.media?.[0]
 const currency = (v) => Number(v||0).toFixed(2).replace('.',',') + '€'
 </script>
 <style scoped>
-.product-card { border-radius:var(--radius); overflow:hidden; background:var(--bg-card); border:1px solid var(--border); transition:transform .25s,box-shadow .25s,border-color .25s; }
+.product-card { content-visibility:auto; contain-intrinsic-size:auto 420px; border-radius:var(--radius); overflow:hidden; background:var(--bg-card); border:1px solid var(--border); transition:transform .25s,box-shadow .25s,border-color .25s; }
 .product-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,0.3); border-color:rgba(47,125,246,0.25); }
 .card-media { position:relative; display:block; overflow:hidden; aspect-ratio:16/9; }
 .card-media img { width:100%; height:100%; object-fit:cover; transition:transform .4s; }

@@ -4,6 +4,8 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   typescript: { shim: false, typeCheck: false },
   nitro: {
+    // Fichiers statiques (JS/CSS) pré-compressés gzip/brotli au build
+    compressPublicAssets: { gzip: true, brotli: true },
     externals: {
       inline: ['stripe']
     }
@@ -34,7 +36,8 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', href: '/favicon.png' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap' }
+        // Police chargée sans bloquer l'affichage (media=print puis all)
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap', media: 'print', onload: "this.media='all'" }
       ]
     }
   },
@@ -55,6 +58,11 @@ export default defineNuxtConfig({
     '/catalogue': { swr: false },
     '/product/**': { swr: false },
     '/about': { swr: false },
-    '/prestation': { swr: false }
+    '/prestation': { swr: false },
+    // Fichiers statiques lourds : cache navigateur long
+    '/hero-bg.mp4': { headers: { 'cache-control': 'public, max-age=2592000' } },
+    '/hero-poster.jpg': { headers: { 'cache-control': 'public, max-age=2592000' } },
+    '/logo-sm.webp': { headers: { 'cache-control': 'public, max-age=2592000' } },
+    '/logo-md.webp': { headers: { 'cache-control': 'public, max-age=2592000' } }
   }
 })

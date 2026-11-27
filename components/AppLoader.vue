@@ -2,7 +2,7 @@
   <Transition name="loader-fade">
     <div v-if="visible" class="app-loader">
       <div class="loader-glow"></div>
-      <img src="/logo.png" alt="GSA" class="loader-logo" />
+      <img src="/logo-md.webp" alt="GSA" class="loader-logo" decoding="async" />
     </div>
   </Transition>
 </template>

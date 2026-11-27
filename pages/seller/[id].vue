@@ -104,7 +104,7 @@
           <article v-for="p in filteredProducts" :key="p.id" class="sp-product-card anim-card">
             <NuxtLink :to="'/product/' + p.slug" class="sp-pc-link">
               <div class="sp-pc-img">
-                <img :src="p.thumbnail || '/placeholder.svg'" :alt="p.title" />
+                <img :src="mediaSrc(p.thumbnail || '/placeholder.svg', 480)" :alt="p.title" width="480" height="300" loading="lazy" decoding="async" />
                 <div v-if="p.discountPercent > 0" class="sp-pc-discount">−{{ p.discountPercent }}%</div>
                 <div v-if="p.isTrending" class="sp-pc-trending">{{ tr(`TENDANCE`, `TRENDING`) }}</div>
               </div>

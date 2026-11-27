@@ -1,8 +1,7 @@
 <template>
   <section class="hero">
-    <video class="hero-video" autoplay loop muted playsinline>
-      <source src="/hero-bg.mp4" type="video/mp4" />
-    </video>
+    <img v-show="!videoReady" class="hero-video hero-poster" src="/hero-poster.jpg" alt="" aria-hidden="true" fetchpriority="high" decoding="async" />
+    <video v-if="playVideo" class="hero-video" src="/hero-bg.mp4" poster="/hero-poster.jpg" autoplay loop muted playsinline preload="auto" aria-hidden="true" @playing="videoReady = true"></video>
     <div class="hero-overlay"></div>
     <div class="container hero-inner">
       <div class="hero-badge">
@@ -47,6 +46,19 @@
 
 <script setup lang="ts">
 const { t } = useLang()
+// La vidéo (2,4 Mo) ne démarre qu'après le chargement de la page, sur écran large, sans économie de données
+// ni préférence « réduire les animations » : sinon l'image d'accueil suffit.
+const playVideo = ref(false)
+const videoReady = ref(false)
+onMounted(() => {
+  const nav: any = navigator
+  const saveData = !!nav.connection?.saveData
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (saveData || reduce || window.innerWidth < 768) return
+  const start = () => { playVideo.value = true }
+  if (document.readyState === 'complete') setTimeout(start, 400)
+  else window.addEventListener('load', () => setTimeout(start, 400), { once: true })
+})
 defineProps({ totalProducts: Number, totalSales: Number, avgRating: String, totalCreators: Number, totalReviews: Number })
 </script>
 

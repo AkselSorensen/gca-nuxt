@@ -157,6 +157,7 @@ export async function getProductBySlug(slug: string, userId: number | null = nul
       JOIN users u ON u.id = r.user_id
       WHERE r.product_id = $1
       ORDER BY r.created_at DESC
+      LIMIT 100
     `,
     [product.id]
   )

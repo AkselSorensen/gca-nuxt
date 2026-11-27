@@ -3,6 +3,7 @@
 import { defineEventHandler, getQuery, createError, setResponseHeader } from 'h3'
 import { query } from '../../services/db'
 import { buildWhereClause, mapProduct } from '../../services/products'
+import { memo } from '../../utils/memo'
 
 // Pas de cache navigateur (max-age=0) : les prix/catégories changent côté admin et
 // l'utilisateur ne doit JAMAIS avoir à refresh. Seul le CDN garde 5 min (purgé au PATCH admin).
@@ -25,6 +26,9 @@ export default defineEventHandler(async (event) => {
     const orderBy = allowedSorts[sortMode] || allowedSorts.popular
     const where = buildWhereClause(q)
 
+    // Liste allégée : pas de description/installation (page produit uniquement), seule la 1re image est utile.
+    // Mémorisée 60 s côté serveur (vidée à chaque modification admin).
+    return await memo('products:' + JSON.stringify(q), 60_000, async () => {
     const result = await query(
       `
         SELECT
@@ -32,8 +36,6 @@ export default defineEventHandler(async (event) => {
           p.slug,
           p.title,
           p.short_description,
-          p.description,
-          p.installation,
           p.price,
           p.old_price,
           p.platform,
@@ -81,9 +83,14 @@ export default defineEventHandler(async (event) => {
     )
 
     return {
-      items: result.rows.map(mapProduct),
+      items: result.rows.map((r: any) => {
+        const item = mapProduct(r)
+        item.media = item.media.slice(0, 1)
+        return item
+      }),
       total: result.rowCount,
     }
+    })
   } catch (error) {
     console.error('Products list error:', error)
     throw createError({ statusCode: 500, statusMessage: 'Unable to fetch products' })

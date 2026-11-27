@@ -33,12 +33,12 @@
                 </span>
               </div>
             </div>
-            <img v-if="currentImg && !(showVideo && videoThumbUrl)" :src="currentImg" :alt="product.title" :class="{ 'has-video': product.videoUrl }" @click="product.videoUrl && videoEmbedUrl ? (showVideo = true, videoPlaying = true) : null" />
+            <img v-if="currentImg && !(showVideo && videoThumbUrl)" :src="mediaSrc(currentImg, 1280)" :alt="product.title" decoding="async" fetchpriority="high" :class="{ 'has-video': product.videoUrl }" @click="product.videoUrl && videoEmbedUrl ? (showVideo = true, videoPlaying = true) : null" />
             <span v-if="currentImg && product.videoUrl && !(showVideo && videoThumbUrl)" class="video-cta" @click="showVideo = true; videoPlaying = true">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
               {{ tr(`Voir la vidéo`, `Watch the video`) }}
             </span>
-            <img v-if="currentImg && !(showVideo && videoThumbUrl)" :src="currentImg" alt="" class="gallery-blur" aria-hidden="true" />
+            <img v-if="currentImg && !(showVideo && videoThumbUrl)" :src="mediaSrc(currentImg, 160)" alt="" class="gallery-blur" loading="lazy" aria-hidden="true" />
             <div v-else class="gallery-empty"><div class="loader"></div></div>
             <div v-if="product.discountPercent > 0" class="discount-badge">-{{ product.discountPercent }}%</div>
           </div>
@@ -49,7 +49,7 @@
               <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
             </button>
             <button v-for="(img, i) in images" :key="i" class="thumb-btn" :class="{ active: !showVideo && currentImg === img }" @click="showVideo = false; videoPlaying = false; currentImg = img">
-              <img :src="img" :alt="'Vue ' + (i+1)" />
+              <img :src="mediaSrc(img, 160)" :alt="'Vue ' + (i+1)" width="160" height="100" loading="lazy" decoding="async" />
             </button>
           </div>
         </div>

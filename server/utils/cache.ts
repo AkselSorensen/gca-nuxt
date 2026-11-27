@@ -2,8 +2,10 @@
 // d'un produit : sans ça la marketplace sert l'ancien prix pendant la durée du SWR
 // (routeRules : '/' 60 s, '/catalogue' + '/product/**' 300 s).
 import { useStorage } from '#imports'
+import { clearMemo } from './memo'
 
 export async function purgeRouteCache(): Promise<number> {
+  clearMemo()
   try {
     const storage = useStorage('cache')
     const keys = await storage.getKeys('nitro:routes')

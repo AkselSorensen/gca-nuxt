@@ -3,7 +3,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <NuxtLink to="/" class="footer-logo"><img src="/logo.png" alt="GSA" class="logo-img" /></NuxtLink>
+          <NuxtLink to="/" class="footer-logo"><img src="/logo-sm.webp" alt="GSA" class="logo-img" width="60" height="40" loading="lazy" decoding="async" /></NuxtLink>
           <p>{{ t('footer.tagline') }}</p>
         </div>
         <div class="footer-links"><h4>{{ t('footer.platform') }}</h4><NuxtLink to="/catalogue">{{ t('nav.marketplace') }}</NuxtLink><NuxtLink to="/prestation">{{ t('nav.services') }}</NuxtLink><NuxtLink to="/about">{{ t('nav.about') }}</NuxtLink></div>

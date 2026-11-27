@@ -35,7 +35,7 @@
       <div v-else class="purchases-list anim-up">
         <article v-for="item in purchases" :key="item.order_item_id" class="purchase-card">
           <NuxtLink class="purchase-thumb" :to="'/product/' + item.slug">
-            <img :src="item.thumbnail || '/placeholder.svg'" :alt="item.title" />
+            <img :src="mediaSrc(item.thumbnail || '/placeholder.svg', 320)" :alt="item.title" width="320" height="200" loading="lazy" decoding="async" />
           </NuxtLink>
           <div class="purchase-info">
             <NuxtLink :to="'/product/' + item.slug" class="purchase-title-link">
@@ -108,7 +108,7 @@
         <p class="review-modal-sub">{{ t('downloads.review_modal_sub') }}</p>
         <div class="review-modal-items">
           <div v-for="item in reviewableItems" :key="item.order_item_id" class="review-modal-item">
-            <img :src="item.thumbnail || '/placeholder.svg'" :alt="item.title" />
+            <img :src="mediaSrc(item.thumbnail || '/placeholder.svg', 320)" :alt="item.title" width="320" height="200" loading="lazy" decoding="async" />
             <div class="rm-info">
               <strong>{{ item.title }}</strong>
               <span class="rm-price">{{ Number(item.price).toFixed(2) }}€</span>

@@ -1,5 +1,7 @@
 services:
   app:
+    # Image construite par GitHub Actions (voir .github/workflows/deploy-ovh.yml)
+    image: ghcr.io/akselsorensen/gca-nuxt:latest
     build: .
     restart: always
     env_file: .env

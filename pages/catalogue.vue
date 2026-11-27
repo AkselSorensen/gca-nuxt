@@ -84,9 +84,9 @@
           <div v-if="loading" class="mp-empty">{{ t('cat.loading') }}</div>
           <div v-else-if="!filteredProducts.length" class="mp-empty">{{ t('cat.no_results') }}</div>
           <div v-else class="mp-grid">
-            <article v-for="(p, i) in filteredProducts" :key="p.id" class="mp-card" :style="{ animationDelay: (i % 12) * 0.04 + 's' }">
+            <article v-for="(p, i) in visibleProducts" :key="p.id" class="mp-card" :style="{ animationDelay: (i % 12) * 0.04 + 's' }">
               <a :href="'/product/' + p.slug" class="card-img">
-                <img :src="p.thumbnail || p.media?.[0]?.thumbnail || p.media?.[0]?.url || ''" :alt="p.title" loading="lazy" />
+                <img :src="mediaSrc(p.thumbnail || p.media?.[0]?.thumbnail || p.media?.[0]?.url || '', 160)" :alt="p.title" width="160" height="100" loading="lazy" decoding="async" />
                 <div v-if="p.discountPercent > 0" class="badge-sale">−{{ p.discountPercent }}%</div>
                 <div v-if="p.isNew || p.is_new" class="badge-new">{{ t('cat.new') }}</div>
               </a>
@@ -106,6 +106,9 @@
                 </div>
               </div>
             </article>
+          </div>
+          <div v-if="filteredProducts.length > visibleCount" class="load-more-wrap">
+            <button class="load-more" @click="visibleCount += PAGE_SIZE">{{ tr('Afficher plus', 'Show more') }} ({{ filteredProducts.length - visibleCount }})</button>
           </div>
         </main>
       </div>
@@ -327,6 +330,12 @@ const filteredProducts = computed(() => {
   return result
 })
 
+// Affichage progressif : 24 articles à la fois (le reste s'affiche à la demande)
+const PAGE_SIZE = 24
+const visibleCount = ref(PAGE_SIZE)
+const visibleProducts = computed(() => filteredProducts.value.slice(0, visibleCount.value))
+watch(() => [filters.search, filters.category, filters.sort, filters.priceMax, filters.onSale, filters.platforms.length, filters.trending, filters.minRating], () => { visibleCount.value = PAGE_SIZE })
+
 onMounted(async () => {
   // Read query params
   const route = useRoute()
@@ -461,4 +470,8 @@ onMounted(async () => {
 .card-pricing strong { font-size:1.15rem;font-weight:900;color:var(--text); }
 .price-sale { color:#8b1a1a !important; }
 .price-old { font-size:.88rem;font-weight:700;color:var(--text-muted);text-decoration:line-through; }
+/* Bouton « Afficher plus » */
+.load-more-wrap { display:flex; justify-content:center; padding:28px 0 8px; }
+.load-more { padding:12px 28px; border-radius:10px; border:1px solid var(--border); background:var(--bg-card); color:var(--text); font-weight:600; cursor:pointer; transition:border-color .15s, background-color .15s; }
+.load-more:hover { border-color:var(--primary); background:rgba(47,125,246,.08); }
 </style>
