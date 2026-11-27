@@ -22,9 +22,10 @@ const app = express();
 const port = Number(process.env.PORT) || 3000;
 const discordInvite = "https://discord.gg/KDsEzGRnKs";
 
+const localDb = /@(db|localhost|127\.0\.0\.1)(:|\/|$)/.test(process.env.DATABASE_URL || "") || /sslmode=disable/.test(process.env.DATABASE_URL || "");
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
+  ssl: localDb ? false : {
     rejectUnauthorized: false,
   },
 });

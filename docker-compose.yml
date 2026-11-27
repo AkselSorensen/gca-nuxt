@@ -13,3 +13,52 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+
+  # Base de données PostgreSQL sur le VPS (remplace Supabase). Démarrée à la main :
+  #   docker compose up -d db backup
+  # Non exposée sur Internet : seul le conteneur "app" la joint, via le nom "db".
+  db:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: gsa
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
+      POSTGRES_DB: gsa
+    command:
+      - postgres
+      - -c
+      - shared_buffers=128MB
+      - -c
+      - effective_cache_size=384MB
+      - -c
+      - work_mem=4MB
+      - -c
+      - max_connections=60
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gsa -d gsa"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Sauvegarde quotidienne (03:00 UTC) : copie locale 7 jours + envoi sur R2 (backups/db/)
+  backup:
+    image: postgres:17-alpine
+    restart: always
+    env_file: .env
+    environment:
+      PGHOST: db
+      PGUSER: gsa
+      PGDATABASE: gsa
+    volumes:
+      - ./scripts/db-backup.sh:/db-backup.sh:ro
+      - dbbackups:/backups
+    entrypoint: ["sh", "/db-backup.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  dbbackups:
