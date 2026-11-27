@@ -885,7 +885,7 @@
         <label class="check-field"><input type="checkbox" v-model="productForm.isHidden" /> Masqué (caché du catalogue)</label>
         <div class="modal-action-btns">
           <button class="btn-cancel" @click="closeProductForm">Annuler</button>
-          <button class="btn-primary" :disabled="saving" @click="saveProduct">{{ saving ? 'Enregistrement…' : (editingId ? 'Enregistrer les modifications' : (uploadFile ? 'Créer et uploader' : 'Créer le produit')) }}</button>
+          <button class="btn-primary" :disabled="saving" @click="saveProduct">{{ saving ? (uploadPct >= 0 ? 'Envoi du fichier ' + uploadPct + ' %' : 'Enregistrement…') : (editingId ? 'Enregistrer les modifications' : (uploadFile ? 'Créer et uploader' : 'Créer le produit')) }}</button>
         </div>
       </div>
     </div>
@@ -1171,6 +1171,7 @@ const pendingMedia = ref<string[]>([])
 const toastRef = ref<InstanceType<typeof ToastNotif> | null>(null)
 const confirmRef = ref<InstanceType<typeof ConfirmModal> | null>(null)
 const saving = ref(false)
+const uploadPct = ref(-1) // progression de l'envoi du fichier produit (-1 = aucun envoi)
 const prodOverlay = ref<HTMLElement | null>(null)
 const prodCard = ref<HTMLElement | null>(null)
 
@@ -1396,7 +1397,33 @@ async function saveProduct() {
     // Upload fichier produit vers R2 si un fichier a été sélectionné
     const productId = res?.id || res?.productId || res?.product?.id || editingId.value
     if (uploadFile.value && productId) {
-      // Envoi binaire direct (le navigateur lit le fichier en flux, pas de base64 ni de copie en mémoire)
+      // 1) Envoi direct navigateur → R2 (URL signée, avec progression) : ne passe ni par Cloudflare ni par le VPS
+      const file = uploadFile.value
+      uploadPct.value = 0
+      let direct = false
+      try {
+        const init: any = await $fetch(api + '/api/admin/products/' + productId + '/upload-init', {
+          credentials: 'include', method: 'POST',
+          body: { filename: uploadFileName.value, type: file.type || 'application/octet-stream', size: file.size },
+        })
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest()
+          xhr.open('PUT', init.url)
+          xhr.setRequestHeader('Content-Type', init.contentType)
+          xhr.upload.onprogress = (ev) => { if (ev.lengthComputable) uploadPct.value = Math.round(ev.loaded / ev.total * 100) }
+          xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('R2 ' + xhr.status))
+          xhr.onerror = () => reject(new Error('réseau/CORS'))
+          xhr.send(file)
+        })
+        await $fetch(api + '/api/admin/products/' + productId + '/upload-complete', {
+          credentials: 'include', method: 'POST', body: { filename: init.filename },
+        })
+        direct = true
+      } catch (err) {
+        console.warn('[admin] envoi direct impossible, repli par le serveur :', err)
+      }
+      if (direct) { /* terminé */ } else {
+      // 2) Repli : envoi binaire par le serveur
       const res2 = await fetch(api + '/api/admin/products/' + productId + '/upload-stream?filename=' + encodeURIComponent(uploadFileName.value), {
         method: 'POST',
         credentials: 'include',
@@ -1408,6 +1435,7 @@ async function saveProduct() {
         try { msg = (await res2.json())?.statusMessage || '' } catch { /* réponse non JSON (proxy) */ }
         throw new Error(msg || (res2.status === 502 || res2.status === 504 ? 'Le serveur n\'a pas répondu (fichier trop lourd ou serveur redémarré) - réessayez' : 'Envoi du fichier impossible (erreur ' + res2.status + ')'))
       }
+      }
     }
 
     editingId.value = null
@@ -1418,6 +1446,7 @@ async function saveProduct() {
     toastRef.value?.show('error', e?.data?.message || e?.message || 'Erreur')
   } finally {
     saving.value = false
+    uploadPct.value = -1
   }
 }
 
