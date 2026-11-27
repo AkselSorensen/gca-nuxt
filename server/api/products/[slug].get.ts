@@ -2,15 +2,16 @@
 // Cache PRIVÉ 30s (jamais de cache CDN partagé : le flag owned est par utilisateur)
 import { defineEventHandler, getRouterParam, createError, setResponseHeader } from 'h3'
 import { query } from '../../services/db'
-import { getProductBySlug } from '../../services/products'
+import { getProductPublic, productForUser } from '../../services/products'
 import { getSessionUser } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   setResponseHeader(event, 'Cache-Control', 'private, max-age=30')
   try {
     const slug = getRouterParam(event, 'slug') || ''
-    const sessionUser = await getSessionUser(event)
-    const product = await getProductBySlug(slug, sessionUser?.id || null)
+    // Session et produit chargés en parallèle
+    const [sessionUser, base] = await Promise.all([getSessionUser(event), getProductPublic(slug)])
+    const product: any = base ? productForUser(base, sessionUser?.id || null) : null
 
     if (!product) {
       throw createError({ statusCode: 404, statusMessage: 'Product not found' })

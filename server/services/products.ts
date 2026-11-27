@@ -1,5 +1,6 @@
 // Service : produits (réplique des helpers du monolithe Express)
 import { query } from './db'
+import { memo } from '../utils/memo'
 
 export function buildWhereClause(query: Record<string, any> = {}) {
   const clauses: string[] = []
@@ -102,7 +103,19 @@ export function mapProduct(row: any) {
   }
 }
 
-export async function getProductBySlug(slug: string, userId: number | null = null) {
+// Avis lancés en parallèle de la requête produit (la base est distante : chaque aller-retour coûte ~100 ms)
+async function loadProductBySlug(slug: string) {
+  const reviewsPromise = query(
+    `
+      SELECT r.id, r.rating, r.comment, r.created_at, r.user_id, u.display_name, u.avatar_url
+      FROM reviews r
+      JOIN users u ON u.id = r.user_id
+      WHERE r.product_id = (SELECT id FROM products WHERE slug = $1 AND is_hidden = FALSE)
+      ORDER BY r.created_at DESC
+      LIMIT 100
+    `,
+    [slug]
+  ).catch(() => ({ rows: [] as any[] }))
   const result = await query(
     `
       SELECT
@@ -143,34 +156,35 @@ export async function getProductBySlug(slug: string, userId: number | null = nul
   if (!result.rowCount) return null
   const product = mapProduct(result.rows[0])
 
-  const reviewsResult = await query(
-    `
-      SELECT
-        r.id,
-        r.rating,
-        r.comment,
-        r.created_at,
-        r.user_id,
-        u.display_name,
-        u.avatar_url
-      FROM reviews r
-      JOIN users u ON u.id = r.user_id
-      WHERE r.product_id = $1
-      ORDER BY r.created_at DESC
-      LIMIT 100
-    `,
-    [product.id]
-  )
+  const reviewsResult = await reviewsPromise
 
-  product.reviews = reviewsResult.rows.map((review: any) => ({
+  ;(product as any).reviews = reviewsResult.rows.map((review: any) => ({
     id: review.id,
     rating: review.rating,
     comment: review.comment,
     displayName: review.display_name,
     avatarUrl: review.avatar_url,
     createdAt: review.created_at,
-    mine: userId ? review.user_id === userId : false,
+    userId: review.user_id,
   }))
 
   return product
+}
+
+// Partie publique d'un produit, mémorisée 30 s (vidée à chaque modification admin)
+export function getProductPublic(slug: string) {
+  return memo('product:' + slug, 30_000, () => loadProductBySlug(slug))
+}
+
+// Copie du produit avec l'indicateur « mon avis » propre à l'utilisateur, sans exposer les identifiants
+export function productForUser(product: any, userId: number | null) {
+  return {
+    ...product,
+    reviews: (product.reviews || []).map(({ userId: uid, ...r }: any) => ({ ...r, mine: userId ? uid === userId : false })),
+  }
+}
+
+export async function getProductBySlug(slug: string, userId: number | null = null) {
+  const product = await getProductPublic(slug)
+  return product ? productForUser(product, userId) : null
 }
