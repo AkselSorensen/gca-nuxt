@@ -205,13 +205,23 @@ const slug = route.params.slug as string
 
 // Cache-busting : le SWR de useFetch sert l'ancienne réponse sur refresh() (avis supprimé
 // ou ajouté qui "restait" visible). Un paramètre unique force une vraie requête réseau.
-const fetchStamp = ref(Date.now())
+// (0 au départ : URL et clé identiques côté serveur et navigateur, sinon la page refaisait toute la requête après l'affichage)
+const fetchStamp = ref(0)
 async function reloadProduct() {
   fetchStamp.value = Date.now()
   await refresh()
 }
-const productUrl = computed(() => api + '/api/products/' + slug + '?_t=' + fetchStamp.value)
-const { data: prodData, refresh } = await useFetch(productUrl, { lazy: true, credentials: 'include' })
+const nuxtApp = useNuxtApp()
+const fromCache = import.meta.client && !nuxtApp.isHydrating && !!getCachedProduct(slug)
+const productUrl = computed(() => api + '/api/products/' + slug + (fetchStamp.value ? '?_t=' + fetchStamp.value : ''))
+const { data: prodData, refresh } = await useFetch(productUrl, {
+  key: 'product-' + slug,
+  lazy: true,
+  credentials: 'include',
+  // Navigation depuis le catalogue : fiche affichée tout de suite avec les données préchargées
+  getCachedData: (key, app) => app.isHydrating ? app.payload.data[key] : getCachedProduct(slug),
+})
+watch(prodData, (v) => { if (v) setCachedProduct(slug, v) }, { immediate: true })
 const product = computed(() => prodData.value?.product || prodData.value || null)
 
 // ===== SEO dynamique =====
@@ -478,7 +488,7 @@ onMounted(async () => {
   // pour afficher "Télécharger" au lieu des boutons d'achat.
   const { user, checkAuth } = useAuth()
   await checkAuth()
-  if (user.value?.id) await refresh()
+  if (user.value?.id || fromCache) await refresh()
 
   const { load, pageEntrance } = await import('~/composables/useAnimation')
   const { gsap } = await load()
