@@ -251,6 +251,9 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// Déclaré AVANT useHead : avec des données déjà en cache, useHead s'exécute tout de suite et le lit
+const categoryName = computed(() => product.value?.categoryName || product.value?.categorySlug || product.value?.category || 'Produit')
+
 useHead(() => {
   const p = product.value
   if (!p) return {}
@@ -356,7 +359,6 @@ watch(images, (imgs) => {
   }
 }, { immediate: true })
 
-const categoryName = computed(() => product.value?.categoryName || product.value?.categorySlug || product.value?.category || 'Produit')
 const productCats = computed(() => {
   const list = product.value?.categories || []
   // Ajoute la catégorie principale si absente de la liste
