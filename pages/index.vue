@@ -129,7 +129,10 @@ useSeoMeta({
 const config = useRuntimeConfig()
 const api = config.public.apiOrigin
 const { t } = useLang()
-const { data: bootstrap } = await useFetch(api + '/api/bootstrap')
+// Retour sur l'accueil = affichage immédiat avec les données déjà chargées, puis mise à jour discrète en arrière-plan
+const { data: bootstrap, refresh: refreshBootstrap } = await useFetch(api + '/api/bootstrap', { key: 'home-bootstrap', getCachedData: (key: string, nuxt: any, ctx: any) => (ctx?.cause === 'refresh:manual' ? undefined : nuxt.payload.data[key]) })
+const hydratingHome = useNuxtApp().isHydrating
+onMounted(() => { if (!hydratingHome) refreshBootstrap() })
 const state = computed(() => bootstrap.value || {})
 
 const stats = computed(() => ({

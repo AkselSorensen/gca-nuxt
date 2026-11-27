@@ -1426,7 +1426,7 @@ async function loadFormData() {
     // Catégories : API admin directe (PAS bootstrap - il est caché SWR et reste périmé)
     const catRes = await $fetch(api + '/api/admin/categories', { credentials: 'include' }).catch(() => ({ categories: [] }))
     categories.value = catRes.categories || []
-    const b = await $fetch(api + '/api/bootstrap', { credentials: 'include' })
+    const b = await $fetch(api + '/api/bootstrap?full=1', { credentials: 'include' })
     // Vrais vendeurs depuis la DB (slug réel), fallback sur l'ancienne liste
     sellers.value = b.sellers?.length
       ? b.sellers.map((s: any) => ({ slug: s.slug, username: s.username }))
@@ -1738,7 +1738,7 @@ const savingFeatured = ref(false)
 
 async function loadFeaturedData() {
   try {
-    const b = await $fetch(api + '/api/bootstrap', { credentials: 'include' })
+    const b = await $fetch(api + '/api/bootstrap?full=1', { credentials: 'include' })
     const lc = b.landingConfig || []
     const collab = lc.find((c:any) => c.section_key === 'featured_collab')
     const comm = lc.find((c:any) => c.section_key === 'featured_comm')

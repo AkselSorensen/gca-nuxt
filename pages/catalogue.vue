@@ -172,8 +172,11 @@ const config = useRuntimeConfig()
 const { t, tr } = useLang()
 const api = config.public.apiOrigin
 
-const { data: prodData } = await useFetch(api + '/api/products?limit=100')
-const { data: catData } = await useFetch(api + '/api/categories')
+// Retour sur la page = affichage immédiat avec les données déjà chargées, puis mise à jour discrète en arrière-plan
+const { data: prodData, refresh: refreshProducts } = await useFetch(api + '/api/products?limit=100', { key: 'catalogue-products', getCachedData: (key: string, nuxt: any, ctx: any) => (ctx?.cause === 'refresh:manual' ? undefined : nuxt.payload.data[key]) })
+const hydratingCat = useNuxtApp().isHydrating
+onMounted(() => { if (!hydratingCat) refreshProducts() })
+const { data: catData } = await useFetch(api + '/api/categories', { key: 'catalogue-categories', getCachedData: (key: string, nuxt: any, ctx: any) => (ctx?.cause === 'refresh:manual' ? undefined : nuxt.payload.data[key]) })
 const pageRef = ref<HTMLElement | null>(null)
 const searchRef = ref<HTMLInputElement | null>(null)
 const sidebarOpen = ref(false)

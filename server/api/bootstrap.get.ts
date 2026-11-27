@@ -1,7 +1,7 @@
 // GET /api/bootstrap - données de la home (réplique du monolithe Express)
 // Cache navigateur 60s + CDN 5min : données publiques (le champ `user` n'est
 // pas utilisé par la home - le header lit /api/me côté client).
-import { defineEventHandler, createError, setResponseHeader } from 'h3'
+import { defineEventHandler, createError, setResponseHeader, getQuery } from 'h3'
 import { query } from '../services/db'
 import { getSessionLocale } from '../utils/auth'
 import { memo } from '../utils/memo'
@@ -192,7 +192,25 @@ export default defineEventHandler(async (event) => {
       discordInvite: DISCORD_INVITE,
     }
     })
-    return { ...data, locale }
+    // Les images de la config d'accueil sont en base64 (180 Ko) : on les remplace par de vraies URLs d'image.
+    // L'admin demande ?full=1 pour garder les données brutes (il les renvoie telles quelles à l'enregistrement).
+    if (getQuery(event).full === '1') return { ...data, locale }
+    const landingConfig = (data.landingConfig || []).map((row: any) => {
+      const items = row?.metadata?.items
+      if (!Array.isArray(items)) return row
+      return {
+        ...row,
+        metadata: {
+          ...row.metadata,
+          items: items.map((it: any, i: number) => (
+            typeof it?.image === 'string' && it.image.startsWith('data:')
+              ? { ...it, image: `/api/landing-image/${encodeURIComponent(row.section_key)}/${i}?v=${it.image.length}` }
+              : it
+          )),
+        },
+      }
+    })
+    return { ...data, landingConfig, locale }
   } catch (error) {
     console.error('Bootstrap error:', error)
     throw createError({ statusCode: 500, statusMessage: 'Unable to load homepage data' })

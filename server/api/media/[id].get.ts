@@ -11,7 +11,7 @@ import { createHash } from 'node:crypto'
 import { query } from '../../services/db'
 import { r2Client, GetObjectCommand, PutObjectCommand, R2_BUCKET } from '../../services/r2'
 
-const ALLOWED_WIDTHS = [160, 320, 480, 640, 960, 1280, 1920]
+const ALLOWED_WIDTHS = [160, 320, 480, 640, 1280]
 const CACHE_MAX_BYTES = 64 * 1024 * 1024
 type Entry = { buf: Buffer; type: string; etag: string }
 const cache = new Map<string, Entry>()
